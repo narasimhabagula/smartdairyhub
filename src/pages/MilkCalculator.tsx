@@ -19,9 +19,8 @@ export default function MilkCalculator() {
     const l = parseFloat(liters);
     if (isNaN(f) || isNaN(s) || isNaN(l)) return;
 
-    // Standard Indian dairy rate formula
-    const baseRate = animalType === "buffalo" ? 8.0 : 6.5;
-    const rate = f * baseRate + s * 0.36;
+    // Milk rate formula: Rate = (FAT × 6) + (SNF × 3)
+    const rate = f * 6 + s * 3;
     const total = rate * l;
     setResult({ rate: Math.round(rate * 100) / 100, total: Math.round(total * 100) / 100 });
   };
@@ -89,7 +88,7 @@ export default function MilkCalculator() {
                 </div>
               </div>
               <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-                <p><strong>Formula:</strong> FAT × {animalType === "buffalo" ? "8.0" : "6.5"} + SNF × 0.36 = Rate/Liter</p>
+                <p><strong>Formula:</strong> FAT × 6 + SNF × 3 = Rate/Liter</p>
                 <p className="mt-1"><strong>Details:</strong> {fat}% FAT, {snf}% SNF, {liters} Liters ({animalType})</p>
               </div>
             </CardContent>

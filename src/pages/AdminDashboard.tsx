@@ -1,0 +1,419 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+
+export default function AdminDashboard() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [vets, setVets] = useState<any[]>([]);
+  const [schemes, setSchemes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Vet form
+  const [vetForm, setVetForm] = useState({ name: "", qualification: "", specialization: "", phone: "", location: "", email: "" });
+  const [vetOpen, setVetOpen] = useState(false);
+
+  // Scheme form
+  const [schemeForm, setSchemeForm] = useState({ title: "", description: "", eligibility: "", benefits: "", category: "subsidy", apply_url: "" });
+  const [schemeOpen, setSchemeOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const [u, p, o, v, s] = await Promise.all([
+        supabase.from("profiles").select("*, user_roles(role)"),
+        supabase.from("products").select("*").order("created_at", { ascending: false }),
+        supabase.from("orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("vet_doctors").select("*").order("created_at", { ascending: false }),
+        supabase.from("schemes").select("*").order("created_at", { ascending: false }),
+      ]);
+      setUsers(u.data || []);
+      setProducts(p.data || []);
+      setOrders(o.data || []);
+      setVets(v.data || []);
+      setSchemes(s.data || []);
+      setLoading(false);
+    };
+    fetchAll();
+  }, []);
+
+  const approveProduct = async (id: string) => {
+    await supabase.from("products").update({ approved: true }).eq("id", id);
+    setProducts(products.map(p => p.id === id ? { ...p, approved: true } : p));
+    toast.success("Product approved");
+  };
+
+  const deleteProduct = async (id: string) => {
+    await supabase.from("products").delete().eq("id", id);
+    setProducts(products.filter(p => p.id !== id));
+    toast.success("Product deleted");
+  };
+
+  const updateOrderStatus = async (id: string, status: string) => {
+    await supabase.from("orders").update({ status }).eq("id", id);
+    setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
+    toast.success("Order status updated");
+  };
+
+  const addVet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from("vet_doctors").insert(vetForm);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Vet added!");
+    setVetOpen(false);
+    setVetForm({ name: "", qualification: "", specialization: "", phone: "", location: "", email: "" });
+    const { data } = await supabase.from("vet_doctors").select("*").order("created_at", { ascending: false });
+    setVets(data || []);
+  };
+
+  const deleteVet = async (id: string) => {
+    await supabase.from("vet_doctors").delete().eq("id", id);
+    setVets(vets.filter(v => v.id !== id));
+    toast.success("Vet deleted");
+  };
+
+  const addScheme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from("schemes").insert(schemeForm);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Scheme added!");
+    setSchemeOpen(false);
+    setSchemeForm({ title: "", description: "", eligibility: "", benefits: "", category: "subsidy", apply_url: "" });
+    const { data } = await supabase.from("schemes").select("*").order("created_at", { ascending: false });
+    setSchemes(data || []);
+  };
+
+  const deleteScheme = async (id: string) => {
+    await supabase.from("schemes").delete().eq("id", id);
+    setSchemes(schemes.filter(s => s.id !== id));
+    toast.success("Scheme deleted");
+  };
+
+  const totalRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
+  const orderStatusData = ["pending", "confirmed", "shipped", "delivered", "cancelled"].map(s => ({
+    name: s, value: orders.filter(o => o.status === s).length
+  })).filter(d => d.value > 0);
+  const COLORS = ["hsl(36, 80%, 55%)", "hsl(142, 45%, 28%)", "hsl(200, 60%, 50%)", "hsl(142, 60%, 40%)", "hsl(0, 72%, 50%)"];
+
+  if (loading) return <div className="container py-10"><p className="text-muted-foreground">Loading admin dashboard...</p></div>;
+
+  return (
+    <div className="container py-10">
+      <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
+      <p className="mt-1 text-muted-foreground">Manage your dairy marketplace platform.</p>
+
+      {/* Stats */}
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {[
+          { label: "Total Users", value: users.length, icon: Users },
+          { label: "Products", value: products.length, icon: Package },
+          { label: "Orders", value: orders.length, icon: ShoppingCart },
+          { label: "Vet Doctors", value: vets.length, icon: Stethoscope },
+          { label: "Revenue", value: `₹${totalRevenue.toFixed(0)}`, icon: IndianRupee },
+        ].map((s) => (
+          <Card key={s.label}>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <s.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="font-display text-xl font-bold">{s.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Tabs defaultValue="products" className="mt-8">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="vets">Vet Doctors</TabsTrigger>
+          <TabsTrigger value="schemes">Schemes</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="products" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="font-display">Product Approvals</CardTitle></CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-3 font-medium">Name</th>
+                      <th className="pb-3 font-medium">Category</th>
+                      <th className="pb-3 font-medium text-right">Price</th>
+                      <th className="pb-3 font-medium text-right">Stock</th>
+                      <th className="pb-3 font-medium text-center">Status</th>
+                      <th className="pb-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((p) => (
+                      <tr key={p.id} className="border-b last:border-0">
+                        <td className="py-3 font-medium">{p.name}</td>
+                        <td className="py-3 capitalize">{p.category}</td>
+                        <td className="py-3 text-right">₹{Number(p.price).toFixed(0)}</td>
+                        <td className="py-3 text-right">{p.stock}</td>
+                        <td className="py-3 text-center">
+                          <Badge variant={p.approved ? "default" : "secondary"}>
+                            {p.approved ? "Approved" : "Pending"}
+                          </Badge>
+                        </td>
+                        <td className="py-3 text-right space-x-1">
+                          {!p.approved && (
+                            <Button size="sm" variant="outline" onClick={() => approveProduct(p.id)} className="gap-1">
+                              <Check className="h-3 w-3" /> Approve
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => deleteProduct(p.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="orders" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="font-display">All Orders</CardTitle></CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-3 font-medium">Order ID</th>
+                      <th className="pb-3 font-medium">Date</th>
+                      <th className="pb-3 font-medium text-right">Total</th>
+                      <th className="pb-3 font-medium text-center">Status</th>
+                      <th className="pb-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((o) => (
+                      <tr key={o.id} className="border-b last:border-0">
+                        <td className="py-3 font-mono text-xs">{o.id.slice(0, 8)}</td>
+                        <td className="py-3">{new Date(o.created_at).toLocaleDateString("en-IN")}</td>
+                        <td className="py-3 text-right font-semibold">₹{Number(o.total).toFixed(0)}</td>
+                        <td className="py-3 text-center">
+                          <Badge variant="secondary" className="capitalize">{o.status}</Badge>
+                        </td>
+                        <td className="py-3 text-right">
+                          <Select value={o.status} onValueChange={(v) => updateOrderStatus(o.id, v)}>
+                            <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {["pending", "confirmed", "shipped", "delivered", "cancelled"].map(s => (
+                                <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="font-display">All Users</CardTitle></CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-3 font-medium">Name</th>
+                      <th className="pb-3 font-medium">Phone</th>
+                      <th className="pb-3 font-medium">Location</th>
+                      <th className="pb-3 font-medium">Role</th>
+                      <th className="pb-3 font-medium">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.id} className="border-b last:border-0">
+                        <td className="py-3 font-medium">{u.full_name || "—"}</td>
+                        <td className="py-3">{u.phone || "—"}</td>
+                        <td className="py-3">{u.location || "—"}</td>
+                        <td className="py-3">
+                          <Badge variant="secondary" className="capitalize">
+                            {u.user_roles?.[0]?.role || "farmer"}
+                          </Badge>
+                        </td>
+                        <td className="py-3 text-muted-foreground">{new Date(u.created_at).toLocaleDateString("en-IN")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="vets" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display">Vet Doctors</CardTitle>
+              <Dialog open={vetOpen} onOpenChange={setVetOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> Add Vet</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle className="font-display">Add Vet Doctor</DialogTitle></DialogHeader>
+                  <form onSubmit={addVet} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><Label>Name</Label><Input value={vetForm.name} onChange={(e) => setVetForm({ ...vetForm, name: e.target.value })} required className="mt-1.5" /></div>
+                      <div><Label>Phone</Label><Input value={vetForm.phone} onChange={(e) => setVetForm({ ...vetForm, phone: e.target.value })} required className="mt-1.5" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><Label>Qualification</Label><Input value={vetForm.qualification} onChange={(e) => setVetForm({ ...vetForm, qualification: e.target.value })} className="mt-1.5" /></div>
+                      <div><Label>Specialization</Label><Input value={vetForm.specialization} onChange={(e) => setVetForm({ ...vetForm, specialization: e.target.value })} className="mt-1.5" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><Label>Location</Label><Input value={vetForm.location} onChange={(e) => setVetForm({ ...vetForm, location: e.target.value })} required className="mt-1.5" /></div>
+                      <div><Label>Email</Label><Input type="email" value={vetForm.email} onChange={(e) => setVetForm({ ...vetForm, email: e.target.value })} className="mt-1.5" /></div>
+                    </div>
+                    <Button type="submit" className="w-full">Add Vet Doctor</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {vets.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <p className="font-medium">{v.name}</p>
+                      <p className="text-sm text-muted-foreground">{v.specialization} · {v.location}</p>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => deleteVet(v.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="schemes" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display">Government Schemes</CardTitle>
+              <Dialog open={schemeOpen} onOpenChange={setSchemeOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> Add Scheme</Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle className="font-display">Add Scheme</DialogTitle></DialogHeader>
+                  <form onSubmit={addScheme} className="space-y-4">
+                    <div><Label>Title</Label><Input value={schemeForm.title} onChange={(e) => setSchemeForm({ ...schemeForm, title: e.target.value })} required className="mt-1.5" /></div>
+                    <div><Label>Description</Label><Textarea value={schemeForm.description} onChange={(e) => setSchemeForm({ ...schemeForm, description: e.target.value })} required className="mt-1.5" /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><Label>Eligibility</Label><Input value={schemeForm.eligibility} onChange={(e) => setSchemeForm({ ...schemeForm, eligibility: e.target.value })} className="mt-1.5" /></div>
+                      <div><Label>Benefits</Label><Input value={schemeForm.benefits} onChange={(e) => setSchemeForm({ ...schemeForm, benefits: e.target.value })} className="mt-1.5" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Category</Label>
+                        <Select value={schemeForm.category} onValueChange={(v) => setSchemeForm({ ...schemeForm, category: v })}>
+                          <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["subsidy", "loan", "insurance", "training", "other"].map(c => (
+                              <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div><Label>Apply URL</Label><Input value={schemeForm.apply_url} onChange={(e) => setSchemeForm({ ...schemeForm, apply_url: e.target.value })} className="mt-1.5" /></div>
+                    </div>
+                    <Button type="submit" className="w-full">Add Scheme</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {schemes.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <p className="font-medium">{s.title}</p>
+                      <p className="text-sm text-muted-foreground capitalize">{s.category} · {s.active ? "Active" : "Inactive"}</p>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => deleteScheme(s.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader><CardTitle className="font-display">Order Status</CardTitle></CardHeader>
+              <CardContent>
+                {orderStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie data={orderStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                        {orderStatusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No orders yet</p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="font-display">Platform Summary</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={[
+                    { name: "Users", value: users.length },
+                    { name: "Products", value: products.length },
+                    { name: "Orders", value: orders.length },
+                    { name: "Vets", value: vets.length },
+                    { name: "Schemes", value: schemes.length },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis fontSize={12} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="hsl(142, 45%, 28%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
