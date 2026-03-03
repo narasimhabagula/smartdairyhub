@@ -1,8 +1,14 @@
 import { Link } from "react-router-dom";
-import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight } from "lucide-react";
+import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight, Store } from "lucide-react";
 import heroImg from "@/assets/hero-dairy.jpg";
 
 const features = [
+  {
+    icon: Store,
+    title: "Dairy Marketplace",
+    desc: "Buy fresh milk, ghee, butter and more from local farmers.",
+    to: "/marketplace",
+  },
   {
     icon: Milk,
     title: "Milk Rate Calculator",
@@ -75,7 +81,7 @@ export default function Landing() {
         <p className="mx-auto mt-3 max-w-lg text-center text-muted-foreground">
           A complete dairy management platform designed for Indian dairy farmers.
         </p>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {features.map((f, i) => (
             <Link
               key={f.title}
