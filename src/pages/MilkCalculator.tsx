@@ -1,24 +1,56 @@
 import { useState } from "react";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator } from "lucide-react";
+import { toast } from "sonner";
+
+const milkSchema = z.object({
+  fat: z.number({ invalid_type_error: "FAT must be a number" })
+    .min(0, "FAT cannot be negative")
+    .max(15, "FAT must be 15% or less"),
+  snf: z.number({ invalid_type_error: "SNF must be a number" })
+    .min(0, "SNF cannot be negative")
+    .max(15, "SNF must be 15% or less"),
+  liters: z.number({ invalid_type_error: "Liters must be a number" })
+    .min(0.1, "Quantity must be greater than 0")
+    .max(10000, "Quantity must be 10,000 liters or less"),
+  animalType: z.enum(["cow", "buffalo"]),
+});
 
 export default function MilkCalculator() {
   const [fat, setFat] = useState("");
   const [snf, setSnf] = useState("");
   const [liters, setLiters] = useState("");
-  const [animalType, setAnimalType] = useState("cow");
+  const [animalType, setAnimalType] = useState<"cow" | "buffalo">("cow");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ rate: number; total: number } | null>(null);
 
   const calculate = () => {
-    const f = parseFloat(fat);
-    const s = parseFloat(snf);
-    const l = parseFloat(liters);
-    if (isNaN(f) || isNaN(s) || isNaN(l)) return;
+    const parsed = milkSchema.safeParse({
+      fat: parseFloat(fat),
+      snf: parseFloat(snf),
+      liters: parseFloat(liters),
+      animalType,
+    });
 
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.issues.forEach((issue) => {
+        const key = issue.path[0] as string;
+        if (key) fieldErrors[key] = issue.message;
+      });
+      setErrors(fieldErrors);
+      setResult(null);
+      toast.error("Please correct the highlighted fields");
+      return;
+    }
+
+    setErrors({});
+    const { fat: f, snf: s, liters: l } = parsed.data;
     // Milk rate formula: Rate = (FAT × 6) + (SNF × 3)
     const rate = f * 6 + s * 3;
     const total = rate * l;
@@ -43,7 +75,7 @@ export default function MilkCalculator() {
           <CardContent className="space-y-5">
             <div>
               <Label>Animal Type</Label>
-              <Select value={animalType} onValueChange={setAnimalType}>
+              <Select value={animalType} onValueChange={(v) => setAnimalType(v as "cow" | "buffalo")}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
@@ -55,15 +87,48 @@ export default function MilkCalculator() {
             </div>
             <div>
               <Label>FAT (%)</Label>
-              <Input type="number" placeholder="e.g. 4.5" value={fat} onChange={(e) => setFat(e.target.value)} className="mt-1.5" />
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="15"
+                placeholder="e.g. 4.5"
+                value={fat}
+                onChange={(e) => setFat(e.target.value)}
+                className="mt-1.5"
+                aria-invalid={!!errors.fat}
+              />
+              {errors.fat && <p className="mt-1 text-xs text-destructive">{errors.fat}</p>}
             </div>
             <div>
               <Label>SNF (%)</Label>
-              <Input type="number" placeholder="e.g. 8.5" value={snf} onChange={(e) => setSnf(e.target.value)} className="mt-1.5" />
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="15"
+                placeholder="e.g. 8.5"
+                value={snf}
+                onChange={(e) => setSnf(e.target.value)}
+                className="mt-1.5"
+                aria-invalid={!!errors.snf}
+              />
+              {errors.snf && <p className="mt-1 text-xs text-destructive">{errors.snf}</p>}
             </div>
             <div>
               <Label>Quantity (Liters)</Label>
-              <Input type="number" placeholder="e.g. 10" value={liters} onChange={(e) => setLiters(e.target.value)} className="mt-1.5" />
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="10000"
+                placeholder="e.g. 10"
+                value={liters}
+                onChange={(e) => setLiters(e.target.value)}
+                className="mt-1.5"
+                aria-invalid={!!errors.liters}
+              />
+              {errors.liters && <p className="mt-1 text-xs text-destructive">{errors.liters}</p>}
             </div>
             <Button onClick={calculate} className="w-full">
               Calculate Rate
