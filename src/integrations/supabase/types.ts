@@ -325,49 +325,76 @@ export type Database = {
       }
       vet_doctors: {
         Row: {
+          address: string | null
           available: boolean
           created_at: string
+          district: string | null
           email: string | null
+          google_maps_url: string | null
+          hospital_name: string | null
           id: string
           image_url: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           name: string
           phone: string
           qualification: string | null
           rating: number | null
           specialization: string | null
+          status: string
+          suggested_by: string | null
           total_ratings: number | null
           updated_at: string
+          village: string | null
         }
         Insert: {
+          address?: string | null
           available?: boolean
           created_at?: string
+          district?: string | null
           email?: string | null
+          google_maps_url?: string | null
+          hospital_name?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           name: string
           phone: string
           qualification?: string | null
           rating?: number | null
           specialization?: string | null
+          status?: string
+          suggested_by?: string | null
           total_ratings?: number | null
           updated_at?: string
+          village?: string | null
         }
         Update: {
+          address?: string | null
           available?: boolean
           created_at?: string
+          district?: string | null
           email?: string | null
+          google_maps_url?: string | null
+          hospital_name?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           name?: string
           phone?: string
           qualification?: string | null
           rating?: number | null
           specialization?: string | null
+          status?: string
+          suggested_by?: string | null
           total_ratings?: number | null
           updated_at?: string
+          village?: string | null
         }
         Relationships: []
       }
