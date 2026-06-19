@@ -159,6 +159,39 @@ export default function Marketplace() {
                     </Button>
                   )}
                 </div>
+                <div className="mt-3 border-t pt-3 space-y-2">
+                  <div className="text-xs text-muted-foreground">
+                    Seller: <span className="font-medium text-foreground">{p.seller_name || "Verified Seller"}</span>
+                  </div>
+                  {p.seller_phone ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                        <a href={telHref(p.seller_phone)} aria-label={`Call seller of ${p.name}`}>
+                          <Phone className="h-3.5 w-3.5" /> Call
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 bg-[#25D366] text-white hover:bg-[#1ebe5b]"
+                        asChild
+                      >
+                        <a
+                          href={waHref(
+                            p.seller_phone,
+                            `Hello, I'm interested in your ${p.name} (₹${Number(p.price).toFixed(0)}/${p.unit}) on DairyPro.`,
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`WhatsApp seller of ${p.name}`}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                        </a>
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Seller contact not provided</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))
