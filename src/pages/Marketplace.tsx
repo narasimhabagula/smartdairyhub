@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Search, Plus, Minus, IndianRupee, Package } from "lucide-react";
+import { ShoppingCart, Search, Plus, Minus, IndianRupee, Package, Phone, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { normalizeIndianPhone, telHref, waHref } from "@/lib/phone";
 
 const categories = ["all", "milk", "ghee", "butter", "paneer", "curd", "other"];
 
+type Product = any & { seller_name?: string; seller_phone?: string | null };
+
 export default function Marketplace() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -21,11 +24,26 @@ export default function Marketplace() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      let query = supabase.from("products").select("*").eq("approved", true);
+      setLoading(true);
+      let query = supabase.from("products").select("*").eq("approved", true).gt("stock", 0);
       if (category !== "all") query = query.eq("category", category);
       if (search) query = query.ilike("name", `%${search}%`);
       const { data } = await query.order("created_at", { ascending: false });
-      setProducts(data || []);
+      const rows = (data as Product[]) || [];
+      const sellerIds = Array.from(new Set(rows.map((r) => r.seller_id)));
+      if (sellerIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, phone")
+          .in("user_id", sellerIds);
+        const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+        rows.forEach((r) => {
+          const p = map.get(r.seller_id);
+          r.seller_name = p?.full_name || "Verified Seller";
+          r.seller_phone = p?.phone ? normalizeIndianPhone(p.phone) : null;
+        });
+      }
+      setProducts(rows);
       setLoading(false);
     };
     fetchProducts();
@@ -139,6 +157,39 @@ export default function Marketplace() {
                     }} className="gap-1.5">
                       <ShoppingCart className="h-3.5 w-3.5" /> Add
                     </Button>
+                  )}
+                </div>
+                <div className="mt-3 border-t pt-3 space-y-2">
+                  <div className="text-xs text-muted-foreground">
+                    Seller: <span className="font-medium text-foreground">{p.seller_name || "Verified Seller"}</span>
+                  </div>
+                  {p.seller_phone ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                        <a href={telHref(p.seller_phone)} aria-label={`Call seller of ${p.name}`}>
+                          <Phone className="h-3.5 w-3.5" /> Call
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 bg-[#25D366] text-white hover:bg-[#1ebe5b]"
+                        asChild
+                      >
+                        <a
+                          href={waHref(
+                            p.seller_phone,
+                            `Hello, I'm interested in your ${p.name} (₹${Number(p.price).toFixed(0)}/${p.unit}) on DairyPro.`,
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`WhatsApp seller of ${p.name}`}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                        </a>
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Seller contact not provided</p>
                   )}
                 </div>
               </CardContent>

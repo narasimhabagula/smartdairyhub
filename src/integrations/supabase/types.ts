@@ -21,6 +21,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           description: string | null
+          district: string | null
           id: string
           image_url: string | null
           listing_type: string
@@ -32,6 +33,7 @@ export type Database = {
           status: string
           type: string
           updated_at: string
+          village: string | null
         }
         Insert: {
           age?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          district?: string | null
           id?: string
           image_url?: string | null
           listing_type?: string
@@ -50,6 +53,7 @@ export type Database = {
           status?: string
           type: string
           updated_at?: string
+          village?: string | null
         }
         Update: {
           age?: string | null
@@ -57,6 +61,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          district?: string | null
           id?: string
           image_url?: string | null
           listing_type?: string
@@ -68,6 +73,7 @@ export type Database = {
           status?: string
           type?: string
           updated_at?: string
+          village?: string | null
         }
         Relationships: []
       }
