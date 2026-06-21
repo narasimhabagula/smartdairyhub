@@ -8,11 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation, User, ExternalLink, Check, X } from "lucide-react";
+import { Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation, User, ExternalLink, Check, X, Siren, Star, Radar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone, telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
+
+type NearbyPlace = {
+  id: string;
+  name: string;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  rating: number | null;
+  total_ratings: number | null;
+  phone: string | null;
+  maps_url: string | null;
+  open_now: boolean | null;
+};
 
 type Vet = {
   id: string;
@@ -83,6 +97,7 @@ function loadGoogleMaps(): Promise<void> {
 
 export default function VetContacts() {
   const { user, hasRole } = useAuth();
+  const { t } = useTranslation();
   const isAdmin = hasRole("admin");
 
   const [vets, setVets] = useState<Vet[]>([]);
@@ -90,12 +105,15 @@ export default function VetContacts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [district, setDistrict] = useState("all");
-  const [view, setView] = useState<"list" | "map">("list");
+  const [view, setView] = useState<"list" | "map" | "nearby">("list");
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [sortByNearest, setSortByNearest] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [nearby, setNearby] = useState<NearbyPlace[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyFetched, setNearbyFetched] = useState(false);
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -153,20 +171,43 @@ export default function VetContacts() {
     });
   }
 
-  const locateMe = () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation not supported on this device");
-      return;
+  const locateMe = () =>
+    new Promise<{ lat: number; lng: number } | null>((resolve) => {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation not supported on this device");
+        return resolve(null);
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserLoc(loc);
+          setSortByNearest(true);
+          resolve(loc);
+        },
+        () => {
+          toast.error("Could not get your location");
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 10000 },
+      );
+    });
+
+  const fetchNearbyLive = async () => {
+    setNearbyLoading(true);
+    setNearbyFetched(true);
+    try {
+      const loc = userLoc ?? (await locateMe());
+      if (!loc) return;
+      const { data, error } = await supabase.functions.invoke("nearby-vets", {
+        body: { lat: loc.lat, lng: loc.lng, radius: 20000 },
+      });
+      if (error) throw error;
+      setNearby((data as any)?.places || []);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load nearby vets");
+    } finally {
+      setNearbyLoading(false);
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setSortByNearest(true);
-        toast.success("Showing nearest vets first");
-      },
-      () => toast.error("Could not get your location"),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
   };
 
   // Render the Google Map when in map view
