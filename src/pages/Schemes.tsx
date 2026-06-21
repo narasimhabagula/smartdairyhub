@@ -6,10 +6,12 @@ import { ExternalLink, IndianRupee, FileText, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const categories = ["all", "subsidy", "loan", "insurance", "training", "other"];
 
 export default function Schemes() {
+  const { t } = useTranslation();
   const [schemes, setSchemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("all");
@@ -17,6 +19,7 @@ export default function Schemes() {
 
   useEffect(() => {
     const fetchSchemes = async () => {
+      setLoading(true);
       let query = supabase.from("schemes").select("*").eq("active", true);
       if (category !== "all") query = query.eq("category", category);
       if (search) query = query.ilike("title", `%${search}%`);
@@ -29,19 +32,21 @@ export default function Schemes() {
 
   return (
     <div className="container py-10">
-      <h1 className="font-display text-3xl font-bold">Government Schemes</h1>
-      <p className="mt-2 text-muted-foreground">Subsidies, loans, and programs for dairy farmers.</p>
+      <h1 className="font-display text-3xl font-bold">{t("schemes.title")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("schemes.subtitle")}</p>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search schemes..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder={t("schemes.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             {categories.map((c) => (
-              <SelectItem key={c} value={c} className="capitalize">{c === "all" ? "All Categories" : c}</SelectItem>
+              <SelectItem key={c} value={c} className="capitalize">
+                {c === "all" ? t("schemes.all") : c}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -49,9 +54,9 @@ export default function Schemes() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {loading ? (
-          <p className="text-muted-foreground col-span-full">Loading...</p>
+          <p className="text-muted-foreground col-span-full">{t("schemes.loading")}</p>
         ) : schemes.length === 0 ? (
-          <p className="text-muted-foreground col-span-full text-center py-12">No schemes found.</p>
+          <p className="text-muted-foreground col-span-full text-center py-12">{t("schemes.empty")}</p>
         ) : (
           schemes.map((s) => (
             <Card key={s.id} className="transition-shadow hover:shadow-lg">
@@ -67,20 +72,20 @@ export default function Schemes() {
                   {s.benefits && (
                     <div className="flex items-start gap-2">
                       <IndianRupee className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                      <div><strong>Benefit:</strong> {s.benefits}</div>
+                      <div><strong>{t("schemes.benefit")}:</strong> {s.benefits}</div>
                     </div>
                   )}
                   {s.eligibility && (
                     <div className="flex items-start gap-2">
                       <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                      <div><strong>Eligibility:</strong> {s.eligibility}</div>
+                      <div><strong>{t("schemes.eligibility")}:</strong> {s.eligibility}</div>
                     </div>
                   )}
                 </div>
                 {s.apply_url && (
-                  <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                  <Button size="lg" className="w-full gap-1.5 sm:w-auto" asChild>
                     <a href={s.apply_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-3.5 w-3.5" /> Apply Now
+                      <ExternalLink className="h-4 w-4" /> {t("schemes.apply")}
                     </a>
                   </Button>
                 )}

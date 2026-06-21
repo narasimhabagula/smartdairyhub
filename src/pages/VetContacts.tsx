@@ -8,11 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation, User, ExternalLink, Check, X } from "lucide-react";
+import { Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation, User, ExternalLink, Check, X, Siren, Star, Radar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone, telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
+
+type NearbyPlace = {
+  id: string;
+  name: string;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  rating: number | null;
+  total_ratings: number | null;
+  phone: string | null;
+  maps_url: string | null;
+  open_now: boolean | null;
+};
 
 type Vet = {
   id: string;
@@ -83,6 +97,7 @@ function loadGoogleMaps(): Promise<void> {
 
 export default function VetContacts() {
   const { user, hasRole } = useAuth();
+  const { t } = useTranslation();
   const isAdmin = hasRole("admin");
 
   const [vets, setVets] = useState<Vet[]>([]);
@@ -90,12 +105,15 @@ export default function VetContacts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [district, setDistrict] = useState("all");
-  const [view, setView] = useState<"list" | "map">("list");
+  const [view, setView] = useState<"list" | "map" | "nearby">("list");
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [sortByNearest, setSortByNearest] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [nearby, setNearby] = useState<NearbyPlace[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyFetched, setNearbyFetched] = useState(false);
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -153,20 +171,43 @@ export default function VetContacts() {
     });
   }
 
-  const locateMe = () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation not supported on this device");
-      return;
+  const locateMe = () =>
+    new Promise<{ lat: number; lng: number } | null>((resolve) => {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation not supported on this device");
+        return resolve(null);
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserLoc(loc);
+          setSortByNearest(true);
+          resolve(loc);
+        },
+        () => {
+          toast.error("Could not get your location");
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 10000 },
+      );
+    });
+
+  const fetchNearbyLive = async () => {
+    setNearbyLoading(true);
+    setNearbyFetched(true);
+    try {
+      const loc = userLoc ?? (await locateMe());
+      if (!loc) return;
+      const { data, error } = await supabase.functions.invoke("nearby-vets", {
+        body: { lat: loc.lat, lng: loc.lng, radius: 20000 },
+      });
+      if (error) throw error;
+      setNearby((data as any)?.places || []);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load nearby vets");
+    } finally {
+      setNearbyLoading(false);
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setSortByNearest(true);
-        toast.success("Showing nearest vets first");
-      },
-      () => toast.error("Could not get your location"),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
   };
 
   // Render the Google Map when in map view
@@ -289,13 +330,13 @@ export default function VetContacts() {
     <div className="container py-10">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold">Veterinary Directory</h1>
-          <p className="mt-2 text-muted-foreground">Find nearby vets, hospitals & animal clinics across Andhra Pradesh.</p>
+          <h1 className="font-display text-3xl font-bold">{t("vet.title")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("vet.subtitle")}</p>
         </div>
         {user && (
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2"><Plus className="h-4 w-4" /> Suggest a Vet</Button>
+              <Button className="gap-2"><Plus className="h-4 w-4" /> {t("vet.suggest")}</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Suggest a Vet Doctor</DialogTitle></DialogHeader>
@@ -342,8 +383,8 @@ export default function VetContacts() {
             {districts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={locateMe} className="gap-1.5">
-          <Navigation className="h-4 w-4" /> Nearest to me
+        <Button variant="outline" onClick={() => locateMe().then((l) => l && toast.success("Showing nearest vets first"))} className="gap-1.5">
+          <Navigation className="h-4 w-4" /> {t("vet.nearest")}
         </Button>
       </div>
 
@@ -370,10 +411,11 @@ export default function VetContacts() {
         </Card>
       )}
 
-      <Tabs value={view} onValueChange={(v) => setView(v as "list" | "map")} className="mt-6">
+      <Tabs value={view} onValueChange={(v) => setView(v as any)} className="mt-6">
         <TabsList>
-          <TabsTrigger value="list" className="gap-1.5"><List className="h-4 w-4" /> List</TabsTrigger>
-          <TabsTrigger value="map" className="gap-1.5"><MapIcon className="h-4 w-4" /> Map</TabsTrigger>
+          <TabsTrigger value="list" className="gap-1.5"><List className="h-4 w-4" /> {t("vet.list")}</TabsTrigger>
+          <TabsTrigger value="map" className="gap-1.5"><MapIcon className="h-4 w-4" /> {t("vet.map")}</TabsTrigger>
+          <TabsTrigger value="nearby" className="gap-1.5"><Radar className="h-4 w-4" /> {t("vet.nearby")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="mt-6">
@@ -441,10 +483,127 @@ export default function VetContacts() {
         <TabsContent value="map" className="mt-6">
           <div ref={mapRef} className="h-[60vh] w-full overflow-hidden rounded-lg border" />
           <p className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5">
-            <User className="h-3 w-3" /> Tap "Nearest to me" to show your location and sort vets by distance.
+            <User className="h-3 w-3" /> Tap "{t("vet.nearest")}" to show your location and sort vets by distance.
           </p>
         </TabsContent>
+
+        <TabsContent value="nearby" className="mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 p-4">
+            <p className="text-sm text-muted-foreground">{t("vet.nearbyHelp")}</p>
+            <Button onClick={fetchNearbyLive} disabled={nearbyLoading} size="lg" className="gap-2">
+              <Radar className="h-4 w-4" />
+              {nearbyLoading ? t("vet.searching") : t("vet.findNearby")}
+            </Button>
+          </div>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {nearbyLoading ? (
+              <p className="col-span-full text-center text-muted-foreground py-8">{t("vet.searching")}</p>
+            ) : !nearbyFetched ? (
+              <p className="col-span-full text-center text-muted-foreground py-8">{t("vet.nearbyHelp")}</p>
+            ) : nearby.length === 0 ? (
+              <p className="col-span-full text-center text-muted-foreground py-8">{t("vet.noNearby")}</p>
+            ) : (
+              nearby.map((p) => {
+                const dist = userLoc && p.lat != null && p.lng != null ? distanceKm(userLoc, { lat: p.lat, lng: p.lng }) : null;
+                const mapsLink = p.maps_url || (p.lat != null && p.lng != null ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : "#");
+                const waNumber = p.phone ? p.phone.replace(/\D/g, "") : null;
+                return (
+                  <Card key={p.id} className="transition-shadow hover:shadow-lg">
+                    <CardContent className="p-5">
+                      <h3 className="font-display text-base font-bold leading-tight">{p.name}</h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {p.rating != null && (
+                          <span className="inline-flex items-center gap-0.5">
+                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" /> {p.rating.toFixed(1)}
+                            {p.total_ratings ? ` (${p.total_ratings})` : ""}
+                          </span>
+                        )}
+                        {dist != null && <Badge variant="secondary">{dist.toFixed(1)} {t("vet.distance")}</Badge>}
+                        {p.open_now === true && <Badge className="bg-green-600 hover:bg-green-700">Open</Badge>}
+                      </div>
+                      {p.address && (
+                        <div className="mt-3 flex items-start gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> <span>{p.address}</span>
+                        </div>
+                      )}
+                      {p.phone && (
+                        <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Phone className="h-3.5 w-3.5" /> {p.phone}
+                        </div>
+                      )}
+
+                      <div className="mt-4 grid grid-cols-3 gap-2">
+                        <Button size="sm" variant="outline" className="gap-1.5" disabled={!p.phone} asChild={!!p.phone}>
+                          {p.phone ? (
+                            <a href={`tel:${p.phone}`}><Phone className="h-3.5 w-3.5" /> {t("vet.call")}</a>
+                          ) : (
+                            <span><Phone className="h-3.5 w-3.5" /> {t("vet.call")}</span>
+                          )}
+                        </Button>
+                        <Button size="sm" className="gap-1.5 bg-[#25D366] text-white hover:bg-[#1ebe5b]" disabled={!waNumber} asChild={!!waNumber}>
+                          {waNumber ? (
+                            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+                              <MessageCircle className="h-3.5 w-3.5" /> {t("vet.whatsapp")}
+                            </a>
+                          ) : (
+                            <span><MessageCircle className="h-3.5 w-3.5" /> {t("vet.whatsapp")}</span>
+                          )}
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                          <a href={mapsLink} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3.5 w-3.5" /> {t("vet.directions")}
+                          </a>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </TabsContent>
       </Tabs>
+
+      {/* Emergency Support */}
+      <Card className="mt-10 border-destructive/40 bg-destructive/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-display text-xl">
+            <Siren className="h-5 w-5 text-destructive" /> {t("vet.emergency.title")}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">{t("vet.emergency.subtitle")}</p>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border bg-background p-4">
+            <h3 className="font-display font-bold">{t("vet.emergency.helpline")}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{t("vet.emergency.helplineDesc")}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button size="lg" className="gap-1.5" asChild>
+                <a href="tel:1962"><Phone className="h-4 w-4" /> 1962</a>
+              </Button>
+              <Button size="lg" variant="outline" className="gap-1.5" asChild>
+                <a href="https://wa.me/911962" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4" /> {t("vet.whatsapp")}
+                </a>
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-background p-4">
+            <h3 className="font-display font-bold">{t("vet.emergency.ah")}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{t("vet.emergency.ahDesc")}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button size="lg" className="gap-1.5" asChild>
+                <a href="tel:+918632446183"><Phone className="h-4 w-4" /> Call AH Dept</a>
+              </Button>
+              <Button size="lg" variant="outline" className="gap-1.5" asChild>
+                <a href="https://www.google.com/maps/search/?api=1&query=District+Animal+Husbandry+Office+Andhra+Pradesh" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" /> {t("vet.directions")}
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
