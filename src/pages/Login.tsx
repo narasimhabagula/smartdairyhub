@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Milk, LogIn, UserPlus, Phone } from "lucide-react";
+import { LogIn, UserPlus, Phone } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -136,10 +136,8 @@ export default function Login() {
     <div className="flex min-h-[80vh] items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Milk className="h-7 w-7 text-primary" />
-          </div>
-          <CardTitle className="font-display text-2xl">Welcome to DairyPro</CardTitle>
+          <img src="/logo.png" alt="Smart Dairy Hub logo" className="mx-auto mb-2 h-16 w-16 rounded-lg object-contain" />
+          <CardTitle className="font-display text-2xl">Welcome to Smart Dairy Hub</CardTitle>
           <p className="text-sm text-muted-foreground">Sign in securely to your account</p>
         </CardHeader>
         <CardContent>
