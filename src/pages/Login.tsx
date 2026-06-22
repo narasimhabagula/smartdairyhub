@@ -1,22 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn, UserPlus, Phone } from "lucide-react";
+import { LogIn, UserPlus, Phone, RotateCw, AlertCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
 const nameSchema = z.string().trim().min(2, "Name is too short").max(100);
-const phoneSchema = z.string().trim().regex(/^\+?[1-9]\d{7,14}$/, "Enter a valid phone (E.164, e.g. +919876543210)");
 const otpSchema = z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code");
+
+const RESEND_SECONDS = 30;
+
+function friendlyAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login")) return "Email or password is incorrect. If you just signed up, create the account first.";
+  if (m.includes("email not confirmed")) return "Please verify your email before logging in.";
+  if (m.includes("user already registered")) return "An account with this email already exists. Try logging in.";
+  if (m.includes("unsupported phone provider") || m.includes("phone_provider_disabled"))
+    return "Phone OTP is not configured. Admin must connect an SMS provider (Twilio).";
+  if (m.includes("rate limit") || m.includes("too many")) return "Too many attempts. Please wait a minute and try again.";
+  return message;
+}
 
 export default function Login() {
   const navigate = useNavigate();
@@ -39,10 +52,22 @@ export default function Login() {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+  const [phoneProviderUnavailable, setPhoneProviderUnavailable] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (user) navigate("/dashboard", { replace: true });
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (resendIn <= 0) {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      return;
+    }
+    timerRef.current = setInterval(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [resendIn]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +82,10 @@ export default function Login() {
       password: pwdParsed.data,
     });
     setLoginLoading(false);
-    if (error) toast.error(error.message);
-    else {
+    if (error) {
+      console.error("[login] sign-in failed", error);
+      toast.error(friendlyAuthError(error.message));
+    } else {
       toast.success("Welcome back!");
       navigate("/dashboard");
     }
@@ -72,9 +99,12 @@ export default function Login() {
     if (!name.success) return toast.error(name.error.issues[0].message);
     if (!email.success) return toast.error(email.error.issues[0].message);
     if (!pwd.success) return toast.error(pwd.error.issues[0].message);
-    if (signupPhone) {
-      const phone = phoneSchema.safeParse(signupPhone);
-      if (!phone.success) return toast.error(phone.error.issues[0].message);
+
+    let canonicalPhone = "";
+    if (signupPhone.trim()) {
+      const normalized = normalizeIndianPhone(signupPhone);
+      if (!normalized) return toast.error("Enter a valid 10-digit Indian mobile number");
+      canonicalPhone = normalized;
     }
 
     setSignupLoading(true);
@@ -83,12 +113,16 @@ export default function Login() {
       password: pwd.data,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: name.data, phone: signupPhone },
+        data: { full_name: name.data, phone: canonicalPhone },
       },
     });
     setSignupLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Account created! Check your email to verify.");
+    if (error) {
+      console.error("[signup] failed", error);
+      toast.error(friendlyAuthError(error.message));
+    } else {
+      toast.success("Account created! You can log in now.");
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -98,35 +132,57 @@ export default function Login() {
     if (result.error) toast.error("Google login failed");
   };
 
+  const sendOtp = async (phoneE164: string) => {
+    setOtpLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ phone: phoneE164 });
+    setOtpLoading(false);
+    if (error) {
+      console.error("[otp] send failed", error);
+      const friendly = friendlyAuthError(error.message);
+      toast.error(friendly);
+      if (error.message.toLowerCase().includes("phone") || (error as any).code === "phone_provider_disabled") {
+        setPhoneProviderUnavailable(true);
+      }
+      return false;
+    }
+    setOtpSent(true);
+    setResendIn(RESEND_SECONDS);
+    toast.success(`OTP sent to ${formatIndianPhoneDisplay(phoneE164)}`);
+    return true;
+  };
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const phone = phoneSchema.safeParse(otpPhone);
-    if (!phone.success) return toast.error(phone.error.issues[0].message);
-    setOtpLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: phone.data });
-    setOtpLoading(false);
-    if (error) toast.error(error.message);
-    else {
-      setOtpSent(true);
-      toast.success("OTP sent to your phone");
-    }
+    const normalized = normalizeIndianPhone(otpPhone);
+    if (!normalized) return toast.error("Enter a valid 10-digit Indian mobile (e.g. 9876543210)");
+    setOtpPhone(normalized);
+    await sendOtp(normalized);
+  };
+
+  const handleResendOtp = async () => {
+    if (resendIn > 0) return;
+    const normalized = normalizeIndianPhone(otpPhone);
+    if (!normalized) return;
+    await sendOtp(normalized);
   };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const phone = phoneSchema.safeParse(otpPhone);
+    const normalized = normalizeIndianPhone(otpPhone);
     const code = otpSchema.safeParse(otpCode);
-    if (!phone.success) return toast.error(phone.error.issues[0].message);
+    if (!normalized) return toast.error("Invalid phone number");
     if (!code.success) return toast.error(code.error.issues[0].message);
     setOtpLoading(true);
     const { error } = await supabase.auth.verifyOtp({
-      phone: phone.data,
+      phone: normalized,
       token: code.data,
       type: "sms",
     });
     setOtpLoading(false);
-    if (error) toast.error(error.message);
-    else {
+    if (error) {
+      console.error("[otp] verify failed", error);
+      toast.error(friendlyAuthError(error.message));
+    } else {
       toast.success("Phone verified!");
       navigate("/dashboard");
     }
@@ -143,15 +199,9 @@ export default function Login() {
         <CardContent>
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="login" className="gap-1.5">
-                <LogIn className="h-3.5 w-3.5" /> Login
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="gap-1.5">
-                <UserPlus className="h-3.5 w-3.5" /> Sign Up
-              </TabsTrigger>
-              <TabsTrigger value="phone" className="gap-1.5">
-                <Phone className="h-3.5 w-3.5" /> Phone
-              </TabsTrigger>
+              <TabsTrigger value="login" className="gap-1.5"><LogIn className="h-3.5 w-3.5" /> Login</TabsTrigger>
+              <TabsTrigger value="signup" className="gap-1.5"><UserPlus className="h-3.5 w-3.5" /> Sign Up</TabsTrigger>
+              <TabsTrigger value="phone" className="gap-1.5"><Phone className="h-3.5 w-3.5" /> Phone</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
@@ -165,9 +215,7 @@ export default function Login() {
                   <Input type="password" autoComplete="current-password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required maxLength={128} className="mt-1.5" />
                 </div>
                 <div className="text-right">
-                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                    Forgot password?
-                  </Link>
+                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
                 </div>
                 <Button type="submit" className="w-full gap-2" disabled={loginLoading}>
                   <LogIn className="h-4 w-4" />
@@ -187,8 +235,9 @@ export default function Login() {
                   <Input type="email" autoComplete="email" placeholder="you@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required maxLength={255} className="mt-1.5" />
                 </div>
                 <div>
-                  <Label>Phone (optional)</Label>
-                  <Input type="tel" placeholder="+919876543210" value={signupPhone} onChange={(e) => setSignupPhone(e.target.value)} maxLength={16} className="mt-1.5" />
+                  <Label>Mobile (optional, India)</Label>
+                  <Input type="tel" inputMode="numeric" placeholder="9876543210" value={signupPhone} onChange={(e) => setSignupPhone(e.target.value)} maxLength={16} className="mt-1.5" />
+                  <p className="mt-1 text-xs text-muted-foreground">10-digit number, we'll add +91 automatically.</p>
                 </div>
                 <div>
                   <Label>Password</Label>
@@ -202,12 +251,24 @@ export default function Login() {
             </TabsContent>
 
             <TabsContent value="phone">
+              {phoneProviderUnavailable && (
+                <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">SMS provider not configured</p>
+                    <p className="mt-0.5 text-destructive/80">Phone OTP requires Twilio. Use Email login for now, or ask the admin to connect Twilio in backend settings.</p>
+                  </div>
+                </div>
+              )}
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} className="mt-4 space-y-4">
                   <div>
-                    <Label>Phone Number</Label>
-                    <Input type="tel" placeholder="+919876543210" value={otpPhone} onChange={(e) => setOtpPhone(e.target.value)} required maxLength={16} className="mt-1.5" />
-                    <p className="mt-1 text-xs text-muted-foreground">Use E.164 format including country code.</p>
+                    <Label>Indian Mobile Number</Label>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="rounded-md border bg-muted px-3 py-2 text-sm text-muted-foreground">+91</span>
+                      <Input type="tel" inputMode="numeric" placeholder="9876543210" value={otpPhone} onChange={(e) => setOtpPhone(e.target.value)} required maxLength={15} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">10-digit mobile starting with 6-9.</p>
                   </div>
                   <Button type="submit" className="w-full gap-2" disabled={otpLoading}>
                     <Phone className="h-4 w-4" />
@@ -218,15 +279,21 @@ export default function Login() {
                 <form onSubmit={handleVerifyOtp} className="mt-4 space-y-4">
                   <div>
                     <Label>6-digit Code</Label>
-                    <Input type="text" inputMode="numeric" pattern="\d{6}" placeholder="123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} required maxLength={6} className="mt-1.5" />
-                    <p className="mt-1 text-xs text-muted-foreground">Sent to {otpPhone}</p>
+                    <Input type="text" inputMode="numeric" pattern="\d{6}" placeholder="123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} required maxLength={6} className="mt-1.5" />
+                    <p className="mt-1 text-xs text-muted-foreground">Sent to {formatIndianPhoneDisplay(otpPhone)}</p>
                   </div>
                   <Button type="submit" className="w-full" disabled={otpLoading}>
                     {otpLoading ? "Verifying..." : "Verify & Login"}
                   </Button>
-                  <Button type="button" variant="ghost" className="w-full" onClick={() => { setOtpSent(false); setOtpCode(""); }}>
-                    Change number
-                  </Button>
+                  <div className="flex items-center justify-between">
+                    <Button type="button" variant="ghost" size="sm" onClick={() => { setOtpSent(false); setOtpCode(""); setResendIn(0); }}>
+                      Change number
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" className="gap-1.5" disabled={resendIn > 0 || otpLoading} onClick={handleResendOtp}>
+                      <RotateCw className="h-3.5 w-3.5" />
+                      {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}
+                    </Button>
+                  </div>
                 </form>
               )}
             </TabsContent>
