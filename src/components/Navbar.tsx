@@ -78,12 +78,21 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="ml-1 gap-1.5" aria-label={t("nav.language")}>
                 <Languages className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase">{i18n.language?.slice(0, 2) || "en"}</span>
+                <span className="text-xs font-semibold">{currentLangNative}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => switchLang("en")}>English</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => switchLang("te")}>తెలుగు</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+              <DropdownMenuLabel className="text-xs">{t("nav.language")}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {LANGUAGES.map((lng) => (
+                <DropdownMenuItem key={lng.code} onClick={() => switchLang(lng.code)} className="flex items-center justify-between gap-3">
+                  <span>
+                    <span className="font-medium">{lng.native}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{lng.label}</span>
+                  </span>
+                  {currentLang === lng.code && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
