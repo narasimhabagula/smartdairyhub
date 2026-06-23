@@ -164,9 +164,18 @@ export default function Navbar() {
             <Link to="/cart" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-foreground/70 hover:bg-muted">
               <ShoppingCart className="h-5 w-5" /> {t("nav.cart")} {count > 0 && `(${count})`}
             </Link>
-            <div className="flex gap-2 px-3 py-2">
-              <Button size="sm" variant={i18n.language === "en" ? "default" : "outline"} onClick={() => switchLang("en")} className="flex-1">English</Button>
-              <Button size="sm" variant={i18n.language === "te" ? "default" : "outline"} onClick={() => switchLang("te")} className="flex-1">తెలుగు</Button>
+            <div className="flex flex-wrap gap-2 px-3 py-2">
+              {LANGUAGES.map((lng) => (
+                <Button
+                  key={lng.code}
+                  size="sm"
+                  variant={currentLang === lng.code ? "default" : "outline"}
+                  onClick={() => switchLang(lng.code)}
+                  className="flex-1 min-w-[44%]"
+                >
+                  {lng.native}
+                </Button>
+              ))}
             </div>
             {user ? (
               <>
