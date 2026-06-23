@@ -12,6 +12,7 @@ interface Profile {
   phone: string | null;
   avatar_url: string | null;
   location: string | null;
+  language: string | null;
 }
 
 interface AuthContextType {

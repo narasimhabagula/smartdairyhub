@@ -1,12 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
+import { LANGUAGES, type LanguageCode } from "@/locales";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Navbar() {
   const location = useLocation();
@@ -29,8 +31,16 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const switchLang = (lng: "en" | "te") => i18n.changeLanguage(lng);
+  const switchLang = async (lng: LanguageCode) => {
+    await i18n.changeLanguage(lng);
+    localStorage.setItem("sdh_language_picked", "1");
+    if (user) {
+      await supabase.from("profiles").update({ language: lng } as any).eq("user_id", user.id);
+    }
+  };
   const visibleItems = navItems.filter((i) => !i.auth || user);
+  const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
+  const currentLangNative = LANGUAGES.find((l) => l.code === currentLang)?.native ?? "English";
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
@@ -68,12 +78,21 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="ml-1 gap-1.5" aria-label={t("nav.language")}>
                 <Languages className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase">{i18n.language?.slice(0, 2) || "en"}</span>
+                <span className="text-xs font-semibold">{currentLangNative}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => switchLang("en")}>English</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => switchLang("te")}>తెలుగు</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+              <DropdownMenuLabel className="text-xs">{t("nav.language")}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {LANGUAGES.map((lng) => (
+                <DropdownMenuItem key={lng.code} onClick={() => switchLang(lng.code)} className="flex items-center justify-between gap-3">
+                  <span>
+                    <span className="font-medium">{lng.native}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{lng.label}</span>
+                  </span>
+                  {currentLang === lng.code && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -145,9 +164,18 @@ export default function Navbar() {
             <Link to="/cart" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-foreground/70 hover:bg-muted">
               <ShoppingCart className="h-5 w-5" /> {t("nav.cart")} {count > 0 && `(${count})`}
             </Link>
-            <div className="flex gap-2 px-3 py-2">
-              <Button size="sm" variant={i18n.language === "en" ? "default" : "outline"} onClick={() => switchLang("en")} className="flex-1">English</Button>
-              <Button size="sm" variant={i18n.language === "te" ? "default" : "outline"} onClick={() => switchLang("te")} className="flex-1">తెలుగు</Button>
+            <div className="flex flex-wrap gap-2 px-3 py-2">
+              {LANGUAGES.map((lng) => (
+                <Button
+                  key={lng.code}
+                  size="sm"
+                  variant={currentLang === lng.code ? "default" : "outline"}
+                  onClick={() => switchLang(lng.code)}
+                  className="flex-1 min-w-[44%]"
+                >
+                  {lng.native}
+                </Button>
+              ))}
             </div>
             {user ? (
               <>
