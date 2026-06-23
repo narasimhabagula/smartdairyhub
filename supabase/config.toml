@@ -2,3 +2,6 @@ project_id = "vqzzvdxwpqkvvtiixzvk"
 
 [functions.nearby-vets]
 verify_jwt = false
+
+[functions.place-order]
+verify_jwt = true
