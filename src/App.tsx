@@ -35,6 +35,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
+            <LanguagePicker />
             <div className="flex min-h-screen flex-col">
               <Navbar />
               <main className="flex-1">
