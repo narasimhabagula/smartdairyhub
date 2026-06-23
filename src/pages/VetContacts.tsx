@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone, telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
+import { safeHref, escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 
 type NearbyPlace = {
@@ -258,12 +259,12 @@ export default function VetContacts() {
           });
           const info = new g.maps.InfoWindow({
             content: `<div style="font-family:sans-serif;max-width:220px">
-              <div style="font-weight:600">${v.name}</div>
-              ${v.hospital_name ? `<div style="font-size:12px">${v.hospital_name}</div>` : ""}
-              ${v.address ? `<div style="font-size:12px;color:#555">${v.address}</div>` : ""}
+              <div style="font-weight:600">${escapeHtml(v.name)}</div>
+              ${v.hospital_name ? `<div style="font-size:12px">${escapeHtml(v.hospital_name)}</div>` : ""}
+              ${v.address ? `<div style="font-size:12px;color:#555">${escapeHtml(v.address)}</div>` : ""}
               <div style="margin-top:6px;display:flex;gap:6px">
-                <a href="tel:${v.phone}" style="color:#16a34a;font-size:12px">Call</a>
-                <a href="${waHref(v.phone)}" target="_blank" rel="noreferrer" style="color:#25D366;font-size:12px">WhatsApp</a>
+                <a href="tel:${escapeHtml(v.phone)}" style="color:#16a34a;font-size:12px">Call</a>
+                <a href="${escapeHtml(waHref(v.phone))}" target="_blank" rel="noreferrer" style="color:#25D366;font-size:12px">WhatsApp</a>
               </div>
             </div>`,
           });
@@ -431,9 +432,9 @@ export default function VetContacts() {
                 const dist = sortByNearest && userLoc && v.latitude != null && v.longitude != null
                   ? distanceKm(userLoc, { lat: v.latitude, lng: v.longitude })
                   : null;
-                const mapsLink = v.google_maps_url || (v.latitude != null && v.longitude != null
+                const mapsLink = safeHref(v.google_maps_url, (v.latitude != null && v.longitude != null
                   ? `https://www.google.com/maps/search/?api=1&query=${v.latitude},${v.longitude}`
-                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.hospital_name, v.address, v.village, v.district].filter(Boolean).join(", "))}`);
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.hospital_name, v.address, v.village, v.district].filter(Boolean).join(", "))}`));
                 return (
                   <Card key={v.id} className="transition-shadow hover:shadow-lg">
                     <CardContent className="p-5">
