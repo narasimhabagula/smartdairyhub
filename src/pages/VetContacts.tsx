@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone, telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
+import { safeHref, escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 
 type NearbyPlace = {
