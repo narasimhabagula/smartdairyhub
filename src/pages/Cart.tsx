@@ -24,23 +24,18 @@ export default function Cart() {
     if (items.length === 0) { toast.error("Cart is empty"); return; }
 
     setPlacing(true);
-    // Create order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({ buyer_id: user.id, total, shipping_address: address })
-      .select()
-      .single();
-    if (orderError || !order) { toast.error("Failed to place order"); setPlacing(false); return; }
-
-    // Create order items
-    const orderItems = items.map((i) => ({
-      order_id: order.id,
-      product_id: i.id,
-      quantity: i.quantity,
-      price: i.price,
-    }));
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
-    if (itemsError) { toast.error("Failed to save order items"); setPlacing(false); return; }
+    // Server-authoritative checkout — prices are re-fetched on the backend
+    const { data, error } = await supabase.functions.invoke("place-order", {
+      body: {
+        shipping_address: address,
+        items: items.map((i) => ({ product_id: i.id, quantity: i.quantity })),
+      },
+    });
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Failed to place order");
+      setPlacing(false);
+      return;
+    }
 
     clearCart();
     toast.success("Order placed successfully!");
