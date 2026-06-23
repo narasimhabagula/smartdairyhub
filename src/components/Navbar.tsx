@@ -1,12 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
+import { LANGUAGES, type LanguageCode } from "@/locales";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Navbar() {
   const location = useLocation();
@@ -29,8 +31,16 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const switchLang = (lng: "en" | "te") => i18n.changeLanguage(lng);
+  const switchLang = async (lng: LanguageCode) => {
+    await i18n.changeLanguage(lng);
+    localStorage.setItem("sdh_language_picked", "1");
+    if (user) {
+      await supabase.from("profiles").update({ language: lng } as any).eq("user_id", user.id);
+    }
+  };
   const visibleItems = navItems.filter((i) => !i.auth || user);
+  const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
+  const currentLangNative = LANGUAGES.find((l) => l.code === currentLang)?.native ?? "English";
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
