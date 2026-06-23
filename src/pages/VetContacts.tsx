@@ -432,9 +432,9 @@ export default function VetContacts() {
                 const dist = sortByNearest && userLoc && v.latitude != null && v.longitude != null
                   ? distanceKm(userLoc, { lat: v.latitude, lng: v.longitude })
                   : null;
-                const mapsLink = v.google_maps_url || (v.latitude != null && v.longitude != null
+                const mapsLink = safeHref(v.google_maps_url, (v.latitude != null && v.longitude != null
                   ? `https://www.google.com/maps/search/?api=1&query=${v.latitude},${v.longitude}`
-                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.hospital_name, v.address, v.village, v.district].filter(Boolean).join(", "))}`);
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.hospital_name, v.address, v.village, v.district].filter(Boolean).join(", "))}`));
                 return (
                   <Card key={v.id} className="transition-shadow hover:shadow-lg">
                     <CardContent className="p-5">
