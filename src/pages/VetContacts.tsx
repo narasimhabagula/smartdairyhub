@@ -259,12 +259,12 @@ export default function VetContacts() {
           });
           const info = new g.maps.InfoWindow({
             content: `<div style="font-family:sans-serif;max-width:220px">
-              <div style="font-weight:600">${v.name}</div>
-              ${v.hospital_name ? `<div style="font-size:12px">${v.hospital_name}</div>` : ""}
-              ${v.address ? `<div style="font-size:12px;color:#555">${v.address}</div>` : ""}
+              <div style="font-weight:600">${escapeHtml(v.name)}</div>
+              ${v.hospital_name ? `<div style="font-size:12px">${escapeHtml(v.hospital_name)}</div>` : ""}
+              ${v.address ? `<div style="font-size:12px;color:#555">${escapeHtml(v.address)}</div>` : ""}
               <div style="margin-top:6px;display:flex;gap:6px">
-                <a href="tel:${v.phone}" style="color:#16a34a;font-size:12px">Call</a>
-                <a href="${waHref(v.phone)}" target="_blank" rel="noreferrer" style="color:#25D366;font-size:12px">WhatsApp</a>
+                <a href="tel:${escapeHtml(v.phone)}" style="color:#16a34a;font-size:12px">Call</a>
+                <a href="${escapeHtml(waHref(v.phone))}" target="_blank" rel="noreferrer" style="color:#25D366;font-size:12px">WhatsApp</a>
               </div>
             </div>`,
           });
