@@ -83,7 +83,7 @@ export default function Schemes() {
                     </div>
                   )}
                 </div>
-                {s.apply_url && (
+                {isSafeHttpUrl(s.apply_url) && (
                   <Button size="lg" className="w-full gap-1.5 sm:w-auto" asChild>
                     <a href={s.apply_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" /> {t("schemes.apply")}
