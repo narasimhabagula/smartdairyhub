@@ -6,6 +6,7 @@ import { ExternalLink, IndianRupee, FileText, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { isSafeHttpUrl } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 
 const categories = ["all", "subsidy", "loan", "insurance", "training", "other"];
