@@ -13,6 +13,9 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import MilkCalculator from "./pages/MilkCalculator";
 import CattleMarket from "./pages/CattleMarket";
+import CattleNew from "./pages/CattleNew";
+import CattleDetail from "./pages/CattleDetail";
+import MyListings from "./pages/MyListings";
 import VetContacts from "./pages/VetContacts";
 import Schemes from "./pages/Schemes";
 import Login from "./pages/Login";
@@ -46,6 +49,10 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/cattle-market" element={<CattleMarket />} />
+                  <Route path="/cattle-market/new" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
+                  <Route path="/cattle-market/:id" element={<CattleDetail />} />
+                  <Route path="/cattle-market/:id/edit" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
+                  <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
                   <Route path="/vet-contacts" element={<VetContacts />} />
                   <Route path="/schemes" element={<Schemes />} />
                   <Route path="/cart" element={<Cart />} />
