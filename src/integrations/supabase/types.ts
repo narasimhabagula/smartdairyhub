@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      cattle_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cattle_favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "cattle_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cattle_listings: {
         Row: {
           age: string | null
@@ -22,17 +51,22 @@ export type Database = {
           created_at: string
           description: string | null
           district: string | null
+          health_status: string | null
           id: string
           image_url: string | null
           listing_type: string
           location: string | null
           milk_yield: string | null
           name: string
+          photos: string[]
           price: number
           seller_id: string
+          state: string | null
           status: string
           type: string
           updated_at: string
+          vaccination_status: string | null
+          video_url: string | null
           village: string | null
         }
         Insert: {
@@ -42,17 +76,22 @@ export type Database = {
           created_at?: string
           description?: string | null
           district?: string | null
+          health_status?: string | null
           id?: string
           image_url?: string | null
           listing_type?: string
           location?: string | null
           milk_yield?: string | null
           name: string
+          photos?: string[]
           price: number
           seller_id: string
+          state?: string | null
           status?: string
           type: string
           updated_at?: string
+          vaccination_status?: string | null
+          video_url?: string | null
           village?: string | null
         }
         Update: {
@@ -62,20 +101,60 @@ export type Database = {
           created_at?: string
           description?: string | null
           district?: string | null
+          health_status?: string | null
           id?: string
           image_url?: string | null
           listing_type?: string
           location?: string | null
           milk_yield?: string | null
           name?: string
+          photos?: string[]
           price?: number
           seller_id?: string
+          state?: string | null
           status?: string
           type?: string
           updated_at?: string
+          vaccination_status?: string | null
+          video_url?: string | null
           village?: string | null
         }
         Relationships: []
+      }
+      cattle_reports: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cattle_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "cattle_listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       milk_records: {
         Row: {
