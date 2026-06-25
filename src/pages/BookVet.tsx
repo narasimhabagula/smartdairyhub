@@ -17,6 +17,63 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { normalizeIndianPhone } from "@/lib/phone";
+import { z } from "zod";
+
+const ANIMAL_TYPES = ["Cow", "Buffalo", "Goat", "Sheep", "Poultry", "Other"] as const;
+const MODES = ["in_person", "online", "emergency"] as const;
+const MAX_FUTURE_DAYS = 60;
+
+const appointmentSchema = z.object({
+  animal_type: z.enum(ANIMAL_TYPES, { errorMap: () => ({ message: "Select an animal type" }) }),
+  mode: z.enum(MODES, { errorMap: () => ({ message: "Select a consultation mode" }) }),
+  symptoms: z
+    .string()
+    .trim()
+    .min(10, "Describe the symptoms in at least 10 characters")
+    .max(1000, "Keep symptoms under 1000 characters")
+    .refine((s) => !/<\s*script/i.test(s), "Invalid characters in symptoms"),
+  contact_phone: z
+    .string()
+    .trim()
+    .min(1, "Contact phone is required")
+    .transform((v, ctx) => {
+      const n = normalizeIndianPhone(v);
+      if (!n) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a valid 10-digit Indian mobile number" });
+        return z.NEVER;
+      }
+      return n;
+    }),
+  location: z
+    .string()
+    .trim()
+    .max(200, "Location must be under 200 characters")
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined)),
+  scheduled_at: z
+    .string()
+    .optional()
+    .transform((v, ctx) => {
+      if (!v) return undefined;
+      const d = new Date(v);
+      if (isNaN(d.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid date/time" });
+        return z.NEVER;
+      }
+      const now = Date.now();
+      if (d.getTime() < now - 60_000) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Preferred time must be in the future" });
+        return z.NEVER;
+      }
+      if (d.getTime() > now + MAX_FUTURE_DAYS * 24 * 60 * 60 * 1000) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Preferred time must be within ${MAX_FUTURE_DAYS} days` });
+        return z.NEVER;
+      }
+      return d.toISOString();
+    }),
+});
+
+type FieldErrors = Partial<Record<"animal_type" | "mode" | "symptoms" | "contact_phone" | "location" | "scheduled_at", string>>;
 
 interface VetRow {
   user_id: string;
@@ -79,22 +136,33 @@ export default function BookVet() {
     }));
   };
 
+  const [errors, setErrors] = useState<FieldErrors>({});
+
   const submit = async () => {
     if (!user || !activeVet) return;
-    const symptoms = form.symptoms.trim();
-    if (symptoms.length < 5) { toast.error("Please describe the symptoms (at least 5 characters)"); return; }
-    const phoneN = normalizeIndianPhone(form.contact_phone);
-    if (!phoneN) { toast.error("Enter a valid 10-digit phone number"); return; }
+    const parsed = appointmentSchema.safeParse(form);
+    if (!parsed.success) {
+      const next: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof FieldErrors | undefined;
+        if (key && !next[key]) next[key] = issue.message;
+      }
+      setErrors(next);
+      toast.error("Please fix the highlighted fields");
+      return;
+    }
+    setErrors({});
     setSubmitting(true);
+    const v = parsed.data;
     const payload: any = {
       farmer_id: user.id,
       vet_id: activeVet.user_id,
-      animal_type: form.animal_type,
-      symptoms,
-      mode: form.mode,
-      contact_phone: phoneN,
-      location: form.location.trim() || null,
-      scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
+      animal_type: v.animal_type,
+      symptoms: v.symptoms,
+      mode: v.mode,
+      contact_phone: v.contact_phone,
+      location: v.location ?? null,
+      scheduled_at: v.scheduled_at ?? null,
     };
     const { error } = await supabase.from("appointments" as any).insert(payload);
     setSubmitting(false);
@@ -105,6 +173,7 @@ export default function BookVet() {
     }
     toast.success("Request sent — the vet has been notified.");
     setActiveVet(null);
+    setErrors({});
     setForm({ animal_type: "Cow", symptoms: "", mode: "in_person", contact_phone: "", location: "", scheduled_at: "" });
   };
 
@@ -164,7 +233,7 @@ export default function BookVet() {
         </div>
       )}
 
-      <Dialog open={!!activeVet} onOpenChange={(o) => !o && setActiveVet(null)}>
+      <Dialog open={!!activeVet} onOpenChange={(o) => { if (!o) { setActiveVet(null); setErrors({}); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Request consultation with {activeVet?.full_name}</DialogTitle>
@@ -176,44 +245,80 @@ export default function BookVet() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Animal</Label>
-                <Select value={form.animal_type} onValueChange={(v) => setForm({ ...form, animal_type: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <Select value={form.animal_type} onValueChange={(v) => { setForm({ ...form, animal_type: v }); setErrors((e) => ({ ...e, animal_type: undefined })); }}>
+                  <SelectTrigger className={`mt-1.5 ${errors.animal_type ? "border-destructive" : ""}`}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["Cow","Buffalo","Goat","Sheep","Poultry","Other"].map((a) => (
+                    {ANIMAL_TYPES.map((a) => (
                       <SelectItem key={a} value={a}>{a}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.animal_type && <p className="mt-1 text-xs text-destructive">{errors.animal_type}</p>}
               </div>
               <div>
                 <Label>Mode</Label>
-                <Select value={form.mode} onValueChange={(v: any) => setForm({ ...form, mode: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <Select value={form.mode} onValueChange={(v: any) => { setForm({ ...form, mode: v }); setErrors((e) => ({ ...e, mode: undefined })); }}>
+                  <SelectTrigger className={`mt-1.5 ${errors.mode ? "border-destructive" : ""}`}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="in_person">In-person visit</SelectItem>
                     <SelectItem value="online">Online consultation</SelectItem>
                     <SelectItem value="emergency"><span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-rose-600" /> Emergency</span></SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.mode && <p className="mt-1 text-xs text-destructive">{errors.mode}</p>}
               </div>
             </div>
             <div>
-              <Label>Symptoms / reason *</Label>
-              <Textarea className="mt-1.5" rows={3} value={form.symptoms} onChange={(e) => setForm({ ...form, symptoms: e.target.value })} placeholder="e.g. Cow has been off feed for 2 days, mild fever, reduced milk yield." />
+              <div className="flex items-center justify-between">
+                <Label>Symptoms / reason *</Label>
+                <span className="text-xs text-muted-foreground">{form.symptoms.length}/1000</span>
+              </div>
+              <Textarea
+                className={`mt-1.5 ${errors.symptoms ? "border-destructive" : ""}`}
+                rows={3}
+                maxLength={1000}
+                value={form.symptoms}
+                onChange={(e) => { setForm({ ...form, symptoms: e.target.value }); setErrors((er) => ({ ...er, symptoms: undefined })); }}
+                placeholder="e.g. Cow has been off feed for 2 days, mild fever, reduced milk yield."
+              />
+              {errors.symptoms && <p className="mt-1 text-xs text-destructive">{errors.symptoms}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Contact phone *</Label>
-                <Input className="mt-1.5" inputMode="numeric" placeholder="10-digit mobile" value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
+                <Input
+                  className={`mt-1.5 ${errors.contact_phone ? "border-destructive" : ""}`}
+                  inputMode="numeric"
+                  maxLength={15}
+                  placeholder="10-digit mobile"
+                  value={form.contact_phone}
+                  onChange={(e) => { setForm({ ...form, contact_phone: e.target.value.replace(/[^\d+\s-]/g, "") }); setErrors((er) => ({ ...er, contact_phone: undefined })); }}
+                />
+                {errors.contact_phone && <p className="mt-1 text-xs text-destructive">{errors.contact_phone}</p>}
               </div>
               <div>
                 <Label>Preferred time (optional)</Label>
-                <Input className="mt-1.5" type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
+                <Input
+                  className={`mt-1.5 ${errors.scheduled_at ? "border-destructive" : ""}`}
+                  type="datetime-local"
+                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                  max={new Date(Date.now() + MAX_FUTURE_DAYS * 86400000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                  value={form.scheduled_at}
+                  onChange={(e) => { setForm({ ...form, scheduled_at: e.target.value }); setErrors((er) => ({ ...er, scheduled_at: undefined })); }}
+                />
+                {errors.scheduled_at && <p className="mt-1 text-xs text-destructive">{errors.scheduled_at}</p>}
               </div>
             </div>
             <div>
               <Label>Location / village (optional)</Label>
-              <Input className="mt-1.5" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Village, mandal, district" />
+              <Input
+                className={`mt-1.5 ${errors.location ? "border-destructive" : ""}`}
+                maxLength={200}
+                value={form.location}
+                onChange={(e) => { setForm({ ...form, location: e.target.value }); setErrors((er) => ({ ...er, location: undefined })); }}
+                placeholder="Village, mandal, district"
+              />
+              {errors.location && <p className="mt-1 text-xs text-destructive">{errors.location}</p>}
             </div>
           </div>
           <DialogFooter>
