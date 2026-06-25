@@ -12,10 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
 import {
   Search, ShoppingCart, Heart, Share2, MapPin, ShieldCheck, Star,
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
+  Phone, MessageCircle, Eye, Loader2,
 } from "lucide-react";
 
 type Product = {
@@ -92,6 +95,25 @@ export default function Marketplace() {
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [listening, setListening] = useState(false);
   const recogRef = useRef<any>(null);
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [contact, setContact] = useState<{ full_name: string | null; phone: string | null } | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+
+  const openDetails = async (p: Product) => {
+    setDetail(p);
+    setContact(null);
+    if (!user) return;
+    setContactLoading(true);
+    try {
+      const { data } = await supabase.rpc("get_seller_contact", { _seller_id: p.seller_id } as any);
+      const row = Array.isArray(data) ? data[0] : null;
+      setContact(row ? { full_name: row.full_name ?? null, phone: row.phone ?? null } : { full_name: null, phone: null });
+    } catch {
+      setContact({ full_name: null, phone: null });
+    } finally {
+      setContactLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -354,6 +376,7 @@ export default function Marketplace() {
                     toast.success(`${p.name} added to cart`);
                   }}
                   onBuy={() => buyNow(p)}
+                  onDetails={() => openDetails(p)}
                 />
               ))}
         </div>
@@ -370,20 +393,42 @@ export default function Marketplace() {
           </div>
         )}
       </div>
+
+      <ProductDetailsDialog
+        product={detail}
+        open={!!detail}
+        onOpenChange={(o) => { if (!o) { setDetail(null); setContact(null); } }}
+        contact={contact}
+        contactLoading={contactLoading}
+        isFav={detail ? wishlist.has(detail.id) : false}
+        onFav={() => detail && toggleWishlist(detail.id)}
+        onShare={() => detail && shareProduct(detail)}
+        onAdd={() => {
+          if (!detail) return;
+          addItem({
+            id: detail.id, name: detail.name, price: Number(detail.price), unit: detail.unit || "unit",
+            image_url: detail.image_url || undefined, seller_id: detail.seller_id,
+          });
+          toast.success(`${detail.name} added to cart`);
+        }}
+        onBuy={() => detail && buyNow(detail)}
+        requireLogin={!user}
+      />
     </div>
   );
 }
 
 function ProductCard({
-  p, isFav, onFav, onShare, onAdd, onBuy,
+  p, isFav, onFav, onShare, onAdd, onBuy, onDetails,
 }: {
-  p: Product; isFav: boolean; onFav: () => void; onShare: () => void; onAdd: () => void; onBuy: () => void;
+  p: Product; isFav: boolean; onFav: () => void; onShare: () => void; onAdd: () => void; onBuy: () => void; onDetails: () => void;
 }) {
   const { stars, count } = ratingFor(p.id);
   const hasDelivery = (p.description || "").toLowerCase().includes("delivery");
   return (
     <Card className="group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl">
-      <div className="relative block aspect-[4/3] overflow-hidden bg-muted">
+      <button type="button" onClick={onDetails} aria-label="View details"
+        className="relative block aspect-[4/3] overflow-hidden bg-muted text-left">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name} loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -400,11 +445,12 @@ function ProductCard({
             </Badge>
           )}
         </div>
-        <button type="button" onClick={onFav} aria-label="Save to wishlist"
-          className="absolute right-2 top-2 rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-background">
+        <span onClick={(e) => { e.stopPropagation(); onFav(); }}
+          role="button" aria-label="Save to wishlist"
+          className="absolute right-2 top-2 cursor-pointer rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-background">
           <Heart className={`h-4 w-4 ${isFav ? "fill-red-500 text-red-500" : "text-foreground"}`} />
-        </button>
-      </div>
+        </span>
+      </button>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
@@ -438,14 +484,162 @@ function ProductCard({
           )}
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-2">
+          <Button size="sm" variant="ghost" className="gap-1.5" onClick={onDetails}>
+            <Eye className="h-3.5 w-3.5" /> Details
+          </Button>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={onAdd}>
             <ShoppingCart className="h-3.5 w-3.5" /> Add
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={onBuy}>Buy Now</Button>
+          <Button size="sm" className="gap-1.5" onClick={onBuy}>Buy</Button>
         </div>
         <p className="text-[10px] text-muted-foreground">{daysAgo(p.created_at)} · {p.seller_name || "Seller"}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function ProductDetailsDialog({
+  product, open, onOpenChange, contact, contactLoading,
+  isFav, onFav, onShare, onAdd, onBuy, requireLogin,
+}: {
+  product: Product | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  contact: { full_name: string | null; phone: string | null } | null;
+  contactLoading: boolean;
+  isFav: boolean;
+  onFav: () => void;
+  onShare: () => void;
+  onAdd: () => void;
+  onBuy: () => void;
+  requireLogin: boolean;
+}) {
+  if (!product) return null;
+  const p = product;
+  const { stars, count } = ratingFor(p.id);
+  const phone = contact?.phone || "";
+  const hasPhone = !!phone;
+  const waMsg = `Hi, I'm interested in your listing "${p.name}" on Smart Dairy Hub.`;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-serif text-2xl">{p.name}</DialogTitle>
+          <DialogDescription>
+            Brand · {brandFor(p)} · Listed {daysAgo(p.created_at)}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <Sparkles className="h-10 w-10 opacity-40" />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-baseline gap-1 text-primary">
+              <IndianRupee className="h-5 w-5" />
+              <span className="text-3xl font-bold">{Number(p.price).toLocaleString("en-IN")}</span>
+              {p.unit && <span className="text-sm text-muted-foreground">/ {p.unit}</span>}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="capitalize">{p.category.replace(/_/g, " ")}</Badge>
+              {p.seller_name && (
+                <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
+                  <ShieldCheck className="h-3 w-3" /> Verified seller
+                </Badge>
+              )}
+              <Badge variant="outline">Stock: {p.stock}</Badge>
+            </div>
+
+            <div className="flex items-center gap-1 text-amber-500 text-sm">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={`h-4 w-4 ${i < Math.round(stars) ? "fill-amber-500" : ""}`} />
+              ))}
+              <span className="ml-1 text-muted-foreground">{stars.toFixed(1)} ({count})</span>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-3 text-sm">
+              <p className="font-medium">{contact?.full_name || p.seller_name || "Seller"}</p>
+              <p className="mt-1 flex items-center gap-1 text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" /> Across India
+              </p>
+              {contactLoading ? (
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Loading contact…
+                </p>
+              ) : requireLogin ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  <Link to="/login" className="text-primary underline">Sign in</Link> to view seller contact.
+                </p>
+              ) : hasPhone ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {formatIndianPhoneDisplay(phone)}
+                </p>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">Contact not available.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {p.description && (
+          <div className="mt-2">
+            <h4 className="text-sm font-semibold">Description</h4>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{p.description}</p>
+          </div>
+        )}
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Button variant={isFav ? "default" : "outline"} onClick={onFav} className="gap-1.5">
+            <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+            {isFav ? "Saved" : "Wishlist"}
+          </Button>
+          <Button variant="outline" onClick={onShare} className="gap-1.5">
+            <Share2 className="h-4 w-4" /> Share
+          </Button>
+          <Button
+            variant="outline"
+            disabled={!hasPhone}
+            asChild={hasPhone}
+            className="gap-1.5"
+          >
+            {hasPhone ? (
+              <a href={telHref(phone)}><Phone className="h-4 w-4" /> Call</a>
+            ) : (
+              <span><Phone className="h-4 w-4" /> Call</span>
+            )}
+          </Button>
+          <Button
+            disabled={!hasPhone}
+            asChild={hasPhone}
+            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+          >
+            {hasPhone ? (
+              <a href={waHref(phone, waMsg)} target="_blank" rel="noreferrer">
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </a>
+            ) : (
+              <span><MessageCircle className="h-4 w-4" /> WhatsApp</span>
+            )}
+          </Button>
+        </div>
+
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Button variant="outline" onClick={onAdd} className="gap-1.5">
+            <ShoppingCart className="h-4 w-4" /> Add to cart
+          </Button>
+          <Button onClick={onBuy}>Buy Now</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
