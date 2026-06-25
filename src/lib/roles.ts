@@ -3,7 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
-const VALID = new Set<AppRole>(["farmer", "mediator", "industry"]);
+const VALID = new Set<AppRole>(["farmer", "mediator", "industry", "vet"]);
 
 /**
  * After a successful login/signup, ensure the role chosen on the role-selection
