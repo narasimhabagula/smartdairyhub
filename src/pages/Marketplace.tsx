@@ -445,11 +445,12 @@ function ProductCard({
             </Badge>
           )}
         </div>
-        <button type="button" onClick={onFav} aria-label="Save to wishlist"
-          className="absolute right-2 top-2 rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-background">
+        <span onClick={(e) => { e.stopPropagation(); onFav(); }}
+          role="button" aria-label="Save to wishlist"
+          className="absolute right-2 top-2 cursor-pointer rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-background">
           <Heart className={`h-4 w-4 ${isFav ? "fill-red-500 text-red-500" : "text-foreground"}`} />
-        </button>
-      </div>
+        </span>
+      </button>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
