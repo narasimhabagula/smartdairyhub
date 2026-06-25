@@ -81,6 +81,7 @@ export default function CattleNew() {
   const isEdit = !!id;
 
   const [form, setForm] = useState<FormState>(empty);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "photos", string>>>({});
   const [photos, setPhotos] = useState<string[]>([]);
   const [video, setVideo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
