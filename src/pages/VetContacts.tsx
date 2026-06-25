@@ -134,6 +134,11 @@ export default function VetContacts() {
   const [nearbyFetched, setNearbyFetched] = useState(false);
   const [nearbyError, setNearbyError] = useState<string | null>(null);
   const [expandedNotice, setExpandedNotice] = useState<number | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [retryIn, setRetryIn] = useState(0); // seconds remaining until auto-retry
+  const retryTimer = useRef<number | null>(null);
+  const tickTimer = useRef<number | null>(null);
+  const MAX_AUTO_RETRIES = 3;
 
   // Filters
   const [animal, setAnimal] = useState<string>("all");
