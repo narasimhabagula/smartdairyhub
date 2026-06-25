@@ -231,10 +231,14 @@ export type Database = {
       dairy_companies: {
         Row: {
           address: string | null
+          business_doc_url: string | null
+          contact_email_verified: boolean
+          contact_phone_verified: boolean
           created_at: string
           description: string | null
           district: string | null
           email: string | null
+          gst_number: string | null
           id: string
           latitude: number | null
           logo_url: string | null
@@ -243,18 +247,28 @@ export type Database = {
           owner_id: string
           phone: string | null
           pin_code: string | null
+          registration_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           state: string | null
+          submitted_at: string
           updated_at: string
+          verification_status: string
           verified: boolean
           village: string | null
           working_hours: string | null
         }
         Insert: {
           address?: string | null
+          business_doc_url?: string | null
+          contact_email_verified?: boolean
+          contact_phone_verified?: boolean
           created_at?: string
           description?: string | null
           district?: string | null
           email?: string | null
+          gst_number?: string | null
           id?: string
           latitude?: number | null
           logo_url?: string | null
@@ -263,18 +277,28 @@ export type Database = {
           owner_id: string
           phone?: string | null
           pin_code?: string | null
+          registration_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           state?: string | null
+          submitted_at?: string
           updated_at?: string
+          verification_status?: string
           verified?: boolean
           village?: string | null
           working_hours?: string | null
         }
         Update: {
           address?: string | null
+          business_doc_url?: string | null
+          contact_email_verified?: boolean
+          contact_phone_verified?: boolean
           created_at?: string
           description?: string | null
           district?: string | null
           email?: string | null
+          gst_number?: string | null
           id?: string
           latitude?: number | null
           logo_url?: string | null
@@ -283,8 +307,14 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           pin_code?: string | null
+          registration_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           state?: string | null
+          submitted_at?: string
           updated_at?: string
+          verification_status?: string
           verified?: boolean
           village?: string | null
           working_hours?: string | null
