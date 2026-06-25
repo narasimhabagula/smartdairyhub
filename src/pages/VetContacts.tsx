@@ -50,14 +50,15 @@ const ANIMALS: { id: string; emoji: string; label: string }[] = [
   { id: "goat", emoji: "🐐", label: "Goat" },
   { id: "sheep", emoji: "🐑", label: "Sheep" },
   { id: "hen", emoji: "🐔", label: "Hen" },
-  { id: "chicken", emoji: "🐓", label: "Chicken" },
-  { id: "duck", emoji: "🦆", label: "Duck" },
+  { id: "chicken", emoji: "🐓", label: "Cock" },
   { id: "dog", emoji: "🐕", label: "Dog" },
   { id: "cat", emoji: "🐈", label: "Cat" },
-  { id: "rabbit", emoji: "🐇", label: "Rabbit" },
-  { id: "pig", emoji: "🐖", label: "Pig" },
-  { id: "horse", emoji: "🐎", label: "Horse" },
-  { id: "birds", emoji: "🐦", label: "Birds" },
+];
+
+const VOICE_LANGS: { code: string; label: string }[] = [
+  { code: "en-IN", label: "English" },
+  { code: "te-IN", label: "తెలుగు" },
+  { code: "hi-IN", label: "हिंदी" },
 ];
 
 const emptyForm = {
