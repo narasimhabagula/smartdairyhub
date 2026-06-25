@@ -456,13 +456,15 @@ export default function CattleNew() {
           <CardHeader><CardTitle className="text-lg">Price</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Price (₹) *</Label>
+              <Label>{isPoultry ? "Price per Bird (₹) *" : "Price (₹) *"}</Label>
               <Input type="number" min={1} required className="mt-1.5" value={form.price} onChange={(e) => set("price", e.target.value)} />
             </div>
-            <label className="flex items-center gap-2 mt-7">
-              <Checkbox checked={form.negotiable} onCheckedChange={(v) => set("negotiable", !!v)} />
-              <span className="text-sm">Price is negotiable</span>
-            </label>
+            {!isPoultry && (
+              <label className="flex items-center gap-2 mt-7">
+                <Checkbox checked={form.negotiable} onCheckedChange={(v) => set("negotiable", !!v)} />
+                <span className="text-sm">Price is negotiable</span>
+              </label>
+            )}
           </CardContent>
         </Card>
 
