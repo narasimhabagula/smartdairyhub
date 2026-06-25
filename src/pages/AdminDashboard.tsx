@@ -40,25 +40,38 @@ export default function AdminDashboard() {
   const [indPage, setIndPage] = useState(1);
   const IND_PAGE_SIZE = 10;
 
+  const fetchIndustries = async () => {
+    setIndLoading(true);
+    setIndError(null);
+    try {
+      const { data, error } = await supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false });
+      if (error) throw error;
+      setIndustries(data || []);
+    } catch (err: any) {
+      setIndError(err.message || "Failed to load dairy companies.");
+    } finally {
+      setIndLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
-      const [u, p, o, v, s, i] = await Promise.all([
+      const [u, p, o, v, s] = await Promise.all([
         supabase.from("profiles").select("*, user_roles(role)"),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false }),
         supabase.from("schemes").select("*").order("created_at", { ascending: false }),
-        supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false }),
       ]);
       setUsers(u.data || []);
       setProducts(p.data || []);
       setOrders(o.data || []);
       setVets(v.data || []);
       setSchemes(s.data || []);
-      setIndustries(i.data || []);
       setLoading(false);
     };
     fetchAll();
+    fetchIndustries();
   }, []);
 
   const approveIndustry = async (id: string) => {
