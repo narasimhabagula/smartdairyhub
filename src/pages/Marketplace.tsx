@@ -268,6 +268,17 @@ export default function Marketplace() {
                     <Input className="mt-1.5" placeholder="District or state" value={location} onChange={(e) => setLocation(e.target.value)} />
                   </div>
                   <div>
+                    <label className="text-sm font-medium">Feed type</label>
+                    <Select value={feedType} onValueChange={setFeedType}>
+                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {FEED_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>{t === "all" ? "All feed types" : t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium">Brand</label>
                     <Select value={brand} onValueChange={setBrand}>
                       <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
