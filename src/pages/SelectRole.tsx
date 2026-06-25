@@ -75,7 +75,7 @@ export default function SelectRole() {
       </div>
 
       <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
-        More roles coming soon: Veterinary Doctor, Feed Supplier, Medicine Supplier, Government Officer, Dairy Cooperative.
+        More roles coming soon: Feed Supplier, Medicine Supplier, Government Officer, Dairy Cooperative.
       </p>
     </div>
   );
