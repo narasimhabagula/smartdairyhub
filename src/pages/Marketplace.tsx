@@ -214,7 +214,7 @@ export default function Marketplace() {
 
   const resetFilters = () => {
     setSearch(""); setLocation(""); setVerifiedOnly(false); setDeliveryOnly(false);
-    setBrand("all"); setPriceRange([0, 20000]); setSort("newest");
+    setBrand("all"); setFeedType("all"); setPriceRange([0, 20000]); setSort("newest");
   };
 
   return (
