@@ -156,6 +156,119 @@ export type Database = {
           },
         ]
       }
+      dairy_companies: {
+        Row: {
+          address: string | null
+          created_at: string
+          description: string | null
+          district: string | null
+          email: string | null
+          id: string
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          name: string
+          owner_id: string
+          phone: string | null
+          pin_code: string | null
+          state: string | null
+          updated_at: string
+          verified: boolean
+          village: string | null
+          working_hours: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          id?: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name: string
+          owner_id: string
+          phone?: string | null
+          pin_code?: string | null
+          state?: string | null
+          updated_at?: string
+          verified?: boolean
+          village?: string | null
+          working_hours?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          id?: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string
+          owner_id?: string
+          phone?: string | null
+          pin_code?: string | null
+          state?: string | null
+          updated_at?: string
+          verified?: boolean
+          village?: string | null
+          working_hours?: string | null
+        }
+        Relationships: []
+      }
+      milk_rates: {
+        Row: {
+          collection_timing: string | null
+          company_id: string
+          created_at: string
+          effective_date: string
+          fat: number
+          id: string
+          milk_type: string
+          notes: string | null
+          price_per_litre: number
+          snf: number
+          updated_at: string
+        }
+        Insert: {
+          collection_timing?: string | null
+          company_id: string
+          created_at?: string
+          effective_date?: string
+          fat: number
+          id?: string
+          milk_type: string
+          notes?: string | null
+          price_per_litre: number
+          snf: number
+          updated_at?: string
+        }
+        Update: {
+          collection_timing?: string | null
+          company_id?: string
+          created_at?: string
+          effective_date?: string
+          fat?: number
+          id?: string
+          milk_type?: string
+          notes?: string | null
+          price_per_litre?: number
+          snf?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milk_rates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "dairy_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milk_records: {
         Row: {
           amount: number | null
@@ -191,6 +304,36 @@ export type Database = {
           rate?: number | null
           shift?: string
           snf?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -547,7 +690,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "farmer" | "buyer" | "vet"
+      app_role: "admin" | "farmer" | "buyer" | "vet" | "mediator" | "industry"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -675,7 +818,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "farmer", "buyer", "vet"],
+      app_role: ["admin", "farmer", "buyer", "vet", "mediator", "industry"],
     },
   },
 } as const

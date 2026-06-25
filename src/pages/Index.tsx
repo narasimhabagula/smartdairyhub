@@ -40,7 +40,7 @@ export default function Landing() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                to="/login"
+                to="/select-role"
                 className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/30 px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
               >
                 {t("home.farmerLogin")}

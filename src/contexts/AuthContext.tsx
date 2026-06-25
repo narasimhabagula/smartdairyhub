@@ -2,8 +2,10 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { applyChosenRole } from "@/lib/roles";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
+
 
 interface Profile {
   id: string;
@@ -71,12 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
           // Use setTimeout to avoid potential deadlock with Supabase auth
           setTimeout(async () => {
+            if (event === "SIGNED_IN") {
+              await applyChosenRole(session.user.id);
+            }
             await Promise.all([
               fetchProfile(session.user.id),
               fetchRoles(session.user.id),
@@ -90,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     );
+
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);

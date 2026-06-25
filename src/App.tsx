@@ -26,7 +26,11 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import AddProduct from "./pages/AddProduct";
 import AdminDashboard from "./pages/AdminDashboard";
+import SelectRole from "./pages/SelectRole";
+import MilkRates from "./pages/MilkRates";
+import IndustryPanel from "./pages/IndustryPanel";
 import NotFound from "./pages/NotFound";
+
 
 const queryClient = new QueryClient();
 
@@ -44,7 +48,11 @@ const App = () => (
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/milk-rates" element={<MilkRates />} />
+                  <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
+
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/marketplace" element={<Marketplace />} />
