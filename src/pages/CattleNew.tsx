@@ -48,6 +48,7 @@ type FormState = {
   lactation_number: string;
   egg_laying: string;
   eggs_per_week: string;
+  pregnancy_status: string;
   quantity: string;
   price: string;
   negotiable: boolean;
@@ -66,7 +67,7 @@ type FormState = {
 const empty: FormState = {
   type: "cow", name: "", breed: "", age: "", gender: "", milk_yield: "",
   fat: "", snf: "", health_status: "", vaccination_status: "", weight: "",
-  lactation_number: "", egg_laying: "", eggs_per_week: "", quantity: "",
+  lactation_number: "", egg_laying: "", eggs_per_week: "", pregnancy_status: "", quantity: "",
   price: "", negotiable: false,
   state: "", district: "", village: "", location: "", gps_lat: "", gps_lng: "",
   seller_name: "", contact_phone: "", whatsapp_phone: "",
@@ -110,6 +111,7 @@ export default function CattleNew() {
         health_status: d.health_status ?? "", vaccination_status: d.vaccination_status ?? "",
         weight: d.weight ?? "", lactation_number: a.lactation_number ?? "",
         egg_laying: a.egg_laying ?? "", eggs_per_week: a.eggs_per_week ?? "",
+        pregnancy_status: a.pregnancy_status ?? "",
         quantity: d.quantity != null ? String(d.quantity) : "",
         price: String(d.price ?? ""), negotiable: !!d.negotiable,
         state: d.state ?? "", district: d.district ?? "", village: d.village ?? "",
@@ -199,9 +201,13 @@ export default function CattleNew() {
         fat: form.fat || null,
         snf: form.snf || null,
         lactation_number: form.lactation_number || null,
+        pregnancy_status: form.pregnancy_status || null,
       });
     } else if (form.type === "buffalo") {
-      Object.assign(attrs, { fat: form.fat || null });
+      Object.assign(attrs, {
+        fat: form.fat || null,
+        pregnancy_status: form.pregnancy_status || null,
+      });
     } else if (form.type === "hen") {
       Object.assign(attrs, {
         egg_laying: form.egg_laying || null,
@@ -389,6 +395,19 @@ export default function CattleNew() {
                 <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
               </div>
             )}
+            {isDairy && (
+              <div>
+                <Label>Pregnancy Status</Label>
+                <Select value={form.pregnancy_status} onValueChange={(v) => set("pregnancy_status", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pregnant">Pregnant</SelectItem>
+                    <SelectItem value="not_pregnant">Not Pregnant</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {isHen && (
               <>
@@ -437,13 +456,15 @@ export default function CattleNew() {
           <CardHeader><CardTitle className="text-lg">Price</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Price (₹) *</Label>
+              <Label>{isPoultry ? "Price per Bird (₹) *" : "Price (₹) *"}</Label>
               <Input type="number" min={1} required className="mt-1.5" value={form.price} onChange={(e) => set("price", e.target.value)} />
             </div>
-            <label className="flex items-center gap-2 mt-7">
-              <Checkbox checked={form.negotiable} onCheckedChange={(v) => set("negotiable", !!v)} />
-              <span className="text-sm">Price is negotiable</span>
-            </label>
+            {!isPoultry && (
+              <label className="flex items-center gap-2 mt-7">
+                <Checkbox checked={form.negotiable} onCheckedChange={(v) => set("negotiable", !!v)} />
+                <span className="text-sm">Price is negotiable</span>
+              </label>
+            )}
           </CardContent>
         </Card>
 
