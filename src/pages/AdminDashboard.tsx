@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [vets, setVets] = useState<any[]>([]);
   const [schemes, setSchemes] = useState<any[]>([]);
+  const [industries, setIndustries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Vet form
@@ -31,22 +32,46 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [u, p, o, v, s] = await Promise.all([
+      const [u, p, o, v, s, i] = await Promise.all([
         supabase.from("profiles").select("*, user_roles(role)"),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false }),
         supabase.from("schemes").select("*").order("created_at", { ascending: false }),
+        supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false }),
       ]);
       setUsers(u.data || []);
       setProducts(p.data || []);
       setOrders(o.data || []);
       setVets(v.data || []);
       setSchemes(s.data || []);
+      setIndustries(i.data || []);
       setLoading(false);
     };
     fetchAll();
   }, []);
+
+  const approveIndustry = async (id: string) => {
+    const { error } = await supabase
+      .from("dairy_companies")
+      .update({ verification_status: "verified", rejection_reason: null, contact_phone_verified: true, contact_email_verified: true })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null } : c));
+    toast.success("Company verified — owner notified");
+  };
+
+  const rejectIndustry = async (id: string, reason: string) => {
+    const trimmed = reason.trim();
+    if (trimmed.length < 5) { toast.error("Please give a reason (min 5 chars)"); return; }
+    const { error } = await supabase
+      .from("dairy_companies")
+      .update({ verification_status: "rejected", rejection_reason: trimmed })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed } : c));
+    toast.success("Company rejected — owner notified");
+  };
 
   const approveProduct = async (id: string) => {
     const { error } = await supabase.from("products").update({ approval_status: "approved", rejection_reason: null }).eq("id", id);
@@ -149,6 +174,14 @@ export default function AdminDashboard() {
       <Tabs defaultValue="products" className="mt-8">
         <TabsList className="flex-wrap">
           <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="industries">
+            Industries
+            {industries.filter(c => c.verification_status === "pending").length > 0 && (
+              <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-[10px]">
+                {industries.filter(c => c.verification_status === "pending").length}
+              </Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="vets">Vet Doctors</TabsTrigger>
@@ -214,6 +247,97 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="industries" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display">Industry Verification</CardTitle>
+              <p className="text-sm text-muted-foreground">Review company registration, GST, and contact details. Only verified industries can publish milk rates.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {industries.length === 0 ? (
+                <p className="py-10 text-center text-sm text-muted-foreground">No dairy companies submitted yet.</p>
+              ) : industries.map((c) => {
+                const status = c.verification_status as "pending" | "verified" | "rejected";
+                const badgeVariant = status === "verified" ? "default" : status === "rejected" ? "destructive" : "secondary";
+                return (
+                  <div key={c.id} className="rounded-lg border p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        {c.logo_url ? (
+                          <img src={c.logo_url} alt="" className="h-12 w-12 rounded-md object-cover ring-1 ring-border" />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground text-xs">Logo</div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{c.name}</p>
+                            <Badge variant={badgeVariant} className="capitalize">{status}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {[c.village, c.district, c.state, c.pin_code].filter(Boolean).join(", ") || "Location not provided"}
+                          </p>
+                          {c.submitted_at && (
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">Submitted {new Date(c.submitted_at).toLocaleString()}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {status !== "verified" && (
+                          <Button size="sm" onClick={() => approveIndustry(c.id)} className="gap-1">
+                            <Check className="h-4 w-4" /> Approve
+                          </Button>
+                        )}
+                        {status !== "rejected" && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="destructive" className="gap-1"><X className="h-4 w-4" /> Reject</Button>
+                            </DialogTrigger>
+                            <IndustryRejectDialog companyName={c.name} onSubmit={(r) => rejectIndustry(c.id, r)} />
+                          </Dialog>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Registration no.</p>
+                        <p className="font-mono">{c.registration_number || <span className="text-destructive">Missing</span>}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">GSTIN</p>
+                        <p className="font-mono">{c.gst_number || <span className="text-destructive">Missing</span>}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</p>
+                        <p>{c.phone || <span className="text-destructive">Missing</span>} {c.contact_phone_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Email</p>
+                        <p>{c.email || <span className="text-destructive">Missing</span>} {c.contact_email_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Address</p>
+                        <p>{c.address || "—"}</p>
+                      </div>
+                      {c.business_doc_url && (
+                        <div className="md:col-span-2">
+                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Business document</p>
+                          <a href={c.business_doc_url} target="_blank" rel="noopener" className="text-primary underline break-all">{c.business_doc_url}</a>
+                        </div>
+                      )}
+                      {status === "rejected" && c.rejection_reason && (
+                        <div className="md:col-span-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+                          Rejection reason: {c.rejection_reason}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         </TabsContent>
@@ -464,6 +588,33 @@ function RejectDialog({ productName, onSubmit }: { productName: string; onSubmit
         <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
         <DialogClose asChild>
           <Button variant="destructive" onClick={() => onSubmit(reason)}>Reject listing</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+function IndustryRejectDialog({ companyName, onSubmit }: { companyName: string; onSubmit: (reason: string) => void }) {
+  const [reason, setReason] = useState("");
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Reject "{companyName}"</DialogTitle>
+        <DialogDescription>
+          Share a short reason (e.g. unreadable GST document, mismatched contact details, registration cannot be verified). The owner sees this in their Industry panel and gets a notification.
+        </DialogDescription>
+      </DialogHeader>
+      <Textarea
+        placeholder="e.g. GST number does not match registered name; please re-upload a clear certificate…"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={4}
+        className="mt-2"
+      />
+      <DialogFooter>
+        <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+        <DialogClose asChild>
+          <Button variant="destructive" onClick={() => onSubmit(reason)}>Reject company</Button>
         </DialogClose>
       </DialogFooter>
     </DialogContent>

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Factory, Plus, Trash2, ImagePlus, Save } from "lucide-react";
+import { Factory, Plus, Trash2, ImagePlus, Save, ShieldCheck, ShieldAlert, ShieldQuestion, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,6 +16,9 @@ type Company = {
   id: string; name: string; logo_url: string | null; description: string | null;
   address: string | null; village: string | null; district: string | null; state: string | null; pin_code: string | null;
   phone: string | null; email: string | null; working_hours: string | null; verified: boolean;
+  verification_status: "pending" | "verified" | "rejected"; rejection_reason: string | null;
+  registration_number: string | null; gst_number: string | null; business_doc_url: string | null;
+  submitted_at: string | null; reviewed_at: string | null;
 };
 
 type Rate = {
@@ -62,14 +65,70 @@ export default function IndustryPanel() {
         </div>
       </div>
 
+      {company && <VerificationBanner company={company} />}
+
       <CompanyForm company={company} onSaved={(c) => setCompany(c)} />
 
       {company && (
         <div className="mt-8">
-          <RatesManager company={company} rates={rates} onChange={setRates} />
+          {company.verification_status === "verified" ? (
+            <RatesManager company={company} rates={rates} onChange={setRates} />
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground"><Lock className="h-6 w-6" /></div>
+                <h3 className="font-display text-lg font-semibold">Publishing is locked</h3>
+                <p className="max-w-md text-sm text-muted-foreground">
+                  You'll be able to publish milk rates and announcements once an admin verifies your company details
+                  (registration, GST, contact). Make sure the form above is complete and submitted.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+function VerificationBanner({ company }: { company: Company }) {
+  const status = company.verification_status;
+  if (status === "verified") {
+    return (
+      <Card className="mb-6 border-emerald-500/40 bg-emerald-50/60">
+        <CardContent className="flex items-start gap-3 p-4 text-sm">
+          <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-700" />
+          <div>
+            <p className="font-semibold text-emerald-800">Company verified</p>
+            <p className="text-emerald-800/80">You can publish milk rates, bonuses and announcements. Editing key business details will send your profile back for re-review.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (status === "rejected") {
+    return (
+      <Card className="mb-6 border-destructive/40 bg-destructive/5">
+        <CardContent className="flex items-start gap-3 p-4 text-sm">
+          <ShieldAlert className="mt-0.5 h-5 w-5 text-destructive" />
+          <div>
+            <p className="font-semibold text-destructive">Verification rejected</p>
+            <p className="text-destructive/90">Reason: {company.rejection_reason || "Not specified"}. Update your details below and resubmit for review.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  return (
+    <Card className="mb-6 border-amber-500/40 bg-amber-50/60">
+      <CardContent className="flex items-start gap-3 p-4 text-sm">
+        <ShieldQuestion className="mt-0.5 h-5 w-5 text-amber-700" />
+        <div>
+          <p className="font-semibold text-amber-800">Verification pending</p>
+          <p className="text-amber-800/80">An admin is reviewing your registration, GST, and contact details. Publishing is disabled until your company is verified.</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -87,6 +146,9 @@ function CompanyForm({ company, onSaved }: { company: Company | null; onSaved: (
     email: company?.email ?? "",
     working_hours: company?.working_hours ?? "",
     logo_url: company?.logo_url ?? "",
+    registration_number: company?.registration_number ?? "",
+    gst_number: company?.gst_number ?? "",
+    business_doc_url: company?.business_doc_url ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -154,8 +216,21 @@ function CompanyForm({ company, onSaved }: { company: Company | null; onSaved: (
         <Field label="Address"><Textarea rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} maxLength={400} /></Field>
         <Field label="About the company"><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={800} /></Field>
 
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4" /> Business verification</p>
+          <p className="mb-3 text-xs text-muted-foreground">An admin reviews these details before your company can publish rates. Required for verification.</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="Company registration number"><Input placeholder="e.g. CIN / Society reg. no." value={form.registration_number} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} maxLength={64} /></Field>
+            <Field label="GSTIN"><Input placeholder="15-digit GST number" value={form.gst_number} onChange={(e) => setForm({ ...form, gst_number: e.target.value.toUpperCase() })} maxLength={15} /></Field>
+          </div>
+          <div className="mt-3">
+            <Label className="mb-1.5 block text-xs">Business document URL (registration / GST certificate, PDF or image link)</Label>
+            <Input placeholder="https://…" value={form.business_doc_url} onChange={(e) => setForm({ ...form, business_doc_url: e.target.value })} maxLength={500} />
+          </div>
+        </div>
+
         <div className="flex justify-end">
-          <Button onClick={save} disabled={saving} className="gap-2"><Save className="h-4 w-4" />{saving ? "Saving…" : company ? "Save changes" : "Create company"}</Button>
+          <Button onClick={save} disabled={saving} className="gap-2"><Save className="h-4 w-4" />{saving ? "Saving…" : company ? "Save changes" : "Submit for verification"}</Button>
         </div>
       </CardContent>
     </Card>
