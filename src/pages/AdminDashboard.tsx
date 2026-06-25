@@ -617,6 +617,8 @@ type IndustryRow = {
   rejection_reason?: string | null;
   contact_phone_verified?: boolean;
   contact_email_verified?: boolean;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
 };
 
 function IndustriesPanel(props: {
