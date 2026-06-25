@@ -34,6 +34,7 @@ import MediatorPanel from "./pages/MediatorPanel";
 import VetDashboard from "./pages/VetDashboard";
 import BookVet from "./pages/BookVet";
 import MyAppointments from "./pages/MyAppointments";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 
