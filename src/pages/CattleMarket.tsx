@@ -18,6 +18,17 @@ const INDIAN_STATES = [
   "Gujarat","Madhya Pradesh","Rajasthan","Uttar Pradesh","Bihar","Punjab","Haryana","West Bengal","Odisha",
 ];
 
+const ANIMALS = [
+  { id: "all", label: "All Animals", emoji: "🐾" },
+  { id: "cow", label: "Cow", emoji: "🐄" },
+  { id: "buffalo", label: "Buffalo", emoji: "🐃" },
+  { id: "hen", label: "Hen", emoji: "🐔" },
+  { id: "rooster", label: "Cock", emoji: "🐓" },
+];
+const ALLOWED = ["cow", "buffalo", "hen", "rooster"];
+
+const animalEmoji = (t: string) => ANIMALS.find((a) => a.id === t)?.emoji ?? "🐾";
+
 export default function CattleMarket() {
   const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -25,7 +36,7 @@ export default function CattleMarket() {
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [animal, setAnimal] = useState("all");
   const [stateFilter, setStateFilter] = useState("All States");
   const [districtFilter, setDistrictFilter] = useState("");
   const [breedFilter, setBreedFilter] = useState("");
@@ -35,8 +46,10 @@ export default function CattleMarket() {
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
-      let q = supabase.from("cattle_listings").select("*").eq("status", "active").eq("listing_type", "sell");
-      if (typeFilter !== "all") q = q.eq("type", typeFilter);
+      let q = supabase.from("cattle_listings").select("*")
+        .eq("status", "active").eq("listing_type", "sell")
+        .in("type", ALLOWED);
+      if (animal !== "all") q = q.eq("type", animal);
       if (stateFilter !== "All States") q = q.eq("state", stateFilter);
       if (districtFilter.trim()) q = q.ilike("district", `%${districtFilter.trim()}%`);
       if (breedFilter.trim()) q = q.ilike("breed", `%${breedFilter.trim()}%`);
@@ -56,7 +69,7 @@ export default function CattleMarket() {
       setLoading(false);
     };
     fetchListings();
-  }, [typeFilter, stateFilter, districtFilter, breedFilter, minPrice, maxPrice, search]);
+  }, [animal, stateFilter, districtFilter, breedFilter, minPrice, maxPrice, search]);
 
   useEffect(() => {
     if (!user) { setFavs(new Set()); return; }
@@ -82,35 +95,31 @@ export default function CattleMarket() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-bold">Livestock Marketplace</h1>
-          <p className="mt-1 text-muted-foreground">Buy and sell cows, buffaloes, goats, sheep, poultry and more from verified farmers across India.</p>
+          <p className="mt-1 text-muted-foreground">Buy and sell cows, buffaloes, hens and cocks from verified farmers.</p>
         </div>
         <div className="flex gap-2">
-          {user && <Button asChild variant="outline" className="gap-2"><Link to="/my-listings"><Heart className="h-4 w-4" /> My Cattle</Link></Button>}
+          {user && <Button asChild variant="outline" className="gap-2"><Link to="/my-listings"><Heart className="h-4 w-4" /> My Listings</Link></Button>}
           <Button asChild className="gap-2"><Link to={user ? "/cattle-market/new" : "/login"}><Plus className="h-4 w-4" /> Sell Animal</Link></Button>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Animal pill selector */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {ANIMALS.map((a) => (
+          <button key={a.id} onClick={() => setAnimal(a.id)}
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
+              animal === a.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+            }`}>
+            <span className="text-base">{a.emoji}</span> {a.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative sm:col-span-2 lg:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search by name or breed…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Animals</SelectItem>
-            <SelectItem value="cow">Cow</SelectItem>
-            <SelectItem value="buffalo">Buffalo</SelectItem>
-            <SelectItem value="calf">Calf</SelectItem>
-            <SelectItem value="goat">Goat</SelectItem>
-            <SelectItem value="sheep">Sheep</SelectItem>
-            <SelectItem value="hen">Hen</SelectItem>
-            <SelectItem value="rooster">Rooster</SelectItem>
-            <SelectItem value="chicken">Chicken</SelectItem>
-            <SelectItem value="duck">Duck</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
         <Select value={stateFilter} onValueChange={setStateFilter}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{INDIAN_STATES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
@@ -132,16 +141,37 @@ export default function CattleMarket() {
           const photoCount = c.photos?.length || (c.image_url ? 1 : 0);
           const loc = [c.village, c.district, c.state].filter(Boolean).join(", ");
           const favd = favs.has(c.id);
+          const a = c.attrs || {};
+
+          // Animal-specific detail lines for cards
+          let line2 = "";
+          if (c.type === "cow") {
+            const bits = [c.breed, c.age, c.milk_yield && `${c.milk_yield} L/day`, a.fat && `FAT ${a.fat}`].filter(Boolean);
+            line2 = bits.join(" • ");
+          } else if (c.type === "buffalo") {
+            const bits = [c.breed, c.age, c.milk_yield && `${c.milk_yield} L/day`].filter(Boolean);
+            line2 = bits.join(" • ");
+          } else if (c.type === "hen") {
+            const bits = [c.breed, a.egg_laying === "yes" && `${a.eggs_per_week || "?"} eggs/wk`, c.quantity && `Qty ${c.quantity}`].filter(Boolean);
+            line2 = bits.join(" • ");
+          } else if (c.type === "rooster") {
+            const bits = [c.breed, c.age, c.weight && `${c.weight} kg`, c.quantity && `Qty ${c.quantity}`].filter(Boolean);
+            line2 = bits.join(" • ");
+          }
+
           return (
             <Card key={c.id} className="overflow-hidden transition-shadow hover:shadow-lg">
               <Link to={`/cattle-market/${c.id}`} className="relative block aspect-[4/3] bg-muted">
                 {cover ? (
                   <img src={cover} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-muted-foreground"><ImageOff className="h-8 w-8" /></div>
+                  <div className="flex h-full items-center justify-center text-6xl">{animalEmoji(c.type)}</div>
                 )}
                 <div className="absolute left-2 top-2 flex gap-1">
-                  {photoCount > 1 && <Badge variant="secondary" className="bg-background/90">+{photoCount - 1} photos</Badge>}
+                  <Badge className="gap-1 bg-background/90 text-foreground hover:bg-background/90">
+                    <span>{animalEmoji(c.type)}</span> <span className="capitalize">{c.type}</span>
+                  </Badge>
+                  {photoCount > 1 && <Badge variant="secondary" className="bg-background/90">+{photoCount - 1}</Badge>}
                   {c.video_url && <Badge variant="secondary" className="gap-1 bg-background/90"><Video className="h-3 w-3" /> Video</Badge>}
                 </div>
                 <button type="button" onClick={(e) => { e.preventDefault(); toggleFav(c.id); }}
@@ -153,9 +183,9 @@ export default function CattleMarket() {
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <Link to={`/cattle-market/${c.id}`} className="font-semibold leading-tight hover:underline">{c.name}</Link>
-                  <Badge variant="outline" className="capitalize shrink-0">{c.type}</Badge>
+                  {c.negotiable && <Badge variant="outline" className="shrink-0">Negotiable</Badge>}
                 </div>
-                <p className="text-sm text-muted-foreground">{c.breed}{c.age ? ` • ${c.age}` : ""}{c.milk_yield ? ` • ${c.milk_yield}` : ""}</p>
+                {line2 && <p className="text-sm text-muted-foreground">{line2}</p>}
                 <div className="flex items-center text-lg font-bold text-primary">
                   <IndianRupee className="h-4 w-4" />{Number(c.price).toLocaleString("en-IN")}
                 </div>
@@ -168,9 +198,9 @@ export default function CattleMarket() {
                       </a>
                     </Button>
                     <Button size="sm" className="gap-1.5 bg-[#25D366] text-white hover:bg-[#1ebe5b]" asChild>
-                      <a target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                        href={waHref(c.contact_phone, `Hello, I'm interested in your ${c.breed} (${c.name}) on Smart Dairy Hub.`)}
-                        aria-label={`WhatsApp seller of ${c.name}`}>
+                      <a target="_blank" rel="noopener noreferrer"
+                        href={waHref(c.whatsapp_phone || c.contact_phone, `Hello, I'm interested in your ${c.breed || c.type} (${c.name}) on Smart Dairy Hub.`)}
+                        onClick={(e) => e.stopPropagation()}>
                         <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                       </a>
                     </Button>
