@@ -246,6 +246,39 @@ export default function VetContacts() {
   useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
   useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
 
+  // Filters
+  const [animal, setAnimal] = useState<string>("all");
+  const [radius, setRadius] = useState<number>(10000);
+  const [minRating, setMinRating] = useState<string>("0");
+  const [openOnly, setOpenOnly] = useState(false);
+  const [govOnly, setGovOnly] = useState(false);
+  const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const [sameStateOnly, setSameStateOnly] = useState(true);
+  const [sortBy, setSortBy] = useState<"distance" | "rating">("distance");
+
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstance = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+
+  const fetchVets = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("vet_doctors").select(VET_SAFE_COLUMNS)
+      .eq("status", "approved").eq("available", true)
+      .order("rating", { ascending: false });
+    if (error) toast.error(error.message);
+    setVets((data as any[]) || []);
+    setLoading(false);
+  }, []);
+
+  const fetchPending = useCallback(async () => {
+    if (!isAdmin) return;
+    const { data } = await supabase.from("vet_doctors").select(VET_SAFE_COLUMNS)
+      .eq("status", "pending").order("created_at", { ascending: false });
+    setPending((data as any[]) || []);
+  }, [isAdmin]);
+
+  useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
 
   const districts = useMemo(
     () => Array.from(new Set(vets.map((v) => v.district).filter(Boolean))) as string[],
