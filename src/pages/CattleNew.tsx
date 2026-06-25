@@ -130,7 +130,14 @@ export default function CattleNew() {
     })();
   }, [id, isEdit, user, profile, navigate]);
 
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => (e[k] ? { ...e, [k]: undefined } : e));
+  };
+  const errCls = (k: keyof FormState | "photos") =>
+    `mt-1.5 ${errors[k] ? "border-destructive focus-visible:ring-destructive" : ""}`;
+  const Err = ({ k }: { k: keyof FormState | "photos" }) =>
+    errors[k] ? <p data-error="true" className="mt-1 text-xs text-destructive">{errors[k]}</p> : null;
 
   const onPhotoFiles = async (files: FileList | null) => {
     if (!files || !user) return;
