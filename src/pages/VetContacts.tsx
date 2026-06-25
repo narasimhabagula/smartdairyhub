@@ -617,21 +617,54 @@ export default function VetContacts() {
                     <span className="text-muted-foreground">Not set</span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Search village, mandal, district, PIN code or state…"
-                      className="pl-9"
+                      placeholder="Search doctor, hospital, village, mandal, district or PIN…"
+                      className="h-12 rounded-xl pl-10 pr-28 text-base shadow-sm"
                       value={manualQuery}
                       onChange={(e) => setManualQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") searchManual(); }}
+                      aria-label="Search vets or location"
                     />
+                    <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                      {voiceSupported && (
+                        <select
+                          aria-label="Voice language"
+                          value={voiceLang}
+                          onChange={(e) => setVoiceLang(e.target.value)}
+                          className="hidden h-8 rounded-md border bg-background px-1.5 text-xs sm:block"
+                        >
+                          {VOICE_LANGS.map((l) => (
+                            <option key={l.code} value={l.code}>{l.label}</option>
+                          ))}
+                        </select>
+                      )}
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant={listening ? "destructive" : "ghost"}
+                        onClick={startVoice}
+                        disabled={!voiceSupported}
+                        aria-label={listening ? "Stop voice search" : "Start voice search"}
+                        title={voiceSupported ? (listening ? "Listening… tap to stop" : "Tap to speak") : "Voice search not supported in this browser"}
+                        className={`h-9 w-9 ${listening ? "animate-pulse" : ""}`}
+                      >
+                        {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
-                  <Button variant="outline" disabled={manualLoading} onClick={searchManual} className="gap-1.5">
-                    <Search className="h-4 w-4" /> {manualLoading ? "…" : "Search"}
+                  <Button disabled={manualLoading} onClick={searchManual} className="h-12 gap-1.5 rounded-xl px-5">
+                    <Search className="h-4 w-4" /> {manualLoading ? "Searching…" : "Search"}
                   </Button>
                 </div>
+                {listening && (
+                  <p className="flex items-center gap-2 text-xs text-primary">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+                    Listening in {VOICE_LANGS.find((l) => l.code === voiceLang)?.label}… speak now (e.g. "Cow doctor near me")
+                  </p>
+                )}
               </div>
               <div className="flex items-end">
                 <Button onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))} className="gap-2 w-full sm:w-auto">
