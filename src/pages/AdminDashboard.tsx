@@ -442,3 +442,30 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+function RejectDialog({ productName, onSubmit }: { productName: string; onSubmit: (reason: string) => void }) {
+  const [reason, setReason] = useState("");
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Reject "{productName}"</DialogTitle>
+        <DialogDescription>
+          Share a short reason. The seller sees this in their dashboard and gets a notification.
+        </DialogDescription>
+      </DialogHeader>
+      <Textarea
+        placeholder="e.g. Images are unclear, price seems incorrect, missing description…"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={4}
+        className="mt-2"
+      />
+      <DialogFooter>
+        <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+        <DialogClose asChild>
+          <Button variant="destructive" onClick={() => onSubmit(reason)}>Reject listing</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
