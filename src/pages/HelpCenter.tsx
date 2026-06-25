@@ -1,11 +1,14 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Mic, MicOff, LifeBuoy, MessageCircle, Mail, Phone } from "lucide-react";
+import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { cn } from "@/lib/utils";
 
 const FAQS: { q: string; a: string; tags: string[] }[] = [
   { q: "How do I create an account?", a: "Tap Login, choose your role (Farmer or Industry), then sign up with email & password or Google. Phone OTP is also supported.", tags: ["account", "signup", "register"] },
@@ -20,10 +23,53 @@ const FAQS: { q: string; a: string; tags: string[] }[] = [
   { q: "How do I report a fake listing?", a: "Open the listing, scroll to the bottom and use Report — or raise a ticket from Customer Support → Report Fake Listings.", tags: ["report", "fraud", "fake"] },
 ];
 
+const LANG_TO_SR_LOCALE: Record<string, string> = {
+  en: "en-IN",
+  te: "te-IN",
+  hi: "hi-IN",
+  ta: "ta-IN",
+  kn: "kn-IN",
+  ml: "ml-IN",
+  mr: "mr-IN",
+  bn: "bn-IN",
+  pa: "pa-IN",
+};
+
+function getSpeechLocale(i18nLang: string) {
+  const base = i18nLang?.slice(0, 2).toLowerCase() || "en";
+  return LANG_TO_SR_LOCALE[base] || "en-IN";
+}
+
 export default function HelpCenter() {
-  const [query, setQuery] = useState("");
-  const [listening, setListening] = useState(false);
-  const recRef = useRef<any>(null);
+  const { i18n } = useTranslation();
+  const [typedQuery, setTypedQuery] = useState("");
+  const {
+    transcript,
+    interimTranscript,
+    listening,
+    supported,
+    error,
+    start,
+    stop,
+    reset,
+  } = useSpeechRecognition(getSpeechLocale(i18n.language));
+
+  // Combine typed text with dictated transcript. Dictation appends to the query.
+  useEffect(() => {
+    if (transcript) {
+      setTypedQuery((prev) => {
+        const separator = prev && !prev.endsWith(" ") ? " " : "";
+        return prev + separator + transcript;
+      });
+    }
+  }, [transcript]);
+
+  // Surface permission/network errors as a toast (once per error)
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
+
+  const query = typedQuery + interimTranscript;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -33,28 +79,26 @@ export default function HelpCenter() {
     );
   }, [query]);
 
+  function clearQuery() {
+    setTypedQuery("");
+    reset();
+  }
+
   function toggleVoice() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      toast.error("Voice search isn't supported in this browser");
+    if (!supported) {
+      toast.error("Voice search isn't supported in this browser. Try Chrome or Edge on Android/Windows.");
       return;
     }
     if (listening) {
-      recRef.current?.stop();
-      setListening(false);
-      return;
+      stop();
+    } else {
+      start();
+      toast.info("Listening… speak your question now");
     }
-    const rec = new SR();
-    rec.lang = "en-IN";
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    rec.onresult = (e: any) => setQuery(e.results[0][0].transcript);
-    rec.onerror = () => setListening(false);
-    rec.onend = () => setListening(false);
-    rec.start();
-    recRef.current = rec;
-    setListening(true);
   }
+
+  const displayValue = typedQuery + interimTranscript;
+  const placeholder = listening ? "Listening… speak your question" : "Search help articles…";
 
   return (
     <div className="container py-8">
@@ -65,26 +109,64 @@ export default function HelpCenter() {
         <h1 className="font-display text-3xl font-bold md:text-4xl">Help Center</h1>
         <p className="mt-2 text-muted-foreground">Find quick answers to common questions about Smart Dairy Hub.</p>
 
-        <div className="mt-6 flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search help articles…"
-              className="pl-10 pr-12 h-12"
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant={listening ? "default" : "ghost"}
-              className="absolute right-1 top-1/2 -translate-y-1/2"
-              onClick={toggleVoice}
-              aria-label="Voice search"
-            >
-              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </Button>
+        <div className="mt-6">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={displayValue}
+                onChange={(e) => {
+                  setTypedQuery(e.target.value);
+                  if (!e.target.value) reset();
+                }}
+                placeholder={placeholder}
+                className={cn("pl-10 pr-24 h-12 transition-shadow", listening && "ring-2 ring-primary/50")}
+                aria-label="Search help articles"
+              />
+              <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                {displayValue && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={clearQuery}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={listening ? "default" : "ghost"}
+                  className={cn("h-8 w-8", listening && "animate-pulse")}
+                  onClick={toggleVoice}
+                  aria-label={listening ? "Stop voice search" : "Start voice search"}
+                  title={supported ? "Tap to speak" : "Voice search not supported in this browser"}
+                >
+                  {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
           </div>
+
+          {listening && (
+            <div className="mt-2 flex items-center justify-center gap-2 text-sm text-primary">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              Listening in {LANG_TO_SR_LOCALE[i18n.language?.slice(0, 2).toLowerCase() || "en"] || "English"} — tap the mic again to stop
+            </div>
+          )}
+
+          {!supported && !listening && (
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <AlertCircle className="h-3 w-3" />
+              Voice search works best in Chrome or Edge.
+            </p>
+          )}
         </div>
       </div>
 
