@@ -183,16 +183,76 @@ export default function CattleNew() {
     );
   };
 
+  const validate = (): { ok: boolean; errs: typeof errors; phone: string; wa: string; price: number } => {
+    const errs: typeof errors = {};
+    const t = form.type;
+    const isDairyT = t === "cow" || t === "buffalo";
+    const isPoultryT = t === "hen" || t === "rooster";
+
+    if (photos.length === 0) errs.photos = "Upload at least 1 photo";
+    if (!form.name.trim()) errs.name = "Title is required";
+    if (!form.breed.trim()) errs.breed = "Breed is required";
+    if (!form.age.trim()) errs.age = "Age is required";
+
+    if (isDairyT) {
+      if (!form.weight.trim()) errs.weight = "Weight is required";
+      if (!form.milk_yield.trim()) errs.milk_yield = "Milk yield is required";
+      else if (isNaN(Number(form.milk_yield)) || Number(form.milk_yield) < 0) errs.milk_yield = "Enter a valid number";
+      if (t === "cow") {
+        if (!form.gender) errs.gender = "Select gender";
+        if (form.fat && (isNaN(Number(form.fat)) || Number(form.fat) < 0 || Number(form.fat) > 15)) errs.fat = "FAT must be 0–15";
+        if (form.snf && (isNaN(Number(form.snf)) || Number(form.snf) < 0 || Number(form.snf) > 15)) errs.snf = "SNF must be 0–15";
+      }
+      if (t === "buffalo" && form.fat && (isNaN(Number(form.fat)) || Number(form.fat) < 0 || Number(form.fat) > 15)) {
+        errs.fat = "FAT must be 0–15";
+      }
+    }
+
+    if (isPoultryT) {
+      if (!form.weight.trim()) errs.weight = "Weight is required";
+      if (!form.quantity.trim()) errs.quantity = "Quantity is required";
+      else if (!Number.isInteger(Number(form.quantity)) || Number(form.quantity) < 1) errs.quantity = "Must be a whole number ≥ 1";
+      if (t === "hen") {
+        if (!form.egg_laying) errs.egg_laying = "Select egg-laying status";
+        if (form.egg_laying === "yes") {
+          if (!form.eggs_per_week.trim()) errs.eggs_per_week = "Required when laying";
+          else if (isNaN(Number(form.eggs_per_week)) || Number(form.eggs_per_week) < 0 || Number(form.eggs_per_week) > 14) {
+            errs.eggs_per_week = "Enter 0–14";
+          }
+        }
+      }
+    }
+
+    if (!form.health_status.trim()) errs.health_status = "Health status is required";
+    if (!form.vaccination_status.trim()) errs.vaccination_status = "Vaccination status is required";
+
+    const price = parseFloat(form.price);
+    if (!Number.isFinite(price) || price <= 0) errs.price = "Enter a valid price";
+
+    if (!form.state) errs.state = "Select a state";
+    if (!form.district.trim()) errs.district = "District is required";
+
+    const phone = normalizeIndianPhone(form.contact_phone);
+    if (!phone) errs.contact_phone = "Enter a valid 10-digit Indian mobile";
+    const wa = form.whatsapp_phone.trim() ? normalizeIndianPhone(form.whatsapp_phone) : (phone || "");
+    if (form.whatsapp_phone.trim() && !wa) errs.whatsapp_phone = "Enter a valid WhatsApp number";
+
+    return { ok: Object.keys(errs).length === 0, errs, phone: phone || "", wa, price };
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const phone = normalizeIndianPhone(form.contact_phone);
-    if (!phone) return toast.error("Enter a valid 10-digit Indian mobile");
-    const wa = form.whatsapp_phone.trim() ? normalizeIndianPhone(form.whatsapp_phone) : phone;
-    if (form.whatsapp_phone.trim() && !wa) return toast.error("Enter a valid WhatsApp number");
-    const price = parseFloat(form.price);
-    if (!Number.isFinite(price) || price <= 0) return toast.error("Enter a valid price");
-    if (photos.length === 0) return toast.error("Upload at least 1 photo");
+    const { ok, errs, phone, wa, price } = validate();
+    setErrors(errs);
+    if (!ok) {
+      toast.error("Please fix the highlighted fields");
+      // scroll to first error
+      requestAnimationFrame(() => {
+        document.querySelector('[data-error="true"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
 
     // Build attrs based on animal type
     const attrs: Record<string, any> = { seller_name: form.seller_name.trim() || null };
