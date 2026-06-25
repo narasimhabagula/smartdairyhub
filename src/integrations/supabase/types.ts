@@ -850,6 +850,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_seller_contact: {
+        Args: { _seller_id: string }
+        Returns: {
+          full_name: string
+          phone: string
+        }[]
+      }
       get_vet_contact: {
         Args: { _vet_id: string }
         Returns: {
