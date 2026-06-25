@@ -33,16 +33,13 @@ type Product = {
 };
 
 const CATEGORIES = [
-  { id: "all", label: "All", icon: Sparkles },
   { id: "feed", label: "Cattle Feed", icon: Wheat },
-  { id: "medicine", label: "Vet Medicines", icon: Pill },
 ];
 
 const CATEGORY_MAP: Record<string, string[]> = {
   feed: ["feed", "cattle_feed", "fodder"],
-  medicine: ["medicine", "veterinary", "vet_medicine", "medicines"],
 };
-const ALLOWED_CATEGORIES = [...CATEGORY_MAP.feed, ...CATEGORY_MAP.medicine];
+const ALLOWED_CATEGORIES = [...CATEGORY_MAP.feed];
 
 const SORTS = [
   { id: "newest", label: "Newest" },
