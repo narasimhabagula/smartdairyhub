@@ -260,95 +260,17 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="industries" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display">Industry Verification</CardTitle>
-              <p className="text-sm text-muted-foreground">Review company registration, GST, and contact details. Only verified industries can publish milk rates.</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {industries.length === 0 ? (
-                <p className="py-10 text-center text-sm text-muted-foreground">No dairy companies submitted yet.</p>
-              ) : industries.map((c) => {
-                const status = c.verification_status as "pending" | "verified" | "rejected";
-                const badgeVariant = status === "verified" ? "default" : status === "rejected" ? "destructive" : "secondary";
-                return (
-                  <div key={c.id} className="rounded-lg border p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        {c.logo_url ? (
-                          <img src={c.logo_url} alt="" className="h-12 w-12 rounded-md object-cover ring-1 ring-border" />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground text-xs">Logo</div>
-                        )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold">{c.name}</p>
-                            <Badge variant={badgeVariant} className="capitalize">{status}</Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {[c.village, c.district, c.state, c.pin_code].filter(Boolean).join(", ") || "Location not provided"}
-                          </p>
-                          {c.submitted_at && (
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">Submitted {new Date(c.submitted_at).toLocaleString()}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {status !== "verified" && (
-                          <Button size="sm" onClick={() => approveIndustry(c.id)} className="gap-1">
-                            <Check className="h-4 w-4" /> Approve
-                          </Button>
-                        )}
-                        {status !== "rejected" && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="destructive" className="gap-1"><X className="h-4 w-4" /> Reject</Button>
-                            </DialogTrigger>
-                            <IndustryRejectDialog companyName={c.name} onSubmit={(r) => rejectIndustry(c.id, r)} />
-                          </Dialog>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Registration no.</p>
-                        <p className="font-mono">{c.registration_number || <span className="text-destructive">Missing</span>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">GSTIN</p>
-                        <p className="font-mono">{c.gst_number || <span className="text-destructive">Missing</span>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</p>
-                        <p>{c.phone || <span className="text-destructive">Missing</span>} {c.contact_phone_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Email</p>
-                        <p>{c.email || <span className="text-destructive">Missing</span>} {c.contact_email_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Address</p>
-                        <p>{c.address || "—"}</p>
-                      </div>
-                      {c.business_doc_url && (
-                        <div className="md:col-span-2">
-                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Business document</p>
-                          <a href={c.business_doc_url} target="_blank" rel="noopener" className="text-primary underline break-all">{c.business_doc_url}</a>
-                        </div>
-                      )}
-                      {status === "rejected" && c.rejection_reason && (
-                        <div className="md:col-span-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
-                          Rejection reason: {c.rejection_reason}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+          <IndustriesPanel
+            industries={industries}
+            search={indSearch} setSearch={setIndSearch}
+            status={indStatus} setStatus={setIndStatus}
+            stateFilter={indState} setStateFilter={setIndState}
+            districtFilter={indDistrict} setDistrictFilter={setIndDistrict}
+            page={indPage} setPage={setIndPage} pageSize={IND_PAGE_SIZE}
+            onApprove={approveIndustry} onReject={rejectIndustry}
+          />
         </TabsContent>
+
 
         <TabsContent value="orders" className="mt-4">
           <Card>
