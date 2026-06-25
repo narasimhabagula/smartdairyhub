@@ -174,6 +174,14 @@ export default function AdminDashboard() {
       <Tabs defaultValue="products" className="mt-8">
         <TabsList className="flex-wrap">
           <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="industries">
+            Industries
+            {industries.filter(c => c.verification_status === "pending").length > 0 && (
+              <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-[10px]">
+                {industries.filter(c => c.verification_status === "pending").length}
+              </Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="vets">Vet Doctors</TabsTrigger>
