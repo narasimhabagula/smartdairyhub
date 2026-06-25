@@ -395,6 +395,19 @@ export default function CattleNew() {
                 <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
               </div>
             )}
+            {isDairy && (
+              <div>
+                <Label>Pregnancy Status</Label>
+                <Select value={form.pregnancy_status} onValueChange={(v) => set("pregnancy_status", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pregnant">Pregnant</SelectItem>
+                    <SelectItem value="not_pregnant">Not Pregnant</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {isHen && (
               <>
