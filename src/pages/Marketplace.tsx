@@ -484,11 +484,14 @@ function ProductCard({
           )}
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-2">
+          <Button size="sm" variant="ghost" className="gap-1.5" onClick={onDetails}>
+            <Eye className="h-3.5 w-3.5" /> Details
+          </Button>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={onAdd}>
             <ShoppingCart className="h-3.5 w-3.5" /> Add
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={onBuy}>Buy Now</Button>
+          <Button size="sm" className="gap-1.5" onClick={onBuy}>Buy</Button>
         </div>
         <p className="text-[10px] text-muted-foreground">{daysAgo(p.created_at)} · {p.seller_name || "Seller"}</p>
       </CardContent>
