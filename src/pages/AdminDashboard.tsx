@@ -593,3 +593,30 @@ function RejectDialog({ productName, onSubmit }: { productName: string; onSubmit
     </DialogContent>
   );
 }
+
+function IndustryRejectDialog({ companyName, onSubmit }: { companyName: string; onSubmit: (reason: string) => void }) {
+  const [reason, setReason] = useState("");
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Reject "{companyName}"</DialogTitle>
+        <DialogDescription>
+          Share a short reason (e.g. unreadable GST document, mismatched contact details, registration cannot be verified). The owner sees this in their Industry panel and gets a notification.
+        </DialogDescription>
+      </DialogHeader>
+      <Textarea
+        placeholder="e.g. GST number does not match registered name; please re-upload a clear certificate…"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={4}
+        className="mt-2"
+      />
+      <DialogFooter>
+        <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+        <DialogClose asChild>
+          <Button variant="destructive" onClick={() => onSubmit(reason)}>Reject company</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
