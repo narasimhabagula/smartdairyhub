@@ -631,8 +631,9 @@ function IndustriesPanel(props: {
   page: number; setPage: (n: number) => void; pageSize: number;
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
+  adminNames: Record<string, string>;
 }) {
-  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
+  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject, adminNames } = props;
 
   const states = useMemo(() => {
     const set = new Set<string>();
