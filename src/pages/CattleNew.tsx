@@ -6,17 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ImagePlus, Video, X, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ImagePlus, Video, X, Loader2, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone } from "@/lib/phone";
 import {
-  MAX_PHOTOS,
-  uploadCattleFile,
-  validatePhoto,
-  validateVideo,
-  deleteCattleFiles,
+  MAX_PHOTOS, uploadCattleFile, validatePhoto, validateVideo, deleteCattleFiles,
 } from "@/lib/cattle-media";
 
 const INDIAN_STATES = [
@@ -27,11 +24,53 @@ const INDIAN_STATES = [
   "Puducherry","Chandigarh","Andaman and Nicobar","Dadra and Nagar Haveli","Lakshadweep",
 ];
 
-const empty = {
-  name: "", breed: "", type: "cow", listing_type: "sell",
-  age: "", milk_yield: "", price: "",
-  state: "", district: "", village: "", location: "",
-  contact_phone: "", vaccination_status: "", health_status: "", description: "",
+const ANIMAL_OPTIONS = [
+  { id: "cow", label: "🐄 Cow" },
+  { id: "buffalo", label: "🐃 Buffalo" },
+  { id: "hen", label: "🐔 Hen" },
+  { id: "rooster", label: "🐓 Cock (Rooster)" },
+];
+
+type AnimalType = "cow" | "buffalo" | "hen" | "rooster";
+
+type FormState = {
+  type: AnimalType;
+  name: string;
+  breed: string;
+  age: string;
+  gender: string;
+  milk_yield: string;
+  fat: string;
+  snf: string;
+  health_status: string;
+  vaccination_status: string;
+  weight: string;
+  lactation_number: string;
+  egg_laying: string;
+  eggs_per_week: string;
+  quantity: string;
+  price: string;
+  negotiable: boolean;
+  state: string;
+  district: string;
+  village: string;
+  location: string;
+  gps_lat: string;
+  gps_lng: string;
+  seller_name: string;
+  contact_phone: string;
+  whatsapp_phone: string;
+  description: string;
+};
+
+const empty: FormState = {
+  type: "cow", name: "", breed: "", age: "", gender: "", milk_yield: "",
+  fat: "", snf: "", health_status: "", vaccination_status: "", weight: "",
+  lactation_number: "", egg_laying: "", eggs_per_week: "", quantity: "",
+  price: "", negotiable: false,
+  state: "", district: "", village: "", location: "", gps_lat: "", gps_lng: "",
+  seller_name: "", contact_phone: "", whatsapp_phone: "",
+  description: "",
 };
 
 export default function CattleNew() {
@@ -40,16 +79,21 @@ export default function CattleNew() {
   const { id } = useParams();
   const isEdit = !!id;
 
-  const [form, setForm] = useState(empty);
+  const [form, setForm] = useState<FormState>(empty);
   const [photos, setPhotos] = useState<string[]>([]);
   const [video, setVideo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [loadingListing, setLoadingListing] = useState(isEdit);
 
   useEffect(() => {
     if (!isEdit) {
-      if (profile?.phone) setForm((f) => ({ ...f, contact_phone: f.contact_phone || profile.phone! }));
+      setForm((f) => ({
+        ...f,
+        contact_phone: f.contact_phone || profile?.phone || "",
+        seller_name: f.seller_name || profile?.full_name || "",
+      }));
       return;
     }
     (async () => {
@@ -57,12 +101,24 @@ export default function CattleNew() {
       if (error || !data) { toast.error("Listing not found"); navigate("/my-listings"); return; }
       if (data.seller_id !== user?.id) { toast.error("Not your listing"); navigate("/my-listings"); return; }
       const d: any = data;
+      const a = d.attrs || {};
       setForm({
-        name: d.name ?? "", breed: d.breed ?? "", type: d.type ?? "cow",
-        listing_type: d.listing_type ?? "sell", age: d.age ?? "", milk_yield: d.milk_yield ?? "",
-        price: String(d.price ?? ""), state: d.state ?? "", district: d.district ?? "",
-        village: d.village ?? "", location: d.location ?? "", contact_phone: d.contact_phone ?? "",
-        vaccination_status: d.vaccination_status ?? "", health_status: d.health_status ?? "",
+        type: (d.type ?? "cow") as AnimalType,
+        name: d.name ?? "", breed: d.breed ?? "", age: d.age ?? "",
+        gender: a.gender ?? "", milk_yield: d.milk_yield ?? "",
+        fat: a.fat ?? "", snf: a.snf ?? "",
+        health_status: d.health_status ?? "", vaccination_status: d.vaccination_status ?? "",
+        weight: d.weight ?? "", lactation_number: a.lactation_number ?? "",
+        egg_laying: a.egg_laying ?? "", eggs_per_week: a.eggs_per_week ?? "",
+        quantity: d.quantity != null ? String(d.quantity) : "",
+        price: String(d.price ?? ""), negotiable: !!d.negotiable,
+        state: d.state ?? "", district: d.district ?? "", village: d.village ?? "",
+        location: d.location ?? "",
+        gps_lat: d.gps_lat != null ? String(d.gps_lat) : "",
+        gps_lng: d.gps_lng != null ? String(d.gps_lng) : "",
+        seller_name: a.seller_name ?? profile?.full_name ?? "",
+        contact_phone: d.contact_phone ?? "",
+        whatsapp_phone: d.whatsapp_phone ?? "",
         description: d.description ?? "",
       });
       setPhotos(d.photos ?? []);
@@ -71,15 +127,16 @@ export default function CattleNew() {
     })();
   }, [id, isEdit, user, profile, navigate]);
 
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
+
   const onPhotoFiles = async (files: FileList | null) => {
     if (!files || !user) return;
     const remaining = MAX_PHOTOS - photos.length;
     if (remaining <= 0) { toast.error(`Max ${MAX_PHOTOS} photos`); return; }
-    const toUpload = Array.from(files).slice(0, remaining);
     setUploading(true);
     try {
       const urls: string[] = [];
-      for (const f of toUpload) {
+      for (const f of Array.from(files).slice(0, remaining)) {
         const err = validatePhoto(f);
         if (err) { toast.error(`${f.name}: ${err}`); continue; }
         urls.push(await uploadCattleFile(user.id, f, "photo"));
@@ -88,12 +145,10 @@ export default function CattleNew() {
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
   };
-
   const removePhoto = async (url: string) => {
     setPhotos((p) => p.filter((u) => u !== url));
     await deleteCattleFiles([url]);
   };
-
   const onVideoFile = async (file: File | null) => {
     if (!file || !user) return;
     const err = validateVideo(file);
@@ -101,17 +156,28 @@ export default function CattleNew() {
     setUploading(true);
     try {
       if (video) await deleteCattleFiles([video]);
-      const url = await uploadCattleFile(user.id, file, "video");
-      setVideo(url);
+      setVideo(await uploadCattleFile(user.id, file, "video"));
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
   };
-
   const removeVideo = async () => {
     if (!video) return;
-    const v = video;
-    setVideo(null);
-    await deleteCattleFiles([v]);
+    const v = video; setVideo(null); await deleteCattleFiles([v]);
+  };
+
+  const captureGPS = () => {
+    if (!navigator.geolocation) return toast.error("Geolocation not supported");
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        set("gps_lat", pos.coords.latitude.toFixed(6));
+        set("gps_lng", pos.coords.longitude.toFixed(6));
+        setLocating(false);
+        toast.success("GPS location captured");
+      },
+      () => { setLocating(false); toast.error("Couldn't get your location"); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -119,32 +185,61 @@ export default function CattleNew() {
     if (!user) return;
     const phone = normalizeIndianPhone(form.contact_phone);
     if (!phone) return toast.error("Enter a valid 10-digit Indian mobile");
+    const wa = form.whatsapp_phone.trim() ? normalizeIndianPhone(form.whatsapp_phone) : phone;
+    if (form.whatsapp_phone.trim() && !wa) return toast.error("Enter a valid WhatsApp number");
     const price = parseFloat(form.price);
     if (!Number.isFinite(price) || price <= 0) return toast.error("Enter a valid price");
     if (photos.length === 0) return toast.error("Upload at least 1 photo");
 
-    setSaving(true);
+    // Build attrs based on animal type
+    const attrs: Record<string, any> = { seller_name: form.seller_name.trim() || null };
+    if (form.type === "cow") {
+      Object.assign(attrs, {
+        gender: form.gender || null,
+        fat: form.fat || null,
+        snf: form.snf || null,
+        lactation_number: form.lactation_number || null,
+      });
+    } else if (form.type === "buffalo") {
+      Object.assign(attrs, { fat: form.fat || null });
+    } else if (form.type === "hen") {
+      Object.assign(attrs, {
+        egg_laying: form.egg_laying || null,
+        eggs_per_week: form.eggs_per_week || null,
+      });
+    }
+
     const payload: any = {
-      name: form.name.trim(), breed: form.breed.trim(), type: form.type,
-      listing_type: form.listing_type, age: form.age.trim() || null,
-      milk_yield: form.milk_yield.trim() || null, price,
-      state: form.state.trim() || null, district: form.district.trim() || null,
-      village: form.village.trim() || null, location: form.location.trim() || null,
+      type: form.type,
+      name: form.name.trim(),
+      breed: form.breed.trim() || null,
+      listing_type: "sell",
+      age: form.age.trim() || null,
+      milk_yield: (form.type === "cow" || form.type === "buffalo") ? (form.milk_yield.trim() || null) : null,
+      weight: form.weight.trim() || null,
+      quantity: (form.type === "hen" || form.type === "rooster") && form.quantity ? Number(form.quantity) : null,
+      price, negotiable: !!form.negotiable,
+      state: form.state.trim() || null,
+      district: form.district.trim() || null,
+      village: form.village.trim() || null,
+      location: form.location.trim() || null,
+      gps_lat: form.gps_lat ? Number(form.gps_lat) : null,
+      gps_lng: form.gps_lng ? Number(form.gps_lng) : null,
       contact_phone: phone,
+      whatsapp_phone: wa,
       vaccination_status: form.vaccination_status.trim() || null,
       health_status: form.health_status.trim() || null,
       description: form.description.trim() || null,
+      attrs,
       photos, video_url: video, image_url: photos[0] ?? null,
     };
 
-    let res;
-    if (isEdit) {
-      res = await supabase.from("cattle_listings").update(payload).eq("id", id!);
-    } else {
-      res = await supabase.from("cattle_listings").insert({ ...payload, seller_id: user.id });
-    }
+    setSaving(true);
+    const res = isEdit
+      ? await supabase.from("cattle_listings").update(payload).eq("id", id!)
+      : await supabase.from("cattle_listings").insert({ ...payload, seller_id: user.id });
     setSaving(false);
-    if (res.error) { toast.error(res.error.message); return; }
+    if (res.error) return toast.error(res.error.message);
     toast.success(isEdit ? "Listing updated" : "Listing created");
     navigate("/my-listings");
   };
@@ -153,12 +248,39 @@ export default function CattleNew() {
     return <div className="container py-16 text-center"><Loader2 className="mx-auto h-8 w-8 animate-spin" /></div>;
   }
 
+  const t = form.type;
+  const isCow = t === "cow";
+  const isBuf = t === "buffalo";
+  const isHen = t === "hen";
+  const isRooster = t === "rooster";
+  const isPoultry = isHen || isRooster;
+  const isDairy = isCow || isBuf;
+
   return (
     <div className="container max-w-3xl py-10">
       <h1 className="font-display text-3xl font-bold">{isEdit ? "Edit Listing" : "Sell Your Animal"}</h1>
-      <p className="mt-1 text-muted-foreground">Add photos, a short video, and complete details so buyers can trust your listing.</p>
+      <p className="mt-1 text-muted-foreground">Choose the animal you're selling — the form will adapt to the right fields.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-6">
+        {/* Animal type */}
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Animal Type</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {ANIMAL_OPTIONS.map((a) => (
+                <button type="button" key={a.id}
+                  onClick={() => set("type", a.id as AnimalType)}
+                  className={`rounded-lg border p-3 text-sm transition ${
+                    t === a.id ? "border-primary bg-primary/10 font-semibold" : "hover:bg-muted"
+                  }`}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Media */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Photos & Video</CardTitle></CardHeader>
           <CardContent className="space-y-4">
@@ -175,7 +297,7 @@ export default function CattleNew() {
                   </div>
                 ))}
                 {photos.length < MAX_PHOTOS && (
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground transition hover:border-primary hover:text-primary">
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary">
                     <ImagePlus className="h-6 w-6" />
                     <span className="text-xs">Add photo</span>
                     <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden"
@@ -205,76 +327,201 @@ export default function CattleNew() {
                 )}
               </div>
             </div>
-
             {uploading && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…</p>}
           </CardContent>
         </Card>
 
+        {/* Animal-specific fields */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Animal Information</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div><Label>Name</Label><Input className="mt-1.5" required maxLength={80} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="HF Cross Cow" /></div>
-            <div><Label>Breed</Label><Input className="mt-1.5" required maxLength={80} value={form.breed} onChange={(e) => setForm({ ...form, breed: e.target.value })} placeholder="Holstein Friesian" /></div>
+            <div className="sm:col-span-2">
+              <Label>Title / Name *</Label>
+              <Input className="mt-1.5" required maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={isCow ? "Lakshmi (HF Cross)" : isBuf ? "Murrah Buffalo" : isHen ? "Aseel Hen batch" : "Country Rooster"} />
+            </div>
             <div>
-              <Label>Animal Type</Label>
-              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cow">Cow</SelectItem>
-                  <SelectItem value="buffalo">Buffalo</SelectItem>
-                  <SelectItem value="calf">Calf</SelectItem>
-                  <SelectItem value="goat">Goat</SelectItem>
-                  <SelectItem value="sheep">Sheep</SelectItem>
-                  <SelectItem value="hen">Hen</SelectItem>
-                  <SelectItem value="rooster">Rooster (Cock)</SelectItem>
-                  <SelectItem value="chicken">Chicken</SelectItem>
-                  <SelectItem value="duck">Duck</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
+              <Label>Breed</Label>
+              <Input className="mt-1.5" maxLength={80} value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+            </div>
+            <div>
+              <Label>Age</Label>
+              <Input className="mt-1.5" maxLength={40} value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="e.g. 3 years" />
+            </div>
+
+            {isCow && (
+              <div>
+                <Label>Gender</Label>
+                <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isDairy && (
+              <div>
+                <Label>Milk Yield (Litres/Day)</Label>
+                <Input className="mt-1.5" value={form.milk_yield} onChange={(e) => set("milk_yield", e.target.value)} placeholder="e.g. 12" />
+              </div>
+            )}
+            {isCow && (
+              <>
+                <div>
+                  <Label>FAT %</Label>
+                  <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 4.2" />
+                </div>
+                <div>
+                  <Label>SNF %</Label>
+                  <Input className="mt-1.5" value={form.snf} onChange={(e) => set("snf", e.target.value)} placeholder="e.g. 8.5" />
+                </div>
+                <div>
+                  <Label>Lactation Number</Label>
+                  <Input className="mt-1.5" value={form.lactation_number} onChange={(e) => set("lactation_number", e.target.value)} placeholder="e.g. 2nd" />
+                </div>
+              </>
+            )}
+            {isBuf && (
+              <div>
+                <Label>FAT %</Label>
+                <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
+              </div>
+            )}
+
+            {isHen && (
+              <>
+                <div>
+                  <Label>Egg Laying</Label>
+                  <Select value={form.egg_laying} onValueChange={(v) => set("egg_laying", v)}>
+                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Average Eggs / Week</Label>
+                  <Input className="mt-1.5" value={form.eggs_per_week} onChange={(e) => set("eggs_per_week", e.target.value)} placeholder="e.g. 5" />
+                </div>
+              </>
+            )}
+
+            <div>
+              <Label>Weight</Label>
+              <Input className="mt-1.5" value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder={isPoultry ? "e.g. 2.5 kg" : "e.g. 350 kg"} />
+            </div>
+
+            {isPoultry && (
+              <div>
+                <Label>Quantity Available</Label>
+                <Input type="number" min={1} className="mt-1.5" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="e.g. 20" />
+              </div>
+            )}
+
+            <div>
+              <Label>Health Status</Label>
+              <Input className="mt-1.5" value={form.health_status} onChange={(e) => set("health_status", e.target.value)} placeholder="e.g. Healthy" />
+            </div>
+            <div>
+              <Label>Vaccination Status</Label>
+              <Input className="mt-1.5" value={form.vaccination_status} onChange={(e) => set("vaccination_status", e.target.value)} placeholder="e.g. Up to date" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Price */}
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Price</CardTitle></CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Price (₹) *</Label>
+              <Input type="number" min={1} required className="mt-1.5" value={form.price} onChange={(e) => set("price", e.target.value)} />
+            </div>
+            <label className="flex items-center gap-2 mt-7">
+              <Checkbox checked={form.negotiable} onCheckedChange={(v) => set("negotiable", !!v)} />
+              <span className="text-sm">Price is negotiable</span>
+            </label>
+          </CardContent>
+        </Card>
+
+        {/* Location */}
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Location</CardTitle></CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>State</Label>
+              <Select value={form.state} onValueChange={(v) => set("state", v)}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select state" /></SelectTrigger>
+                <SelectContent>{INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Listing</Label>
-              <Select value={form.listing_type} onValueChange={(v) => setForm({ ...form, listing_type: v })}>
-                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sell">For Sale</SelectItem>
-                  <SelectItem value="buy">Want to Buy</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>District</Label>
+              <Input className="mt-1.5" value={form.district} onChange={(e) => set("district", e.target.value)} />
             </div>
-            <div><Label>Age</Label><Input className="mt-1.5" maxLength={20} value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="3 years" /></div>
-            <div><Label>Milk Yield Per Day</Label><Input className="mt-1.5" maxLength={20} value={form.milk_yield} onChange={(e) => setForm({ ...form, milk_yield: e.target.value })} placeholder="15 L/day" /></div>
-            <div><Label>Price (₹)</Label><Input className="mt-1.5" type="number" min="1" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="85000" /></div>
-            <div><Label>Vaccination Status</Label><Input className="mt-1.5" maxLength={80} value={form.vaccination_status} onChange={(e) => setForm({ ...form, vaccination_status: e.target.value })} placeholder="FMD + HS done" /></div>
-            <div className="sm:col-span-2"><Label>Health Status</Label><Input className="mt-1.5" maxLength={120} value={form.health_status} onChange={(e) => setForm({ ...form, health_status: e.target.value })} placeholder="Healthy, 2nd lactation, no mastitis" /></div>
-            <div className="sm:col-span-2"><Label>Description</Label><Textarea className="mt-1.5" maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the animal..." /></div>
+            <div>
+              <Label>Village / Town</Label>
+              <Input className="mt-1.5" value={form.village} onChange={(e) => set("village", e.target.value)} />
+            </div>
+            <div>
+              <Label>Landmark / Address</Label>
+              <Input className="mt-1.5" value={form.location} onChange={(e) => set("location", e.target.value)} />
+            </div>
+            <div className="sm:col-span-2">
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Label>GPS Latitude</Label>
+                  <Input className="mt-1.5" value={form.gps_lat} onChange={(e) => set("gps_lat", e.target.value)} placeholder="optional" />
+                </div>
+                <div className="flex-1">
+                  <Label>GPS Longitude</Label>
+                  <Input className="mt-1.5" value={form.gps_lng} onChange={(e) => set("gps_lng", e.target.value)} placeholder="optional" />
+                </div>
+                <Button type="button" variant="outline" onClick={captureGPS} disabled={locating} className="gap-1.5">
+                  {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                  Use my location
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Seller contact */}
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Seller Contact</CardTitle></CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Seller Name</Label>
+              <Input className="mt-1.5" value={form.seller_name} onChange={(e) => set("seller_name", e.target.value)} />
+            </div>
+            <div>
+              <Label>Contact Number *</Label>
+              <Input required className="mt-1.5" value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="10-digit mobile" />
+            </div>
+            <div>
+              <Label>WhatsApp Number</Label>
+              <Input className="mt-1.5" value={form.whatsapp_phone} onChange={(e) => set("whatsapp_phone", e.target.value)} placeholder="Leave blank to use contact number" />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-lg">Seller Information</CardTitle></CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2"><Label>Farmer Name</Label><Input className="mt-1.5" value={profile?.full_name || ""} disabled /></div>
-            <div><Label>Mobile Number</Label><Input className="mt-1.5" required inputMode="tel" maxLength={15} value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} placeholder="98765 43210" /></div>
-            <div><Label>Village</Label><Input className="mt-1.5" maxLength={60} value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} placeholder="Tenali" /></div>
-            <div><Label>District</Label><Input className="mt-1.5" maxLength={60} value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="Guntur" /></div>
-            <div>
-              <Label>State</Label>
-              <Select value={form.state} onValueChange={(v) => setForm({ ...form, state: v })}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select state" /></SelectTrigger>
-                <SelectContent>{INDIAN_STATES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
-              </Select>
-            </div>
-            <div className="sm:col-span-2"><Label>Full Address (optional)</Label><Input className="mt-1.5" maxLength={120} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+          <CardHeader><CardTitle className="text-lg">Description</CardTitle></CardHeader>
+          <CardContent>
+            <Textarea rows={5} maxLength={2000} value={form.description} onChange={(e) => set("description", e.target.value)}
+              placeholder="Add any other details that will help buyers decide." />
           </CardContent>
         </Card>
 
-        <div className="flex gap-3">
-          <Button type="submit" size="lg" disabled={saving || uploading} className="flex-1">
-            {saving ? "Saving…" : isEdit ? "Save Changes" : "Publish Listing"}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+          <Button type="submit" disabled={saving || uploading} className="gap-2">
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isEdit ? "Save Changes" : "Publish Listing"}
           </Button>
-          <Button type="button" size="lg" variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
         </div>
       </form>
     </div>
