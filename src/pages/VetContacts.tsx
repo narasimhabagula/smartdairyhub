@@ -153,6 +153,9 @@ export default function VetContacts() {
   const tickTimer = useRef<number | null>(null);
   const MAX_AUTO_RETRIES = 3;
 
+  // Vet contact info fetched via get_vet_contact RPC (returns rows only for admins / the suggester).
+  const [vetContacts, setVetContacts] = useState<Record<string, { phone: string | null; email: string | null }>>({});
+
   // Filters
   const [animal, setAnimal] = useState<string>("all");
   const [radius, setRadius] = useState<number>(10000);
