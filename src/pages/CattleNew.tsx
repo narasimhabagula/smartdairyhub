@@ -48,6 +48,7 @@ type FormState = {
   lactation_number: string;
   egg_laying: string;
   eggs_per_week: string;
+  pregnancy_status: string;
   quantity: string;
   price: string;
   negotiable: boolean;
