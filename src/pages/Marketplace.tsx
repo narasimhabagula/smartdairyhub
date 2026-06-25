@@ -32,15 +32,11 @@ export default function Marketplace() {
       const rows = (data as Product[]) || [];
       const sellerIds = Array.from(new Set(rows.map((r) => r.seller_id)));
       if (sellerIds.length > 0) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, phone")
-          .in("user_id", sellerIds);
-        const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+        const { data: profs } = await supabase.rpc("get_display_names", { _ids: sellerIds } as any);
+        const map = new Map((profs || []).map((p: any) => [p.user_id, p.full_name]));
         rows.forEach((r) => {
-          const p = map.get(r.seller_id);
-          r.seller_name = p?.full_name || "Verified Seller";
-          r.seller_phone = p?.phone ? normalizeIndianPhone(p.phone) : null;
+          r.seller_name = map.get(r.seller_id) || "Verified Seller";
+          r.seller_phone = null; // Phone numbers are no longer exposed cross-user.
         });
       }
       setProducts(rows);

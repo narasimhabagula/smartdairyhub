@@ -520,6 +520,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_product_stock: {
+        Args: { _product_id: string; _qty: number }
+        Returns: boolean
+      }
+      get_display_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -29,8 +29,8 @@ export default function CattleDetail() {
       const { data } = await supabase.from("cattle_listings").select("*").eq("id", id!).single();
       if (!data) { setLoading(false); return; }
       setListing(data);
-      const { data: prof } = await supabase.from("profiles").select("full_name, phone").eq("user_id", (data as any).seller_id).single();
-      setSeller(prof);
+      const { data: prof } = await supabase.rpc("get_display_names", { _ids: [(data as any).seller_id] } as any);
+      setSeller(prof?.[0] ? { full_name: prof[0].full_name } : null);
       if (user) {
         const { data: f } = await supabase.from("cattle_favorites" as any).select("id").eq("user_id", user.id).eq("listing_id", id!).maybeSingle();
         setFav(!!f);
