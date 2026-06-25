@@ -602,7 +602,7 @@ export default function VetContacts() {
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm">
                 <div>
                   <div className="font-medium">{p.name} {p.hospital_name && <span className="text-muted-foreground">· {p.hospital_name}</span>}</div>
-                  <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")} · {formatIndianPhoneDisplay(p.phone)}</div>
+                  <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")}{vetContacts[p.id]?.phone ? ` · ${formatIndianPhoneDisplay(vetContacts[p.id]!.phone!)}` : ""}{vetContacts[p.id]?.email ? ` · ${vetContacts[p.id]!.email}` : ""}</div>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => moderate(p.id, "approved")} className="gap-1.5"><Check className="h-3.5 w-3.5" /> Approve</Button>
