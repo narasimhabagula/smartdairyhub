@@ -73,7 +73,7 @@ export default function AdminDashboard() {
     toast.success("Vet added!");
     setVetOpen(false);
     setVetForm({ name: "", qualification: "", specialization: "", phone: "", location: "", email: "" });
-    const { data } = await supabase.from("vet_doctors").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false });
     setVets(data || []);
   };
 
