@@ -42,6 +42,21 @@ export default function AdminDashboard() {
   const [indPage, setIndPage] = useState(1);
   const IND_PAGE_SIZE = 10;
 
+  const resolveAdminNames = async (ids: string[]) => {
+    const unique = Array.from(new Set(ids.filter(Boolean)));
+    const missing = unique.filter((id) => !adminNames[id]);
+    if (missing.length === 0) return;
+    const { data } = await supabase.rpc("get_display_names", { _ids: missing });
+    if (data) {
+      setAdminNames((prev) => {
+        const next = { ...prev };
+        (data as any[]).forEach((r) => { next[r.user_id] = r.full_name || "Admin"; });
+        missing.forEach((id) => { if (!next[id]) next[id] = "Admin"; });
+        return next;
+      });
+    }
+  };
+
   const fetchIndustries = async () => {
     setIndLoading(true);
     setIndError(null);
@@ -49,6 +64,8 @@ export default function AdminDashboard() {
       const { data, error } = await supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false });
       if (error) throw error;
       setIndustries(data || []);
+      const reviewerIds = (data || []).map((c: any) => c.reviewed_by).filter(Boolean);
+      if (reviewerIds.length) resolveAdminNames(reviewerIds);
     } catch (err: any) {
       setIndError(err.message || "Failed to load dairy companies.");
     } finally {
