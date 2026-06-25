@@ -60,6 +60,8 @@ const App = () => (
                   <Route path="/mediator" element={<ProtectedRoute><MediatorPanel /></ProtectedRoute>} />
                   <Route path="/vet-dashboard" element={<ProtectedRoute><VetDashboard /></ProtectedRoute>} />
                   <Route path="/book-vet" element={<ProtectedRoute><BookVet /></ProtectedRoute>} />
+                  <Route path="/my-appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
+
 
 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
