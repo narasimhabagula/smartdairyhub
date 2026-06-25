@@ -119,7 +119,7 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={() => navigate("/orders")}>
                   <Package className="mr-2 h-4 w-4" /> {t("nav.orders")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/add-product")}>
+                <DropdownMenuItem onClick={() => navigate("/seller")}>
                   <Store className="mr-2 h-4 w-4" /> {t("nav.sell")}
                 </DropdownMenuItem>
                 {(hasRole("mediator") || hasRole("admin")) && (
