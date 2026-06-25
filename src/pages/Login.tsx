@@ -146,10 +146,25 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
-    });
-    if (result.error) toast.error("Google login failed");
+    try {
+      // Persist intended destination; navigate after session is hydrated
+      sessionStorage.setItem("postLoginRedirect", "/dashboard");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        // Must be a public same-origin URL, NOT a protected route
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        console.error("[google] sign-in failed", result.error);
+        toast.error(friendlyAuthError((result.error as any).message || "Google login failed"));
+        return;
+      }
+      if (result.redirected) return; // browser will redirect
+      // Popup flow: session is set, go to dashboard
+      navigate("/dashboard");
+    } catch (e: any) {
+      console.error("[google] unexpected", e);
+      toast.error("Google login failed. Please try again.");
+    }
   };
 
   const sendOtp = async (phoneE164: string) => {
