@@ -6,12 +6,21 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, UserPlus, Phone, RotateCw, AlertCircle } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
+import { readChosenRole } from "@/lib/roles";
+import { Sprout, Handshake, Factory } from "lucide-react";
+
+const ROLE_META: Record<string, { label: string; Icon: any }> = {
+  farmer: { label: "Farmer", Icon: Sprout },
+  mediator: { label: "Mediator / Trader", Icon: Handshake },
+  industry: { label: "Dairy Industry", Icon: Factory },
+};
+
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
@@ -34,6 +43,16 @@ function friendlyAuthError(message: string): string {
 export default function Login() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  // Role chosen on the previous screen (or via query string)
+  const role = (searchParams.get("role") || readChosenRole() || "farmer") as keyof typeof ROLE_META;
+  useEffect(() => {
+    if (ROLE_META[role]) localStorage.setItem("sdh_chosen_role", role);
+  }, [role]);
+  const RoleIcon = ROLE_META[role]?.Icon ?? Sprout;
+
+
 
   // Email login
   const [loginEmail, setLoginEmail] = useState("");
@@ -113,9 +132,10 @@ export default function Login() {
       password: pwd.data,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: name.data, phone: canonicalPhone },
+        data: { full_name: name.data, phone: canonicalPhone, role },
       },
     });
+
     setSignupLoading(false);
     if (error) {
       console.error("[signup] failed", error);
