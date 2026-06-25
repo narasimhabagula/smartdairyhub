@@ -1,45 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Sprout, Handshake, Factory, Stethoscope, ArrowRight } from "lucide-react";
+import { Sprout, Factory, ArrowRight, ShieldCheck } from "lucide-react";
 
 const ROLES = [
   {
     id: "farmer",
     title: "Farmer",
-    desc: "Manage milk records, compare daily rates, list cattle, and access vet & schemes.",
+    desc: "View live milk rates, compare companies, list cattle, and access vet & schemes.",
     Icon: Sprout,
     accent: "from-emerald-500/15 to-emerald-500/0 border-emerald-500/30",
     iconBg: "bg-emerald-500/15 text-emerald-700",
   },
   {
-    id: "mediator",
-    title: "Mediator / Trader",
-    desc: "Connect farmers and dairy industries, trade livestock, view all milk rates.",
-    Icon: Handshake,
-    accent: "from-amber-500/15 to-amber-500/0 border-amber-500/30",
-    iconBg: "bg-amber-500/15 text-amber-700",
-  },
-  {
     id: "industry",
     title: "Dairy Industry / Collection Center",
-    desc: "Publish your daily procurement rates, manage your company profile and centers.",
+    desc: "Publish daily procurement rates, bonuses and announcements. Verified companies only.",
     Icon: Factory,
     accent: "from-sky-500/15 to-sky-500/0 border-sky-500/30",
     iconBg: "bg-sky-500/15 text-sky-700",
-  },
-  {
-    id: "vet",
-    title: "Veterinary Doctor",
-    desc: "Get verified, accept consultation requests, manage appointments and emergency calls.",
-    Icon: Stethoscope,
-    accent: "from-rose-500/15 to-rose-500/0 border-rose-500/30",
-    iconBg: "bg-rose-500/15 text-rose-700",
   },
 ] as const;
 
 export default function SelectRole() {
   const navigate = useNavigate();
-
   const choose = (role: string) => {
     localStorage.setItem("sdh_chosen_role", role);
     navigate(`/login?role=${role}`);
@@ -47,13 +30,13 @@ export default function SelectRole() {
 
   return (
     <div className="container py-12">
-      <div className="mx-auto max-w-4xl text-center">
+      <div className="mx-auto max-w-3xl text-center">
         <img src="/logo.png" alt="Smart Dairy Hub" className="mx-auto mb-4 h-16 w-16 rounded-xl object-contain" />
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Select your role to continue</h1>
-        <p className="mt-3 text-muted-foreground">Smart Dairy Hub adapts the experience to who you are. You can change this later from your profile.</p>
+        <p className="mt-3 text-muted-foreground">Smart Dairy Hub is built for two roles — farmers and verified dairy industries.</p>
       </div>
 
-      <div className="mx-auto mt-10 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
         {ROLES.map(({ id, title, desc, Icon, accent, iconBg }) => (
           <button
             key={id}
@@ -74,8 +57,8 @@ export default function SelectRole() {
         ))}
       </div>
 
-      <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
-        More roles coming soon: Feed Supplier, Medicine Supplier, Government Officer, Dairy Cooperative.
+      <p className="mx-auto mt-8 flex max-w-2xl items-center justify-center gap-2 text-center text-xs text-muted-foreground">
+        <ShieldCheck className="h-3.5 w-3.5" /> Industry accounts require admin verification (company, GST, contact) before they can publish rates.
       </p>
     </div>
   );
