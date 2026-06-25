@@ -574,5 +574,3 @@ export default function VetContacts() {
   );
 }
 
-// Local icon reuse to avoid extra import diff above
-import { Stethoscope } from "lucide-react";
