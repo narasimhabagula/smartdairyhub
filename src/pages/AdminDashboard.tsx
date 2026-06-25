@@ -842,9 +842,50 @@ function IndustriesPanel(props: {
                   </div>
                 )}
               </div>
+
+              <details className="mt-3 group">
+                <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground select-none">
+                  Audit log
+                </summary>
+                <ol className="mt-2 space-y-2 border-l-2 border-border pl-4">
+                  {c.submitted_at && (
+                    <li className="relative text-xs">
+                      <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-muted-foreground/40 ring-2 ring-background" />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant="outline" className="h-5 px-1.5 text-[10px]">Submitted</Badge>
+                        <span className="text-muted-foreground">{new Date(c.submitted_at).toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">Owner submitted business details for review.</p>
+                    </li>
+                  )}
+                  {c.reviewed_at && (c.verification_status === "verified" || c.verification_status === "rejected") && (
+                    <li className="relative text-xs">
+                      <span className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background ${c.verification_status === "verified" ? "bg-primary" : "bg-destructive"}`} />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant={c.verification_status === "verified" ? "default" : "destructive"} className="h-5 px-1.5 text-[10px] capitalize">{c.verification_status}</Badge>
+                        <span className="text-muted-foreground">{new Date(c.reviewed_at).toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">
+                        by <span className="font-medium text-foreground">{c.reviewed_by ? (adminNames[c.reviewed_by] || "Admin") : "Admin"}</span>
+                        {c.verification_status === "rejected" && c.rejection_reason ? <> — {c.rejection_reason}</> : null}
+                      </p>
+                    </li>
+                  )}
+                  {!c.reviewed_at && c.verification_status === "pending" && (
+                    <li className="relative text-xs">
+                      <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-background" />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">Awaiting review</Badge>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">No admin action recorded yet.</p>
+                    </li>
+                  )}
+                </ol>
+              </details>
             </div>
           );
         })}
+
 
         {filtered.length > pageSize && (
           <div className="flex items-center justify-between pt-2">
