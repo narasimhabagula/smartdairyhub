@@ -20,6 +20,8 @@ export default function AdminDashboard() {
   const [vets, setVets] = useState<any[]>([]);
   const [schemes, setSchemes] = useState<any[]>([]);
   const [industries, setIndustries] = useState<any[]>([]);
+  const [indLoading, setIndLoading] = useState(true);
+  const [indError, setIndError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Vet form
