@@ -1,0 +1,2 @@
+ALTER TABLE public.cattle_listings DROP CONSTRAINT IF EXISTS cattle_listings_type_check;
+ALTER TABLE public.cattle_listings ADD CONSTRAINT cattle_listings_type_check CHECK (type = ANY (ARRAY['cow','buffalo','calf','goat','sheep','hen','rooster','chicken','duck','other']));

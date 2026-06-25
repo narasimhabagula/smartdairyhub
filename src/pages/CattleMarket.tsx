@@ -81,8 +81,8 @@ export default function CattleMarket() {
     <div className="container py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold">Cattle Marketplace</h1>
-          <p className="mt-1 text-muted-foreground">Buy and sell cows, buffaloes, and calves from verified farmers across India.</p>
+          <h1 className="font-display text-3xl font-bold">Livestock Marketplace</h1>
+          <p className="mt-1 text-muted-foreground">Buy and sell cows, buffaloes, goats, sheep, poultry and more from verified farmers across India.</p>
         </div>
         <div className="flex gap-2">
           {user && <Button asChild variant="outline" className="gap-2"><Link to="/my-listings"><Heart className="h-4 w-4" /> My Cattle</Link></Button>}
@@ -102,6 +102,12 @@ export default function CattleMarket() {
             <SelectItem value="cow">Cow</SelectItem>
             <SelectItem value="buffalo">Buffalo</SelectItem>
             <SelectItem value="calf">Calf</SelectItem>
+            <SelectItem value="goat">Goat</SelectItem>
+            <SelectItem value="sheep">Sheep</SelectItem>
+            <SelectItem value="hen">Hen</SelectItem>
+            <SelectItem value="rooster">Rooster</SelectItem>
+            <SelectItem value="chicken">Chicken</SelectItem>
+            <SelectItem value="duck">Duck</SelectItem>
             <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>

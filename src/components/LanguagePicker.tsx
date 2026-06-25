@@ -16,28 +16,26 @@ export default function LanguagePicker() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<LanguageCode>("en");
 
-  // Open on first visit (no remembered choice in localStorage).
+  // Show the picker ONLY after the user signs in for the first time and has
+  // not chosen a language yet. Anonymous visitors are never prompted.
   useEffect(() => {
+    if (!user) return;
     const picked = localStorage.getItem(STORAGE_KEY_PICKED);
+    const profileLang = (profile as any)?.language as LanguageCode | undefined;
+    if (profileLang && (LANGUAGE_CODES as string[]).includes(profileLang)) {
+      // Apply the saved language instantly on every login — no refresh needed.
+      if (i18n.language?.slice(0, 2) !== profileLang) i18n.changeLanguage(profileLang);
+      localStorage.setItem(STORAGE_KEY_PICKED, "1");
+      localStorage.setItem(STORAGE_KEY_LANG, profileLang);
+      return;
+    }
     if (!picked) {
-      // Suggest based on browser language, falling back to English.
       const nav = (navigator.language || "en").slice(0, 2).toLowerCase() as LanguageCode;
       const initial = (LANGUAGE_CODES as string[]).includes(nav) ? nav : "en";
       setSelected(initial as LanguageCode);
       setOpen(true);
-    } else {
-      setSelected((localStorage.getItem(STORAGE_KEY_LANG) as LanguageCode) || "en");
     }
-  }, []);
-
-  // When a logged-in user has a saved profile language, prefer it.
-  useEffect(() => {
-    const profileLang = (profile as any)?.language as LanguageCode | undefined;
-    if (profileLang && (LANGUAGE_CODES as string[]).includes(profileLang) && i18n.language !== profileLang) {
-      i18n.changeLanguage(profileLang);
-      localStorage.setItem(STORAGE_KEY_PICKED, "1");
-    }
-  }, [profile, i18n]);
+  }, [user, profile, i18n]);
 
   const confirm = async () => {
     await i18n.changeLanguage(selected);

@@ -223,7 +223,13 @@ export default function CattleNew() {
                   <SelectItem value="cow">Cow</SelectItem>
                   <SelectItem value="buffalo">Buffalo</SelectItem>
                   <SelectItem value="calf">Calf</SelectItem>
-                  <SelectItem value="other">Other Dairy Animal</SelectItem>
+                  <SelectItem value="goat">Goat</SelectItem>
+                  <SelectItem value="sheep">Sheep</SelectItem>
+                  <SelectItem value="hen">Hen</SelectItem>
+                  <SelectItem value="rooster">Rooster (Cock)</SelectItem>
+                  <SelectItem value="chicken">Chicken</SelectItem>
+                  <SelectItem value="duck">Duck</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
