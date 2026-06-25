@@ -190,6 +190,25 @@ export default function VetContacts() {
 
   useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
 
+  // Resolve phone/email through the security-definer RPC so we never read those columns directly.
+  const loadVetContacts = useCallback(async (ids: string[]) => {
+    if (!user || ids.length === 0) return;
+    const missing = ids.filter((id) => !(id in vetContacts));
+    if (missing.length === 0) return;
+    const results = await Promise.all(
+      missing.map(async (id) => {
+        const { data } = await supabase.rpc("get_vet_contact", { _vet_id: id });
+        const row = (data as any[] | null)?.[0];
+        return [id, { phone: row?.phone ?? null, email: row?.email ?? null }] as const;
+      }),
+    );
+    setVetContacts((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+  }, [user, vetContacts]);
+
+  useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
+  useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
+
+
   const districts = useMemo(
     () => Array.from(new Set(vets.map((v) => v.district).filter(Boolean))) as string[],
     [vets],
