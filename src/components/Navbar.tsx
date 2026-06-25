@@ -132,6 +132,11 @@ export default function Navbar() {
                     <Factory className="mr-2 h-4 w-4" /> Industry panel
                   </DropdownMenuItem>
                 )}
+                {(hasRole("vet") || hasRole("admin")) && (
+                  <DropdownMenuItem onClick={() => navigate("/vet-dashboard")}>
+                    <Stethoscope className="mr-2 h-4 w-4" /> Vet dashboard
+                  </DropdownMenuItem>
+                )}
 
                 {hasRole("admin") && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
