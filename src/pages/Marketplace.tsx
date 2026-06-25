@@ -12,10 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
 import {
   Search, ShoppingCart, Heart, Share2, MapPin, ShieldCheck, Star,
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
+  Phone, MessageCircle, Eye, Loader2,
 } from "lucide-react";
 
 type Product = {
