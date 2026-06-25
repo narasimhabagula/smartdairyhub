@@ -26,15 +26,15 @@ type Company = {
 
 type Listing = {
   id: string;
-  title: string;
+  name: string;
   price: number;
-  animal_type: string | null;
+  type: string | null;
   breed: string | null;
   district: string | null;
   state: string | null;
   status: string;
   created_at: string;
-  cover_image: string | null;
+  image_url: string | null;
 };
 
 export default function MediatorPanel() {
@@ -226,7 +226,7 @@ function LivestockLeads() {
       setLoading(true);
       const { data } = await supabase
         .from("cattle_listings")
-        .select("id,title,price,animal_type,breed,district,state,status,created_at,cover_image")
+        .select("id,name,price,type,breed,district,state,status,created_at,image_url")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(60);
@@ -236,14 +236,14 @@ function LivestockLeads() {
   }, []);
 
   const animals = useMemo(
-    () => Array.from(new Set(items.map((i) => i.animal_type).filter(Boolean))) as string[],
+    () => Array.from(new Set(items.map((i) => i.type).filter(Boolean))) as string[],
     [items],
   );
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
     return items.filter((i) => {
-      if (animal !== "all" && i.animal_type !== animal) return false;
+      if (animal !== "all" && i.type !== animal) return false;
       if (!ql) return true;
       return `${i.title} ${i.breed ?? ""} ${i.district ?? ""} ${i.state ?? ""}`.toLowerCase().includes(ql);
     });
@@ -276,16 +276,16 @@ function LivestockLeads() {
           {filtered.map((l) => (
             <Link to={`/cattle-market/${l.id}`} key={l.id}>
               <Card className="overflow-hidden transition-shadow hover:shadow-md">
-                {l.cover_image ? (
-                  <img src={l.cover_image} alt={l.title} loading="lazy" className="h-40 w-full object-cover" />
+                {l.image_url ? (
+                  <img src={l.image_url} alt={l.name} loading="lazy" className="h-40 w-full object-cover" />
                 ) : (
                   <div className="flex h-40 items-center justify-center bg-muted text-muted-foreground"><ShoppingCart className="h-8 w-8" /></div>
                 )}
                 <CardContent className="space-y-1 p-3">
-                  <p className="line-clamp-1 font-semibold">{l.title}</p>
+                  <p className="line-clamp-1 font-semibold">{l.name}</p>
                   <p className="text-sm font-bold text-primary">₹{Number(l.price).toLocaleString("en-IN")}</p>
                   <p className="line-clamp-1 text-xs text-muted-foreground">
-                    {[l.animal_type, l.breed].filter(Boolean).join(" · ")}
+                    {[l.type, l.breed].filter(Boolean).join(" · ")}
                   </p>
                   <p className="flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" /> {[l.district, l.state].filter(Boolean).join(", ") || "—"}
@@ -309,7 +309,7 @@ function MyTrades({ userId }: { userId: string }) {
       setLoading(true);
       const { data } = await supabase
         .from("cattle_listings")
-        .select("id,title,price,animal_type,breed,district,state,status,created_at,cover_image")
+        .select("id,name,price,type,breed,district,state,status,created_at,image_url")
         .eq("seller_id", userId)
         .order("created_at", { ascending: false });
       setItems((data as Listing[]) ?? []);
@@ -331,14 +331,14 @@ function MyTrades({ userId }: { userId: string }) {
       {items.map((l) => (
         <Link to={`/cattle-market/${l.id}`} key={l.id}>
           <Card className="overflow-hidden transition-shadow hover:shadow-md">
-            {l.cover_image && <img src={l.cover_image} alt={l.title} loading="lazy" className="h-36 w-full object-cover" />}
+            {l.image_url && <img src={l.image_url} alt={l.name} loading="lazy" className="h-36 w-full object-cover" />}
             <CardContent className="p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="line-clamp-1 font-semibold">{l.title}</p>
+                <p className="line-clamp-1 font-semibold">{l.name}</p>
                 <Badge variant={l.status === "active" ? "default" : "secondary"} className="capitalize">{l.status}</Badge>
               </div>
               <p className="mt-1 text-sm font-bold text-primary">₹{Number(l.price).toLocaleString("en-IN")}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{[l.animal_type, l.breed].filter(Boolean).join(" · ")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{[l.type, l.breed].filter(Boolean).join(" · ")}</p>
             </CardContent>
           </Card>
         </Link>
