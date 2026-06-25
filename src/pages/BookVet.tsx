@@ -17,6 +17,63 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { normalizeIndianPhone } from "@/lib/phone";
+import { z } from "zod";
+
+const ANIMAL_TYPES = ["Cow", "Buffalo", "Goat", "Sheep", "Poultry", "Other"] as const;
+const MODES = ["in_person", "online", "emergency"] as const;
+const MAX_FUTURE_DAYS = 60;
+
+const appointmentSchema = z.object({
+  animal_type: z.enum(ANIMAL_TYPES, { errorMap: () => ({ message: "Select an animal type" }) }),
+  mode: z.enum(MODES, { errorMap: () => ({ message: "Select a consultation mode" }) }),
+  symptoms: z
+    .string()
+    .trim()
+    .min(10, "Describe the symptoms in at least 10 characters")
+    .max(1000, "Keep symptoms under 1000 characters")
+    .refine((s) => !/<\s*script/i.test(s), "Invalid characters in symptoms"),
+  contact_phone: z
+    .string()
+    .trim()
+    .min(1, "Contact phone is required")
+    .transform((v, ctx) => {
+      const n = normalizeIndianPhone(v);
+      if (!n) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a valid 10-digit Indian mobile number" });
+        return z.NEVER;
+      }
+      return n;
+    }),
+  location: z
+    .string()
+    .trim()
+    .max(200, "Location must be under 200 characters")
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined)),
+  scheduled_at: z
+    .string()
+    .optional()
+    .transform((v, ctx) => {
+      if (!v) return undefined;
+      const d = new Date(v);
+      if (isNaN(d.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid date/time" });
+        return z.NEVER;
+      }
+      const now = Date.now();
+      if (d.getTime() < now - 60_000) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Preferred time must be in the future" });
+        return z.NEVER;
+      }
+      if (d.getTime() > now + MAX_FUTURE_DAYS * 24 * 60 * 60 * 1000) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Preferred time must be within ${MAX_FUTURE_DAYS} days` });
+        return z.NEVER;
+      }
+      return d.toISOString();
+    }),
+});
+
+type FieldErrors = Partial<Record<"animal_type" | "mode" | "symptoms" | "contact_phone" | "location" | "scheduled_at", string>>;
 
 interface VetRow {
   user_id: string;
