@@ -48,15 +48,11 @@ type GeoComponents = {
 };
 
 const ANIMALS: { id: string; emoji: string; label: string }[] = [
-  { id: "all", emoji: "🐾", label: "All Animals" },
+  { id: "all", emoji: "🐾", label: "All" },
   { id: "cow", emoji: "🐄", label: "Cow" },
   { id: "buffalo", emoji: "🐃", label: "Buffalo" },
-  { id: "goat", emoji: "🐐", label: "Goat" },
-  { id: "sheep", emoji: "🐑", label: "Sheep" },
   { id: "hen", emoji: "🐔", label: "Hen" },
   { id: "chicken", emoji: "🐓", label: "Cock" },
-  { id: "dog", emoji: "🐕", label: "Dog" },
-  { id: "cat", emoji: "🐈", label: "Cat" },
 ];
 
 const VOICE_LANGS: { code: string; label: string }[] = [
