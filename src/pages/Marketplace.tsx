@@ -166,6 +166,7 @@ export default function Marketplace() {
     if (verifiedOnly) list = list.filter((p) => !!p.seller_name);
     if (deliveryOnly) list = list.filter((p) => (p.description || "").toLowerCase().includes("delivery"));
     if (brand !== "all") list = list.filter((p) => brandFor(p) === brand);
+    if (feedType !== "all") list = list.filter((p) => matchesFeedType(p, feedType));
     list = list.filter((p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
 
     if (sort === "price_asc") list.sort((a, b) => Number(a.price) - Number(b.price));
@@ -173,7 +174,7 @@ export default function Marketplace() {
     else if (sort === "rating") list.sort((a, b) => ratingFor(b.id).stars - ratingFor(a.id).stars);
     else list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return list;
-  }, [products, tab, search, location, verifiedOnly, deliveryOnly, brand, priceRange, sort]);
+  }, [products, tab, search, location, verifiedOnly, deliveryOnly, brand, feedType, priceRange, sort]);
 
   const cartCount = useMemo(() => cartItems.reduce((s, i) => s + i.quantity, 0), [cartItems]);
 
