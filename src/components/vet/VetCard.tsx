@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar } from "lucide-react";
 import { telHref, waHref } from "@/lib/phone";
 
 export type VetCardData = {
@@ -22,6 +23,15 @@ export type VetCardData = {
   is_government?: boolean;
   description?: string | null;
 };
+
+export type VetCardProps = {
+  vet: VetCardData;
+  isLoading?: boolean;
+  contactError?: string | null;
+  retryIn?: number;
+  onRetry?: () => void;
+};
+
 
 function directionsHref(v: VetCardData) {
   if (v.maps_url) return v.maps_url;
