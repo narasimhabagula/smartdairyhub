@@ -70,17 +70,15 @@ Deno.serve(async (req) => {
 
     const useText = animal !== "all" && ANIMAL_QUERIES[animal];
 
-    async function search(radius: number) {
-      let res: Response;
+    async function doFetch(radius: number): Promise<Response> {
       if (useText) {
-        const fieldMaskText = fieldMaskNearby; // same prefix valid for searchText
-        res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
+        return await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${LOVABLE_API_KEY}`,
             "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
             "Content-Type": "application/json",
-            "X-Goog-FieldMask": fieldMaskText,
+            "X-Goog-FieldMask": fieldMaskNearby,
           },
           body: JSON.stringify({
             textQuery: ANIMAL_QUERIES[animal],
@@ -90,26 +88,43 @@ Deno.serve(async (req) => {
             rankPreference: "DISTANCE",
           }),
         });
-      } else {
-        res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
-            "Content-Type": "application/json",
-            "X-Goog-FieldMask": fieldMaskNearby,
-          },
-          body: JSON.stringify({
-            includedTypes: ["veterinary_care"],
-            maxResultCount: 20,
-            locationRestriction: { circle: { center: { latitude: lat, longitude: lng }, radius } },
-            rankPreference: "DISTANCE",
-          }),
-        });
       }
-      if (!res.ok) {
-        const detail = await res.text().catch(() => "");
-        console.error("nearby-vets: Places API error", res.status, detail);
+      return await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
+          "Content-Type": "application/json",
+          "X-Goog-FieldMask": fieldMaskNearby,
+        },
+        body: JSON.stringify({
+          includedTypes: ["veterinary_care"],
+          maxResultCount: 20,
+          locationRestriction: { circle: { center: { latitude: lat, longitude: lng }, radius } },
+          rankPreference: "DISTANCE",
+        }),
+      });
+    }
+
+    async function search(radius: number) {
+      let res: Response | null = null;
+      let lastDetail = "";
+      // Retry transient upstream failures (502/503/504) with short backoff.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          res = await doFetch(radius);
+        } catch (e) {
+          lastDetail = String(e);
+          await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+          continue;
+        }
+        if (res.ok) break;
+        if (![502, 503, 504].includes(res.status)) break;
+        lastDetail = await res.text().catch(() => "");
+        await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+      }
+      if (!res || !res.ok) {
+        console.error("nearby-vets: Places API error", res?.status, lastDetail);
         throw new Error("places_error");
       }
       const data = await res.json();
@@ -171,7 +186,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch {
-      return jsonResp({ error: "External service error" }, 502);
+      return jsonResp({ places: [], radius_used: usedRadius, expanded, error: "SERVICE_UNAVAILABLE", fallback: true }, 200);
     }
 
     return jsonResp({ places, radius_used: usedRadius, expanded }, 200);
