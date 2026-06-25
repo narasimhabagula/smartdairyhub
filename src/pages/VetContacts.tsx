@@ -672,17 +672,29 @@ export default function VetContacts() {
             {pending.map((p) => {
               const cErr = vetContactErrors[p.id];
               const cLoading = !!contactLoading[p.id];
+              const cRetryIn = vetContactRetryIn[p.id];
               return (
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm">
                 <div className="min-w-0">
                   <div className="font-medium">{p.name} {p.hospital_name && <span className="text-muted-foreground">· {p.hospital_name}</span>}</div>
-                  <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")}{vetContacts[p.id]?.phone ? ` · ${formatIndianPhoneDisplay(vetContacts[p.id]!.phone!)}` : ""}{vetContacts[p.id]?.email ? ` · ${vetContacts[p.id]!.email}` : ""}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {[p.village, p.district].filter(Boolean).join(", ")}
+                    {cLoading && !vetContacts[p.id]?.phone ? (
+                      <span className="ml-2 inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                        Loading contact…
+                      </span>
+                    ) : vetContacts[p.id]?.phone ? (
+                      ` · ${formatIndianPhoneDisplay(vetContacts[p.id]!.phone!)}`
+                    ) : null}
+                    {vetContacts[p.id]?.email ? ` · ${vetContacts[p.id]!.email}` : ""}
+                  </div>
                   {cErr && (
                     <div className="mt-1 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
                       <AlertCircle className="h-3.5 w-3.5" />
-                      <span>Couldn't load contact info.</span>
-                      <button type="button" disabled={cLoading} onClick={() => retryVetContact(p.id)} className="font-medium underline underline-offset-2 hover:text-amber-900 disabled:opacity-50">
-                        {cLoading ? "Retrying…" : "Retry"}
+                      <span>{cErr}</span>
+                      <button type="button" disabled={cLoading || cRetryIn > 0} onClick={() => retryVetContact(p.id)} className="font-medium underline underline-offset-2 hover:text-amber-900 disabled:opacity-50">
+                        {cRetryIn > 0 ? `Retry in ${cRetryIn}s` : cLoading ? "Retrying…" : "Retry"}
                       </button>
                     </div>
                   )}
