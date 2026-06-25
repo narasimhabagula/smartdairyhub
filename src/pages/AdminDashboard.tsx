@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [industries, setIndustries] = useState<any[]>([]);
   const [indLoading, setIndLoading] = useState(true);
   const [indError, setIndError] = useState<string | null>(null);
+  const [adminNames, setAdminNames] = useState<Record<string, string>>({});
+  const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Vet form
