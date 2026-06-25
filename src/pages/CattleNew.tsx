@@ -201,9 +201,13 @@ export default function CattleNew() {
         fat: form.fat || null,
         snf: form.snf || null,
         lactation_number: form.lactation_number || null,
+        pregnancy_status: form.pregnancy_status || null,
       });
     } else if (form.type === "buffalo") {
-      Object.assign(attrs, { fat: form.fat || null });
+      Object.assign(attrs, {
+        fat: form.fat || null,
+        pregnancy_status: form.pregnancy_status || null,
+      });
     } else if (form.type === "hen") {
       Object.assign(attrs, {
         egg_laying: form.egg_laying || null,
