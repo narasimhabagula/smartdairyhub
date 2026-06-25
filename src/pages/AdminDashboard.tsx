@@ -592,6 +592,9 @@ type IndustryRow = {
 
 function IndustriesPanel(props: {
   industries: IndustryRow[];
+  loading: boolean;
+  error: string | null;
+  onRetry: () => void;
   search: string; setSearch: (v: string) => void;
   status: "all" | "pending" | "verified" | "rejected"; setStatus: (v: "all" | "pending" | "verified" | "rejected") => void;
   stateFilter: string; setStateFilter: (v: string) => void;
@@ -600,7 +603,7 @@ function IndustriesPanel(props: {
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
 }) {
-  const { industries, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
+  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
 
   const states = useMemo(() => {
     const set = new Set<string>();
