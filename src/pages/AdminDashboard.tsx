@@ -180,15 +180,30 @@ export default function AdminDashboard() {
                         <td className="py-3 text-right">₹{Number(p.price).toFixed(0)}</td>
                         <td className="py-3 text-right">{p.stock}</td>
                         <td className="py-3 text-center">
-                          <Badge variant={p.approved ? "default" : "secondary"}>
-                            {p.approved ? "Approved" : "Pending"}
-                          </Badge>
+                          {(() => {
+                            const s = p.approval_status ?? (p.approved ? "approved" : "pending");
+                            const variant = s === "approved" ? "default" : s === "rejected" ? "destructive" : "secondary";
+                            return <Badge variant={variant as any} className="capitalize">{s}</Badge>;
+                          })()}
+                          {p.approval_status === "rejected" && p.rejection_reason && (
+                            <div className="mt-1 text-[11px] text-muted-foreground italic">{p.rejection_reason}</div>
+                          )}
                         </td>
                         <td className="py-3 text-right space-x-1">
-                          {!p.approved && (
+                          {p.approval_status !== "approved" && (
                             <Button size="sm" variant="outline" onClick={() => approveProduct(p.id)} className="gap-1">
                               <Check className="h-3 w-3" /> Approve
                             </Button>
+                          )}
+                          {p.approval_status !== "rejected" && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="gap-1 text-destructive">
+                                  <X className="h-3 w-3" /> Reject
+                                </Button>
+                              </DialogTrigger>
+                              <RejectDialog onSubmit={(reason) => rejectProduct(p.id, reason)} productName={p.name} />
+                            </Dialog>
                           )}
                           <Button size="sm" variant="ghost" onClick={() => deleteProduct(p.id)}>
                             <Trash2 className="h-3.5 w-3.5 text-destructive" />
