@@ -393,6 +393,27 @@ export default function Marketplace() {
           </div>
         )}
       </div>
+
+      <ProductDetailsDialog
+        product={detail}
+        open={!!detail}
+        onOpenChange={(o) => { if (!o) { setDetail(null); setContact(null); } }}
+        contact={contact}
+        contactLoading={contactLoading}
+        isFav={detail ? wishlist.has(detail.id) : false}
+        onFav={() => detail && toggleWishlist(detail.id)}
+        onShare={() => detail && shareProduct(detail)}
+        onAdd={() => {
+          if (!detail) return;
+          addItem({
+            id: detail.id, name: detail.name, price: Number(detail.price), unit: detail.unit || "unit",
+            image_url: detail.image_url || undefined, seller_id: detail.seller_id,
+          });
+          toast.success(`${detail.name} added to cart`);
+        }}
+        onBuy={() => detail && buyNow(detail)}
+        requireLogin={!user}
+      />
     </div>
   );
 }
