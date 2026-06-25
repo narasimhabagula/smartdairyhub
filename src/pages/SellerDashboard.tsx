@@ -284,9 +284,9 @@ export default function SellerDashboard() {
         <TabsContent value="overview" className="mt-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <StatCard icon={Eye} label="Live listings" value={stats.live} />
-            <StatCard icon={Boxes} label="Pending approval" value={stats.pending} />
+            <StatCard icon={Boxes} label="Pending review" value={stats.pending} />
+            <StatCard icon={X} label="Rejected" value={stats.rejected} />
             <StatCard icon={Package} label="Low stock (≤5)" value={stats.lowStock} />
-            <StatCard icon={ShoppingBag} label="Enquiries" value={stats.enquiries} />
             <StatCard
               icon={TrendingUp}
               label="Revenue (completed)"
