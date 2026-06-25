@@ -30,6 +30,14 @@ export default function AdminDashboard() {
   const [schemeForm, setSchemeForm] = useState({ title: "", description: "", eligibility: "", benefits: "", category: "subsidy", apply_url: "" });
   const [schemeOpen, setSchemeOpen] = useState(false);
 
+  // Industries filters
+  const [indSearch, setIndSearch] = useState("");
+  const [indStatus, setIndStatus] = useState<"all" | "pending" | "verified" | "rejected">("all");
+  const [indState, setIndState] = useState<string>("all");
+  const [indDistrict, setIndDistrict] = useState<string>("all");
+  const [indPage, setIndPage] = useState(1);
+  const IND_PAGE_SIZE = 10;
+
   useEffect(() => {
     const fetchAll = async () => {
       const [u, p, o, v, s, i] = await Promise.all([
