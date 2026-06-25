@@ -136,22 +136,33 @@ export default function BookVet() {
     }));
   };
 
+  const [errors, setErrors] = useState<FieldErrors>({});
+
   const submit = async () => {
     if (!user || !activeVet) return;
-    const symptoms = form.symptoms.trim();
-    if (symptoms.length < 5) { toast.error("Please describe the symptoms (at least 5 characters)"); return; }
-    const phoneN = normalizeIndianPhone(form.contact_phone);
-    if (!phoneN) { toast.error("Enter a valid 10-digit phone number"); return; }
+    const parsed = appointmentSchema.safeParse(form);
+    if (!parsed.success) {
+      const next: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof FieldErrors | undefined;
+        if (key && !next[key]) next[key] = issue.message;
+      }
+      setErrors(next);
+      toast.error("Please fix the highlighted fields");
+      return;
+    }
+    setErrors({});
     setSubmitting(true);
+    const v = parsed.data;
     const payload: any = {
       farmer_id: user.id,
       vet_id: activeVet.user_id,
-      animal_type: form.animal_type,
-      symptoms,
-      mode: form.mode,
-      contact_phone: phoneN,
-      location: form.location.trim() || null,
-      scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
+      animal_type: v.animal_type,
+      symptoms: v.symptoms,
+      mode: v.mode,
+      contact_phone: v.contact_phone,
+      location: v.location ?? null,
+      scheduled_at: v.scheduled_at ?? null,
     };
     const { error } = await supabase.from("appointments" as any).insert(payload);
     setSubmitting(false);
