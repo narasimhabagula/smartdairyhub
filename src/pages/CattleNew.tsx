@@ -111,6 +111,7 @@ export default function CattleNew() {
         health_status: d.health_status ?? "", vaccination_status: d.vaccination_status ?? "",
         weight: d.weight ?? "", lactation_number: a.lactation_number ?? "",
         egg_laying: a.egg_laying ?? "", eggs_per_week: a.eggs_per_week ?? "",
+        pregnancy_status: a.pregnancy_status ?? "",
         quantity: d.quantity != null ? String(d.quantity) : "",
         price: String(d.price ?? ""), negotiable: !!d.negotiable,
         state: d.state ?? "", district: d.district ?? "", village: d.village ?? "",
