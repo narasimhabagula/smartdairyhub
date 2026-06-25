@@ -419,9 +419,9 @@ export default function Marketplace() {
 }
 
 function ProductCard({
-  p, isFav, onFav, onShare, onAdd, onBuy,
+  p, isFav, onFav, onShare, onAdd, onBuy, onDetails,
 }: {
-  p: Product; isFav: boolean; onFav: () => void; onShare: () => void; onAdd: () => void; onBuy: () => void;
+  p: Product; isFav: boolean; onFav: () => void; onShare: () => void; onAdd: () => void; onBuy: () => void; onDetails: () => void;
 }) {
   const { stars, count } = ratingFor(p.id);
   const hasDelivery = (p.description || "").toLowerCase().includes("delivery");
