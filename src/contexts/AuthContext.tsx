@@ -81,6 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             if (event === "SIGNED_IN") {
               await applyChosenRole(session.user.id);
+              // Honor stored post-login destination (e.g. from Google OAuth redirect)
+              try {
+                const dest = sessionStorage.getItem("postLoginRedirect");
+                if (dest && dest.startsWith("/") && window.location.pathname !== dest) {
+                  sessionStorage.removeItem("postLoginRedirect");
+                  window.history.replaceState({}, "", dest);
+                  window.dispatchEvent(new PopStateEvent("popstate"));
+                }
+              } catch {}
             }
             await Promise.all([
               fetchProfile(session.user.id),
