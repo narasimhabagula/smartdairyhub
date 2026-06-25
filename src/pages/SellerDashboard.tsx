@@ -35,6 +35,9 @@ type Product = {
   photos: string[] | null;
   video_url: string | null;
   approved: boolean | null;
+  approval_status: "pending" | "approved" | "rejected" | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
   created_at: string;
 };
 
