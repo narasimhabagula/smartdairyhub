@@ -313,7 +313,9 @@ export default function AdminDashboard() {
             districtFilter={indDistrict} setDistrictFilter={setIndDistrict}
             page={indPage} setPage={setIndPage} pageSize={IND_PAGE_SIZE}
             onApprove={approveIndustry} onReject={rejectIndustry}
+            adminNames={adminNames}
           />
+
         </TabsContent>
 
 
