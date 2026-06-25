@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation,
-  ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles,
+  ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles, Stethoscope,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
