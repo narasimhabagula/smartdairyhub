@@ -31,6 +31,7 @@ import MilkRates from "./pages/MilkRates";
 import IndustryPanel from "./pages/IndustryPanel";
 import MediatorPanel from "./pages/MediatorPanel";
 import VetDashboard from "./pages/VetDashboard";
+import BookVet from "./pages/BookVet";
 import NotFound from "./pages/NotFound";
 
 
