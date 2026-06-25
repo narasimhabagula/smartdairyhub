@@ -31,22 +31,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization") ?? "";
-    if (!authHeader.startsWith("Bearer ")) {
-      return jsonResp({ error: "Unauthorized" }, 401);
-    }
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: authErr } = await userClient.auth.getUser(
-      authHeader.replace("Bearer ", ""),
-    );
-    if (authErr || !userData?.user?.id) {
-      return jsonResp({ error: "Unauthorized" }, 401);
-    }
-
+    // Public endpoint: vet search is available to all visitors (no PII exposed).
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
     if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
