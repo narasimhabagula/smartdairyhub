@@ -307,6 +307,70 @@ export default function VetContacts() {
     }
   }, [manualQuery]);
 
+  const stopVoice = useCallback(() => {
+    try { recognitionRef.current?.stop(); } catch {}
+    setListening(false);
+  }, []);
+
+  const startVoice = useCallback(async () => {
+    if (listening) { stopVoice(); return; }
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error("Voice search isn't supported in this browser. Try Chrome on Android/Desktop."); return; }
+    // Request mic permission early so denial surfaces a clear toast.
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        s.getTracks().forEach((t) => t.stop());
+      }
+    } catch {
+      toast.error("Microphone access denied. Enable it in your browser settings to use voice search.");
+      return;
+    }
+    const rec = new SR();
+    rec.lang = voiceLang;
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.maxAlternatives = 1;
+    let finalText = "";
+    rec.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setManualQuery((finalText + interim).trim());
+    };
+    rec.onerror = (e: any) => {
+      setListening(false);
+      const code = e?.error || "";
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        toast.error("Microphone access denied. Please allow it and try again.");
+      } else if (code === "no-speech") {
+        toast.error("Didn't catch that. Please try again.");
+      } else if (code !== "aborted") {
+        toast.error("Voice search failed. Please try again.");
+      }
+    };
+    rec.onend = () => {
+      setListening(false);
+      const q = (finalText || manualQuery).trim();
+      if (q.length >= 2) {
+        setManualQuery(q);
+        // Auto-run a location search with the spoken text.
+        setTimeout(() => searchManual(), 50);
+      }
+    };
+    recognitionRef.current = rec;
+    setListening(true);
+    try { rec.start(); }
+    catch { setListening(false); toast.error("Couldn't start voice search."); }
+  }, [listening, stopVoice, voiceLang, manualQuery, searchManual]);
+
+  // Cleanup recognition on unmount
+  useEffect(() => () => { try { recognitionRef.current?.stop(); } catch {} }, []);
+
+
   const clearRetryTimers = useCallback(() => {
     if (retryTimer.current) { window.clearTimeout(retryTimer.current); retryTimer.current = null; }
     if (tickTimer.current) { window.clearInterval(tickTimer.current); tickTimer.current = null; }
