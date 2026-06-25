@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -49,9 +49,19 @@ export default function AdminDashboard() {
   }, []);
 
   const approveProduct = async (id: string) => {
-    await supabase.from("products").update({ approved: true }).eq("id", id);
-    setProducts(products.map(p => p.id === id ? { ...p, approved: true } : p));
+    const { error } = await supabase.from("products").update({ approval_status: "approved", rejection_reason: null }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setProducts(products.map(p => p.id === id ? { ...p, approval_status: "approved", approved: true, rejection_reason: null } : p));
     toast.success("Product approved");
+  };
+
+  const rejectProduct = async (id: string, reason: string) => {
+    const trimmed = reason.trim();
+    if (trimmed.length < 5) { toast.error("Please give a reason (min 5 chars)"); return; }
+    const { error } = await supabase.from("products").update({ approval_status: "rejected", rejection_reason: trimmed }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setProducts(products.map(p => p.id === id ? { ...p, approval_status: "rejected", approved: false, rejection_reason: trimmed } : p));
+    toast.success("Product rejected — seller notified");
   };
 
   const deleteProduct = async (id: string) => {
@@ -170,15 +180,30 @@ export default function AdminDashboard() {
                         <td className="py-3 text-right">₹{Number(p.price).toFixed(0)}</td>
                         <td className="py-3 text-right">{p.stock}</td>
                         <td className="py-3 text-center">
-                          <Badge variant={p.approved ? "default" : "secondary"}>
-                            {p.approved ? "Approved" : "Pending"}
-                          </Badge>
+                          {(() => {
+                            const s = p.approval_status ?? (p.approved ? "approved" : "pending");
+                            const variant = s === "approved" ? "default" : s === "rejected" ? "destructive" : "secondary";
+                            return <Badge variant={variant as any} className="capitalize">{s}</Badge>;
+                          })()}
+                          {p.approval_status === "rejected" && p.rejection_reason && (
+                            <div className="mt-1 text-[11px] text-muted-foreground italic">{p.rejection_reason}</div>
+                          )}
                         </td>
                         <td className="py-3 text-right space-x-1">
-                          {!p.approved && (
+                          {p.approval_status !== "approved" && (
                             <Button size="sm" variant="outline" onClick={() => approveProduct(p.id)} className="gap-1">
                               <Check className="h-3 w-3" /> Approve
                             </Button>
+                          )}
+                          {p.approval_status !== "rejected" && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="gap-1 text-destructive">
+                                  <X className="h-3 w-3" /> Reject
+                                </Button>
+                              </DialogTrigger>
+                              <RejectDialog onSubmit={(reason) => rejectProduct(p.id, reason)} productName={p.name} />
+                            </Dialog>
                           )}
                           <Button size="sm" variant="ghost" onClick={() => deleteProduct(p.id)}>
                             <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -415,5 +440,32 @@ export default function AdminDashboard() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function RejectDialog({ productName, onSubmit }: { productName: string; onSubmit: (reason: string) => void }) {
+  const [reason, setReason] = useState("");
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Reject "{productName}"</DialogTitle>
+        <DialogDescription>
+          Share a short reason. The seller sees this in their dashboard and gets a notification.
+        </DialogDescription>
+      </DialogHeader>
+      <Textarea
+        placeholder="e.g. Images are unclear, price seems incorrect, missing description…"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={4}
+        className="mt-2"
+      />
+      <DialogFooter>
+        <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+        <DialogClose asChild>
+          <Button variant="destructive" onClick={() => onSubmit(reason)}>Reject listing</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
   );
 }

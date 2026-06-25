@@ -463,6 +463,7 @@ export type Database = {
       }
       products: {
         Row: {
+          approval_status: string
           approved: boolean
           category: string
           created_at: string
@@ -472,6 +473,9 @@ export type Database = {
           name: string
           photos: string[]
           price: number
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           seller_id: string
           stock: number
           unit: string
@@ -479,6 +483,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          approval_status?: string
           approved?: boolean
           category: string
           created_at?: string
@@ -488,6 +493,9 @@ export type Database = {
           name: string
           photos?: string[]
           price: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           seller_id: string
           stock?: number
           unit?: string
@@ -495,6 +503,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          approval_status?: string
           approved?: boolean
           category?: string
           created_at?: string
@@ -504,6 +513,9 @@ export type Database = {
           name?: string
           photos?: string[]
           price?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           seller_id?: string
           stock?: number
           unit?: string

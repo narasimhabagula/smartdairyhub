@@ -35,6 +35,9 @@ type Product = {
   photos: string[] | null;
   video_url: string | null;
   approved: boolean | null;
+  approval_status: "pending" | "approved" | "rejected" | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
   created_at: string;
 };
 
@@ -132,13 +135,14 @@ export default function SellerDashboard() {
   }, [user?.id]);
 
   const stats = useMemo(() => {
-    const live = products.filter((p) => p.approved && p.stock > 0).length;
-    const pending = products.filter((p) => !p.approved).length;
-    const lowStock = products.filter((p) => p.approved && p.stock > 0 && p.stock <= 5).length;
+    const live = products.filter((p) => p.approval_status === "approved" && p.stock > 0).length;
+    const pending = products.filter((p) => (p.approval_status ?? "pending") === "pending").length;
+    const rejected = products.filter((p) => p.approval_status === "rejected").length;
+    const lowStock = products.filter((p) => p.approval_status === "approved" && p.stock > 0 && p.stock <= 5).length;
     const revenue = enquiries
       .filter((e) => e.status === "completed" || e.status === "delivered")
       .reduce((s, e) => s + e.price * e.quantity, 0);
-    return { live, pending, lowStock, revenue, enquiries: enquiries.length };
+    return { live, pending, rejected, lowStock, revenue, enquiries: enquiries.length };
   }, [products, enquiries]);
 
   const openCreate = () => {
@@ -280,9 +284,9 @@ export default function SellerDashboard() {
         <TabsContent value="overview" className="mt-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <StatCard icon={Eye} label="Live listings" value={stats.live} />
-            <StatCard icon={Boxes} label="Pending approval" value={stats.pending} />
+            <StatCard icon={Boxes} label="Pending review" value={stats.pending} />
+            <StatCard icon={X} label="Rejected" value={stats.rejected} />
             <StatCard icon={Package} label="Low stock (≤5)" value={stats.lowStock} />
-            <StatCard icon={ShoppingBag} label="Enquiries" value={stats.enquiries} />
             <StatCard
               icon={TrendingUp}
               label="Revenue (completed)"
@@ -341,19 +345,31 @@ export default function SellerDashboard() {
                     )}
                   </div>
                   <div className="min-w-[180px] flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-medium">{p.name}</h3>
-                      {p.approved ? (
-                        <Badge variant="secondary">Live</Badge>
+                      {p.approval_status === "approved" ? (
+                        <Badge className="bg-emerald-600 hover:bg-emerald-600">Approved · Live</Badge>
+                      ) : p.approval_status === "rejected" ? (
+                        <Badge variant="destructive">Rejected</Badge>
                       ) : (
-                        <Badge className="bg-amber-500 hover:bg-amber-500">Pending</Badge>
+                        <Badge className="bg-amber-500 hover:bg-amber-500">Pending review</Badge>
                       )}
                       <Badge variant="outline" className="capitalize">{p.category}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Posted {new Date(p.created_at).toLocaleDateString()} • {p.photos?.length || (p.image_url ? 1 : 0)} photo(s)
                       {p.video_url ? " • 1 video" : ""}
+                      {p.reviewed_at ? ` • reviewed ${new Date(p.reviewed_at).toLocaleDateString()}` : ""}
                     </p>
+                    {p.approval_status === "rejected" && (
+                      <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                        <span className="font-medium">Reason: </span>
+                        {p.rejection_reason || "Not specified."} Edit the listing to resubmit for review.
+                      </div>
+                    )}
+                    {p.approval_status === "pending" && (
+                      <p className="mt-1 text-xs text-amber-700">Awaiting admin review. You'll be notified when it's decided.</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground">₹</Label>
