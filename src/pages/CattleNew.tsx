@@ -489,41 +489,47 @@ export default function CattleNew() {
             {isHen && (
               <>
                 <div>
-                  <Label>Egg Laying</Label>
+                  <Label>Egg Laying *</Label>
                   <Select value={form.egg_laying} onValueChange={(v) => set("egg_laying", v)}>
-                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className={errCls("egg_laying")}><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="yes">Yes</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Err k="egg_laying" />
                 </div>
                 <div>
-                  <Label>Average Eggs / Week</Label>
-                  <Input className="mt-1.5" value={form.eggs_per_week} onChange={(e) => set("eggs_per_week", e.target.value)} placeholder="e.g. 5" />
+                  <Label>Average Eggs / Week {form.egg_laying === "yes" && "*"}</Label>
+                  <Input className={errCls("eggs_per_week")} value={form.eggs_per_week} onChange={(e) => set("eggs_per_week", e.target.value)} placeholder="e.g. 5" />
+                  <Err k="eggs_per_week" />
                 </div>
               </>
             )}
 
             <div>
-              <Label>Weight</Label>
-              <Input className="mt-1.5" value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder={isPoultry ? "e.g. 2.5 kg" : "e.g. 350 kg"} />
+              <Label>Weight {(isDairy || isPoultry) && "*"}</Label>
+              <Input className={errCls("weight")} value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder={isPoultry ? "e.g. 2.5 kg" : "e.g. 350 kg"} />
+              <Err k="weight" />
             </div>
 
             {isPoultry && (
               <div>
-                <Label>Quantity Available</Label>
-                <Input type="number" min={1} className="mt-1.5" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="e.g. 20" />
+                <Label>Quantity Available *</Label>
+                <Input type="number" min={1} className={errCls("quantity")} value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="e.g. 20" />
+                <Err k="quantity" />
               </div>
             )}
 
             <div>
-              <Label>Health Status</Label>
-              <Input className="mt-1.5" value={form.health_status} onChange={(e) => set("health_status", e.target.value)} placeholder="e.g. Healthy" />
+              <Label>Health Status *</Label>
+              <Input className={errCls("health_status")} value={form.health_status} onChange={(e) => set("health_status", e.target.value)} placeholder="e.g. Healthy" />
+              <Err k="health_status" />
             </div>
             <div>
-              <Label>Vaccination Status</Label>
-              <Input className="mt-1.5" value={form.vaccination_status} onChange={(e) => set("vaccination_status", e.target.value)} placeholder="e.g. Up to date" />
+              <Label>Vaccination Status *</Label>
+              <Input className={errCls("vaccination_status")} value={form.vaccination_status} onChange={(e) => set("vaccination_status", e.target.value)} placeholder="e.g. Up to date" />
+              <Err k="vaccination_status" />
             </div>
           </CardContent>
         </Card>
@@ -534,7 +540,8 @@ export default function CattleNew() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{isPoultry ? "Price per Bird (₹) *" : "Price (₹) *"}</Label>
-              <Input type="number" min={1} required className="mt-1.5" value={form.price} onChange={(e) => set("price", e.target.value)} />
+              <Input type="number" min={1} className={errCls("price")} value={form.price} onChange={(e) => set("price", e.target.value)} />
+              <Err k="price" />
             </div>
             {!isPoultry && (
               <label className="flex items-center gap-2 mt-7">
@@ -550,15 +557,17 @@ export default function CattleNew() {
           <CardHeader><CardTitle className="text-lg">Location</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>State</Label>
+              <Label>State *</Label>
               <Select value={form.state} onValueChange={(v) => set("state", v)}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select state" /></SelectTrigger>
+                <SelectTrigger className={errCls("state")}><SelectValue placeholder="Select state" /></SelectTrigger>
                 <SelectContent>{INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
+              <Err k="state" />
             </div>
             <div>
-              <Label>District</Label>
-              <Input className="mt-1.5" value={form.district} onChange={(e) => set("district", e.target.value)} />
+              <Label>District *</Label>
+              <Input className={errCls("district")} value={form.district} onChange={(e) => set("district", e.target.value)} />
+              <Err k="district" />
             </div>
             <div>
               <Label>Village / Town</Label>
@@ -597,11 +606,13 @@ export default function CattleNew() {
             </div>
             <div>
               <Label>Contact Number *</Label>
-              <Input required className="mt-1.5" value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="10-digit mobile" />
+              <Input className={errCls("contact_phone")} value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="10-digit mobile" />
+              <Err k="contact_phone" />
             </div>
             <div>
               <Label>WhatsApp Number</Label>
-              <Input className="mt-1.5" value={form.whatsapp_phone} onChange={(e) => set("whatsapp_phone", e.target.value)} placeholder="Leave blank to use contact number" />
+              <Input className={errCls("whatsapp_phone")} value={form.whatsapp_phone} onChange={(e) => set("whatsapp_phone", e.target.value)} placeholder="Leave blank to use contact number" />
+              <Err k="whatsapp_phone" />
             </div>
           </CardContent>
         </Card>
