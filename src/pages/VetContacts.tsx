@@ -904,7 +904,7 @@ export default function VetContacts() {
                   id: v.id, name: v.name,
                   hospital: v.hospital_name,
                   subtitle: [v.specialization, v.qualification].filter(Boolean).join(" · ") || null,
-                  phone: v.phone, address: v.address || [v.village, v.district].filter(Boolean).join(", "),
+                  phone: vetContacts[v.id]?.phone ?? null, address: v.address || [v.village, v.district].filter(Boolean).join(", "),
                   rating: v.rating, total_ratings: v.total_ratings,
                   distance_km: dist, maps_url: v.google_maps_url,
                   lat: v.latitude, lng: v.longitude,
