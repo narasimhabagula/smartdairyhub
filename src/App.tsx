@@ -35,6 +35,15 @@ import VetDashboard from "./pages/VetDashboard";
 import BookVet from "./pages/BookVet";
 import MyAppointments from "./pages/MyAppointments";
 import Notifications from "./pages/Notifications";
+import HelpCenter from "./pages/HelpCenter";
+import Support from "./pages/Support";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Refund from "./pages/Refund";
+import Careers from "./pages/Careers";
+import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 
 
@@ -84,6 +93,15 @@ const App = () => (
                   <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/refund" element={<Refund />} />
+                  <Route path="/careers" element={<Careers />} />
+                  <Route path="/feedback" element={<Feedback />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
