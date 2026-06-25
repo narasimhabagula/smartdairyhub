@@ -30,12 +30,16 @@ type NearbyPlace = {
 
 type Vet = {
   id: string; name: string; qualification: string | null; specialization: string | null;
-  phone: string; email: string | null; location: string; hospital_name: string | null;
+  location: string; hospital_name: string | null;
   address: string | null; district: string | null; village: string | null;
   google_maps_url: string | null; latitude: number | null; longitude: number | null;
   rating: number | null; total_ratings: number | null; available: boolean;
   status: string; suggested_by: string | null;
 };
+
+// Columns safe to read directly from vet_doctors. Phone/email require get_vet_contact RPC.
+const VET_SAFE_COLUMNS =
+  "id,name,qualification,specialization,location,hospital_name,address,district,village,google_maps_url,latitude,longitude,rating,total_ratings,available,status,suggested_by,created_at,updated_at";
 
 type GeoComponents = {
   village: string | null; mandal: string | null; district: string | null;
