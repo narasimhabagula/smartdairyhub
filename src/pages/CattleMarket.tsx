@@ -48,7 +48,7 @@ export default function CattleMarket() {
       const rows = (data as any[]) || [];
       const ids = Array.from(new Set(rows.map((r) => r.seller_id)));
       if (ids.length) {
-        const { data: profs } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
+        const { data: profs } = await supabase.rpc("get_display_names", { _ids: ids } as any);
         const map = new Map((profs || []).map((p: any) => [p.user_id, p.full_name]));
         rows.forEach((r) => { r.seller_name = map.get(r.seller_id) || "Verified Seller"; });
       }
