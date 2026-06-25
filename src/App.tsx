@@ -26,6 +26,7 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import AddProduct from "./pages/AddProduct";
 import AdminDashboard from "./pages/AdminDashboard";
+import SellerDashboard from "./pages/SellerDashboard";
 import SelectRole from "./pages/SelectRole";
 import MilkRates from "./pages/MilkRates";
 import IndustryPanel from "./pages/IndustryPanel";
@@ -79,6 +80,7 @@ const App = () => (
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                   <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+                  <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
