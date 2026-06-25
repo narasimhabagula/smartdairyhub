@@ -13,12 +13,13 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
 import { readChosenRole } from "@/lib/roles";
-import { Sprout, Handshake, Factory } from "lucide-react";
+import { Sprout, Handshake, Factory, Stethoscope } from "lucide-react";
 
 const ROLE_META: Record<string, { label: string; Icon: any }> = {
   farmer: { label: "Farmer", Icon: Sprout },
   mediator: { label: "Mediator / Trader", Icon: Handshake },
   industry: { label: "Dairy Industry", Icon: Factory },
+  vet: { label: "Veterinary Doctor", Icon: Stethoscope },
 };
 
 
