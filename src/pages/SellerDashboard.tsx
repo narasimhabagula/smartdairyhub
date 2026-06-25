@@ -135,13 +135,14 @@ export default function SellerDashboard() {
   }, [user?.id]);
 
   const stats = useMemo(() => {
-    const live = products.filter((p) => p.approved && p.stock > 0).length;
-    const pending = products.filter((p) => !p.approved).length;
-    const lowStock = products.filter((p) => p.approved && p.stock > 0 && p.stock <= 5).length;
+    const live = products.filter((p) => p.approval_status === "approved" && p.stock > 0).length;
+    const pending = products.filter((p) => (p.approval_status ?? "pending") === "pending").length;
+    const rejected = products.filter((p) => p.approval_status === "rejected").length;
+    const lowStock = products.filter((p) => p.approval_status === "approved" && p.stock > 0 && p.stock <= 5).length;
     const revenue = enquiries
       .filter((e) => e.status === "completed" || e.status === "delivered")
       .reduce((s, e) => s + e.price * e.quantity, 0);
-    return { live, pending, lowStock, revenue, enquiries: enquiries.length };
+    return { live, pending, rejected, lowStock, revenue, enquiries: enquiries.length };
   }, [products, enquiries]);
 
   const openCreate = () => {
