@@ -1,5 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -20,11 +22,13 @@ export default function Navbar() {
 
   const navItems = [
     { label: t("nav.dashboard"), to: "/dashboard", icon: LayoutDashboard, auth: true },
+    { label: "Milk Rates", to: "/milk-rates", icon: TrendingUp, auth: false },
     { label: t("nav.marketplace"), to: "/marketplace", icon: Store, auth: false },
     { label: t("nav.cattle"), to: "/cattle-market", icon: ShoppingCart, auth: false },
     { label: t("nav.vet"), to: "/vet-contacts", icon: Stethoscope, auth: false },
     { label: t("nav.schemes"), to: "/schemes", icon: Landmark, auth: false },
   ];
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,6 +78,9 @@ export default function Navbar() {
             )}
           </Link>
 
+          {user && <NotificationBell />}
+
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="ml-1 gap-1.5" aria-label={t("nav.language")}>
@@ -114,11 +121,17 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={() => navigate("/add-product")}>
                   <Store className="mr-2 h-4 w-4" /> {t("nav.sell")}
                 </DropdownMenuItem>
+                {(hasRole("industry") || hasRole("admin")) && (
+                  <DropdownMenuItem onClick={() => navigate("/industry")}>
+                    <Factory className="mr-2 h-4 w-4" /> Industry panel
+                  </DropdownMenuItem>
+                )}
                 {hasRole("admin") && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
                     <Shield className="mr-2 h-4 w-4" /> {t("nav.admin")}
                   </DropdownMenuItem>
                 )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" /> {t("nav.logout")}
