@@ -81,6 +81,7 @@ export default function CattleNew() {
   const isEdit = !!id;
 
   const [form, setForm] = useState<FormState>(empty);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "photos", string>>>({});
   const [photos, setPhotos] = useState<string[]>([]);
   const [video, setVideo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -129,7 +130,14 @@ export default function CattleNew() {
     })();
   }, [id, isEdit, user, profile, navigate]);
 
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => (e[k] ? { ...e, [k]: undefined } : e));
+  };
+  const errCls = (k: keyof FormState | "photos") =>
+    `mt-1.5 ${errors[k] ? "border-destructive focus-visible:ring-destructive" : ""}`;
+  const Err = ({ k }: { k: keyof FormState | "photos" }) =>
+    errors[k] ? <p data-error="true" className="mt-1 text-xs text-destructive">{errors[k]}</p> : null;
 
   const onPhotoFiles = async (files: FileList | null) => {
     if (!files || !user) return;
@@ -182,16 +190,76 @@ export default function CattleNew() {
     );
   };
 
+  const validate = (): { ok: boolean; errs: typeof errors; phone: string; wa: string; price: number } => {
+    const errs: typeof errors = {};
+    const t = form.type;
+    const isDairyT = t === "cow" || t === "buffalo";
+    const isPoultryT = t === "hen" || t === "rooster";
+
+    if (photos.length === 0) errs.photos = "Upload at least 1 photo";
+    if (!form.name.trim()) errs.name = "Title is required";
+    if (!form.breed.trim()) errs.breed = "Breed is required";
+    if (!form.age.trim()) errs.age = "Age is required";
+
+    if (isDairyT) {
+      if (!form.weight.trim()) errs.weight = "Weight is required";
+      if (!form.milk_yield.trim()) errs.milk_yield = "Milk yield is required";
+      else if (isNaN(Number(form.milk_yield)) || Number(form.milk_yield) < 0) errs.milk_yield = "Enter a valid number";
+      if (t === "cow") {
+        if (!form.gender) errs.gender = "Select gender";
+        if (form.fat && (isNaN(Number(form.fat)) || Number(form.fat) < 0 || Number(form.fat) > 15)) errs.fat = "FAT must be 0–15";
+        if (form.snf && (isNaN(Number(form.snf)) || Number(form.snf) < 0 || Number(form.snf) > 15)) errs.snf = "SNF must be 0–15";
+      }
+      if (t === "buffalo" && form.fat && (isNaN(Number(form.fat)) || Number(form.fat) < 0 || Number(form.fat) > 15)) {
+        errs.fat = "FAT must be 0–15";
+      }
+    }
+
+    if (isPoultryT) {
+      if (!form.weight.trim()) errs.weight = "Weight is required";
+      if (!form.quantity.trim()) errs.quantity = "Quantity is required";
+      else if (!Number.isInteger(Number(form.quantity)) || Number(form.quantity) < 1) errs.quantity = "Must be a whole number ≥ 1";
+      if (t === "hen") {
+        if (!form.egg_laying) errs.egg_laying = "Select egg-laying status";
+        if (form.egg_laying === "yes") {
+          if (!form.eggs_per_week.trim()) errs.eggs_per_week = "Required when laying";
+          else if (isNaN(Number(form.eggs_per_week)) || Number(form.eggs_per_week) < 0 || Number(form.eggs_per_week) > 14) {
+            errs.eggs_per_week = "Enter 0–14";
+          }
+        }
+      }
+    }
+
+    if (!form.health_status.trim()) errs.health_status = "Health status is required";
+    if (!form.vaccination_status.trim()) errs.vaccination_status = "Vaccination status is required";
+
+    const price = parseFloat(form.price);
+    if (!Number.isFinite(price) || price <= 0) errs.price = "Enter a valid price";
+
+    if (!form.state) errs.state = "Select a state";
+    if (!form.district.trim()) errs.district = "District is required";
+
+    const phone = normalizeIndianPhone(form.contact_phone);
+    if (!phone) errs.contact_phone = "Enter a valid 10-digit Indian mobile";
+    const wa = form.whatsapp_phone.trim() ? normalizeIndianPhone(form.whatsapp_phone) : (phone || "");
+    if (form.whatsapp_phone.trim() && !wa) errs.whatsapp_phone = "Enter a valid WhatsApp number";
+
+    return { ok: Object.keys(errs).length === 0, errs, phone: phone || "", wa, price };
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const phone = normalizeIndianPhone(form.contact_phone);
-    if (!phone) return toast.error("Enter a valid 10-digit Indian mobile");
-    const wa = form.whatsapp_phone.trim() ? normalizeIndianPhone(form.whatsapp_phone) : phone;
-    if (form.whatsapp_phone.trim() && !wa) return toast.error("Enter a valid WhatsApp number");
-    const price = parseFloat(form.price);
-    if (!Number.isFinite(price) || price <= 0) return toast.error("Enter a valid price");
-    if (photos.length === 0) return toast.error("Upload at least 1 photo");
+    const { ok, errs, phone, wa, price } = validate();
+    setErrors(errs);
+    if (!ok) {
+      toast.error("Please fix the highlighted fields");
+      // scroll to first error
+      requestAnimationFrame(() => {
+        document.querySelector('[data-error="true"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
 
     // Build attrs based on animal type
     const attrs: Record<string, any> = { seller_name: form.seller_name.trim() || null };
@@ -292,6 +360,7 @@ export default function CattleNew() {
           <CardContent className="space-y-4">
             <div>
               <Label>Photos ({photos.length}/{MAX_PHOTOS}) — JPG/PNG/WebP, up to 5 MB each</Label>
+              <Err k="photos" />
               <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {photos.map((url) => (
                   <div key={url} className="relative group aspect-square overflow-hidden rounded-lg border">
@@ -343,45 +412,52 @@ export default function CattleNew() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Title / Name *</Label>
-              <Input className="mt-1.5" required maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={isCow ? "Lakshmi (HF Cross)" : isBuf ? "Murrah Buffalo" : isHen ? "Aseel Hen batch" : "Country Rooster"} />
+              <Input className={errCls("name")} maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={isCow ? "Lakshmi (HF Cross)" : isBuf ? "Murrah Buffalo" : isHen ? "Aseel Hen batch" : "Country Rooster"} />
+              <Err k="name" />
             </div>
             <div>
-              <Label>Breed</Label>
-              <Input className="mt-1.5" maxLength={80} value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+              <Label>Breed *</Label>
+              <Input className={errCls("breed")} maxLength={80} value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+              <Err k="breed" />
             </div>
             <div>
-              <Label>Age</Label>
-              <Input className="mt-1.5" maxLength={40} value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="e.g. 3 years" />
+              <Label>Age *</Label>
+              <Input className={errCls("age")} maxLength={40} value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="e.g. 3 years" />
+              <Err k="age" />
             </div>
 
             {isCow && (
               <div>
-                <Label>Gender</Label>
+                <Label>Gender *</Label>
                 <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
-                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger className={errCls("gender")}><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="male">Male</SelectItem>
                   </SelectContent>
                 </Select>
+                <Err k="gender" />
               </div>
             )}
 
             {isDairy && (
               <div>
-                <Label>Milk Yield (Litres/Day)</Label>
-                <Input className="mt-1.5" value={form.milk_yield} onChange={(e) => set("milk_yield", e.target.value)} placeholder="e.g. 12" />
+                <Label>Milk Yield (Litres/Day) *</Label>
+                <Input className={errCls("milk_yield")} value={form.milk_yield} onChange={(e) => set("milk_yield", e.target.value)} placeholder="e.g. 12" />
+                <Err k="milk_yield" />
               </div>
             )}
             {isCow && (
               <>
                 <div>
                   <Label>FAT %</Label>
-                  <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 4.2" />
+                  <Input className={errCls("fat")} value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 4.2" />
+                  <Err k="fat" />
                 </div>
                 <div>
                   <Label>SNF %</Label>
-                  <Input className="mt-1.5" value={form.snf} onChange={(e) => set("snf", e.target.value)} placeholder="e.g. 8.5" />
+                  <Input className={errCls("snf")} value={form.snf} onChange={(e) => set("snf", e.target.value)} placeholder="e.g. 8.5" />
+                  <Err k="snf" />
                 </div>
                 <div>
                   <Label>Lactation Number</Label>
@@ -392,7 +468,8 @@ export default function CattleNew() {
             {isBuf && (
               <div>
                 <Label>FAT %</Label>
-                <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
+                <Input className={errCls("fat")} value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
+                <Err k="fat" />
               </div>
             )}
             {isDairy && (
@@ -412,41 +489,47 @@ export default function CattleNew() {
             {isHen && (
               <>
                 <div>
-                  <Label>Egg Laying</Label>
+                  <Label>Egg Laying *</Label>
                   <Select value={form.egg_laying} onValueChange={(v) => set("egg_laying", v)}>
-                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className={errCls("egg_laying")}><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="yes">Yes</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Err k="egg_laying" />
                 </div>
                 <div>
-                  <Label>Average Eggs / Week</Label>
-                  <Input className="mt-1.5" value={form.eggs_per_week} onChange={(e) => set("eggs_per_week", e.target.value)} placeholder="e.g. 5" />
+                  <Label>Average Eggs / Week {form.egg_laying === "yes" && "*"}</Label>
+                  <Input className={errCls("eggs_per_week")} value={form.eggs_per_week} onChange={(e) => set("eggs_per_week", e.target.value)} placeholder="e.g. 5" />
+                  <Err k="eggs_per_week" />
                 </div>
               </>
             )}
 
             <div>
-              <Label>Weight</Label>
-              <Input className="mt-1.5" value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder={isPoultry ? "e.g. 2.5 kg" : "e.g. 350 kg"} />
+              <Label>Weight {(isDairy || isPoultry) && "*"}</Label>
+              <Input className={errCls("weight")} value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder={isPoultry ? "e.g. 2.5 kg" : "e.g. 350 kg"} />
+              <Err k="weight" />
             </div>
 
             {isPoultry && (
               <div>
-                <Label>Quantity Available</Label>
-                <Input type="number" min={1} className="mt-1.5" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="e.g. 20" />
+                <Label>Quantity Available *</Label>
+                <Input type="number" min={1} className={errCls("quantity")} value={form.quantity} onChange={(e) => set("quantity", e.target.value)} placeholder="e.g. 20" />
+                <Err k="quantity" />
               </div>
             )}
 
             <div>
-              <Label>Health Status</Label>
-              <Input className="mt-1.5" value={form.health_status} onChange={(e) => set("health_status", e.target.value)} placeholder="e.g. Healthy" />
+              <Label>Health Status *</Label>
+              <Input className={errCls("health_status")} value={form.health_status} onChange={(e) => set("health_status", e.target.value)} placeholder="e.g. Healthy" />
+              <Err k="health_status" />
             </div>
             <div>
-              <Label>Vaccination Status</Label>
-              <Input className="mt-1.5" value={form.vaccination_status} onChange={(e) => set("vaccination_status", e.target.value)} placeholder="e.g. Up to date" />
+              <Label>Vaccination Status *</Label>
+              <Input className={errCls("vaccination_status")} value={form.vaccination_status} onChange={(e) => set("vaccination_status", e.target.value)} placeholder="e.g. Up to date" />
+              <Err k="vaccination_status" />
             </div>
           </CardContent>
         </Card>
@@ -457,7 +540,8 @@ export default function CattleNew() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{isPoultry ? "Price per Bird (₹) *" : "Price (₹) *"}</Label>
-              <Input type="number" min={1} required className="mt-1.5" value={form.price} onChange={(e) => set("price", e.target.value)} />
+              <Input type="number" min={1} className={errCls("price")} value={form.price} onChange={(e) => set("price", e.target.value)} />
+              <Err k="price" />
             </div>
             {!isPoultry && (
               <label className="flex items-center gap-2 mt-7">
@@ -473,15 +557,17 @@ export default function CattleNew() {
           <CardHeader><CardTitle className="text-lg">Location</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>State</Label>
+              <Label>State *</Label>
               <Select value={form.state} onValueChange={(v) => set("state", v)}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select state" /></SelectTrigger>
+                <SelectTrigger className={errCls("state")}><SelectValue placeholder="Select state" /></SelectTrigger>
                 <SelectContent>{INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
+              <Err k="state" />
             </div>
             <div>
-              <Label>District</Label>
-              <Input className="mt-1.5" value={form.district} onChange={(e) => set("district", e.target.value)} />
+              <Label>District *</Label>
+              <Input className={errCls("district")} value={form.district} onChange={(e) => set("district", e.target.value)} />
+              <Err k="district" />
             </div>
             <div>
               <Label>Village / Town</Label>
@@ -520,11 +606,13 @@ export default function CattleNew() {
             </div>
             <div>
               <Label>Contact Number *</Label>
-              <Input required className="mt-1.5" value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="10-digit mobile" />
+              <Input className={errCls("contact_phone")} value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="10-digit mobile" />
+              <Err k="contact_phone" />
             </div>
             <div>
               <Label>WhatsApp Number</Label>
-              <Input className="mt-1.5" value={form.whatsapp_phone} onChange={(e) => set("whatsapp_phone", e.target.value)} placeholder="Leave blank to use contact number" />
+              <Input className={errCls("whatsapp_phone")} value={form.whatsapp_phone} onChange={(e) => set("whatsapp_phone", e.target.value)} placeholder="Leave blank to use contact number" />
+              <Err k="whatsapp_phone" />
             </div>
           </CardContent>
         </Card>
