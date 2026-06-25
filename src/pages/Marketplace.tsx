@@ -84,6 +84,7 @@ export default function Marketplace() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [deliveryOnly, setDeliveryOnly] = useState(false);
   const [brand, setBrand] = useState<string>("all");
+  const [feedType, setFeedType] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
 
   const [products, setProducts] = useState<Product[]>([]);
