@@ -412,45 +412,52 @@ export default function CattleNew() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Title / Name *</Label>
-              <Input className="mt-1.5" required maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={isCow ? "Lakshmi (HF Cross)" : isBuf ? "Murrah Buffalo" : isHen ? "Aseel Hen batch" : "Country Rooster"} />
+              <Input className={errCls("name")} maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={isCow ? "Lakshmi (HF Cross)" : isBuf ? "Murrah Buffalo" : isHen ? "Aseel Hen batch" : "Country Rooster"} />
+              <Err k="name" />
             </div>
             <div>
-              <Label>Breed</Label>
-              <Input className="mt-1.5" maxLength={80} value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+              <Label>Breed *</Label>
+              <Input className={errCls("breed")} maxLength={80} value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+              <Err k="breed" />
             </div>
             <div>
-              <Label>Age</Label>
-              <Input className="mt-1.5" maxLength={40} value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="e.g. 3 years" />
+              <Label>Age *</Label>
+              <Input className={errCls("age")} maxLength={40} value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="e.g. 3 years" />
+              <Err k="age" />
             </div>
 
             {isCow && (
               <div>
-                <Label>Gender</Label>
+                <Label>Gender *</Label>
                 <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
-                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger className={errCls("gender")}><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="male">Male</SelectItem>
                   </SelectContent>
                 </Select>
+                <Err k="gender" />
               </div>
             )}
 
             {isDairy && (
               <div>
-                <Label>Milk Yield (Litres/Day)</Label>
-                <Input className="mt-1.5" value={form.milk_yield} onChange={(e) => set("milk_yield", e.target.value)} placeholder="e.g. 12" />
+                <Label>Milk Yield (Litres/Day) *</Label>
+                <Input className={errCls("milk_yield")} value={form.milk_yield} onChange={(e) => set("milk_yield", e.target.value)} placeholder="e.g. 12" />
+                <Err k="milk_yield" />
               </div>
             )}
             {isCow && (
               <>
                 <div>
                   <Label>FAT %</Label>
-                  <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 4.2" />
+                  <Input className={errCls("fat")} value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 4.2" />
+                  <Err k="fat" />
                 </div>
                 <div>
                   <Label>SNF %</Label>
-                  <Input className="mt-1.5" value={form.snf} onChange={(e) => set("snf", e.target.value)} placeholder="e.g. 8.5" />
+                  <Input className={errCls("snf")} value={form.snf} onChange={(e) => set("snf", e.target.value)} placeholder="e.g. 8.5" />
+                  <Err k="snf" />
                 </div>
                 <div>
                   <Label>Lactation Number</Label>
@@ -461,7 +468,8 @@ export default function CattleNew() {
             {isBuf && (
               <div>
                 <Label>FAT %</Label>
-                <Input className="mt-1.5" value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
+                <Input className={errCls("fat")} value={form.fat} onChange={(e) => set("fat", e.target.value)} placeholder="e.g. 7.0" />
+                <Err k="fat" />
               </div>
             )}
             {isDairy && (
