@@ -26,6 +26,7 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import AddProduct from "./pages/AddProduct";
 import AdminDashboard from "./pages/AdminDashboard";
+import SellerDashboard from "./pages/SellerDashboard";
 import SelectRole from "./pages/SelectRole";
 import MilkRates from "./pages/MilkRates";
 import IndustryPanel from "./pages/IndustryPanel";
