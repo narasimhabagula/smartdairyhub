@@ -285,7 +285,15 @@ export default function VetContacts() {
     }
   }, [manualQuery]);
 
-  const fetchNearbyLive = useCallback(async (opts?: { radius?: number; animal?: string; loc?: { lat: number; lng: number } }) => {
+  const clearRetryTimers = useCallback(() => {
+    if (retryTimer.current) { window.clearTimeout(retryTimer.current); retryTimer.current = null; }
+    if (tickTimer.current) { window.clearInterval(tickTimer.current); tickTimer.current = null; }
+    setRetryIn(0);
+  }, []);
+
+  const fetchNearbyLive = useCallback(async (opts?: { radius?: number; animal?: string; loc?: { lat: number; lng: number }; attempt?: number; manual?: boolean }) => {
+    const attempt = opts?.attempt ?? 0;
+    if (opts?.manual) { setRetryAttempt(0); clearRetryTimers(); }
     setNearbyLoading(true);
     setNearbyFetched(true);
     setNearbyError(null);
@@ -303,15 +311,39 @@ export default function VetContacts() {
         },
       });
       if (error) throw error;
-      const places: NearbyPlace[] = (data as any)?.places || [];
-      setNearby(places);
-      if ((data as any)?.expanded) setExpandedNotice((data as any).radius_used);
+      const d: any = data || {};
+      if (d.fallback || d.error) {
+        throw new Error(d.error === "SERVICE_UNAVAILABLE" ? "Google service is temporarily unavailable" : (d.error || "Service unavailable"));
+      }
+      setNearby(d.places || []);
+      if (d.expanded) setExpandedNotice(d.radius_used);
+      setRetryAttempt(0);
+      clearRetryTimers();
     } catch (e: any) {
-      setNearbyError(e?.message || "Failed to load nearby vets");
+      const msg = e?.message || "Failed to load nearby vets";
+      setNearbyError(msg);
+      // Schedule exponential backoff retry: 2s, 4s, 8s
+      const next = attempt + 1;
+      if (next <= MAX_AUTO_RETRIES) {
+        const delay = Math.pow(2, next); // seconds
+        setRetryAttempt(next);
+        setRetryIn(delay);
+        if (tickTimer.current) window.clearInterval(tickTimer.current);
+        tickTimer.current = window.setInterval(() => {
+          setRetryIn((s) => (s > 0 ? s - 1 : 0));
+        }, 1000);
+        retryTimer.current = window.setTimeout(() => {
+          clearRetryTimers();
+          fetchNearbyLive({ ...opts, attempt: next });
+        }, delay * 1000);
+      }
     } finally {
       setNearbyLoading(false);
     }
-  }, [userLoc, radius, animal, sameStateOnly, userGeo, locateMe]);
+  }, [userLoc, radius, animal, sameStateOnly, userGeo, locateMe, clearRetryTimers]);
+
+  // Clean up timers on unmount
+  useEffect(() => () => { clearRetryTimers(); }, [clearRetryTimers]);
 
   // Auto-load on first visit to Nearby tab once we have location
   useEffect(() => {
