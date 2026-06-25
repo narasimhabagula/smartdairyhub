@@ -233,7 +233,7 @@ export default function BookVet() {
         </div>
       )}
 
-      <Dialog open={!!activeVet} onOpenChange={(o) => !o && setActiveVet(null)}>
+      <Dialog open={!!activeVet} onOpenChange={(o) => { if (!o) { setActiveVet(null); setErrors({}); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Request consultation with {activeVet?.full_name}</DialogTitle>
