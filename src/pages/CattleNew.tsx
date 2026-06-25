@@ -67,7 +67,7 @@ type FormState = {
 const empty: FormState = {
   type: "cow", name: "", breed: "", age: "", gender: "", milk_yield: "",
   fat: "", snf: "", health_status: "", vaccination_status: "", weight: "",
-  lactation_number: "", egg_laying: "", eggs_per_week: "", quantity: "",
+  lactation_number: "", egg_laying: "", eggs_per_week: "", pregnancy_status: "", quantity: "",
   price: "", negotiable: false,
   state: "", district: "", village: "", location: "", gps_lat: "", gps_lng: "",
   seller_name: "", contact_phone: "", whatsapp_phone: "",
