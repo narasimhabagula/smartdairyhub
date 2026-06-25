@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee, Search, ChevronLeft, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -20,6 +20,8 @@ export default function AdminDashboard() {
   const [vets, setVets] = useState<any[]>([]);
   const [schemes, setSchemes] = useState<any[]>([]);
   const [industries, setIndustries] = useState<any[]>([]);
+  const [indLoading, setIndLoading] = useState(true);
+  const [indError, setIndError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Vet form
@@ -38,25 +40,38 @@ export default function AdminDashboard() {
   const [indPage, setIndPage] = useState(1);
   const IND_PAGE_SIZE = 10;
 
+  const fetchIndustries = async () => {
+    setIndLoading(true);
+    setIndError(null);
+    try {
+      const { data, error } = await supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false });
+      if (error) throw error;
+      setIndustries(data || []);
+    } catch (err: any) {
+      setIndError(err.message || "Failed to load dairy companies.");
+    } finally {
+      setIndLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
-      const [u, p, o, v, s, i] = await Promise.all([
+      const [u, p, o, v, s] = await Promise.all([
         supabase.from("profiles").select("*, user_roles(role)"),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false }),
         supabase.from("schemes").select("*").order("created_at", { ascending: false }),
-        supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false }),
       ]);
       setUsers(u.data || []);
       setProducts(p.data || []);
       setOrders(o.data || []);
       setVets(v.data || []);
       setSchemes(s.data || []);
-      setIndustries(i.data || []);
       setLoading(false);
     };
     fetchAll();
+    fetchIndustries();
   }, []);
 
   const approveIndustry = async (id: string) => {
@@ -262,6 +277,9 @@ export default function AdminDashboard() {
         <TabsContent value="industries" className="mt-4">
           <IndustriesPanel
             industries={industries}
+            loading={indLoading}
+            error={indError}
+            onRetry={fetchIndustries}
             search={indSearch} setSearch={setIndSearch}
             status={indStatus} setStatus={setIndStatus}
             stateFilter={indState} setStateFilter={setIndState}
@@ -574,6 +592,9 @@ type IndustryRow = {
 
 function IndustriesPanel(props: {
   industries: IndustryRow[];
+  loading: boolean;
+  error: string | null;
+  onRetry: () => void;
   search: string; setSearch: (v: string) => void;
   status: "all" | "pending" | "verified" | "rejected"; setStatus: (v: "all" | "pending" | "verified" | "rejected") => void;
   stateFilter: string; setStateFilter: (v: string) => void;
@@ -582,7 +603,7 @@ function IndustriesPanel(props: {
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
 }) {
-  const { industries, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
+  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
 
   const states = useMemo(() => {
     const set = new Set<string>();
@@ -677,10 +698,45 @@ function IndustriesPanel(props: {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {industries.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">No dairy companies submitted yet.</p>
-        ) : pageItems.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">No companies match the current filters.</p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading dairy companies…</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center gap-4 py-14 rounded-lg border border-destructive/30 bg-destructive/5 px-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <RefreshCw className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-medium text-destructive">Could not load companies</p>
+              <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+            </div>
+            <Button variant="outline" onClick={onRetry} className="gap-2">
+              <RefreshCw className="h-4 w-4" /> Retry
+            </Button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-14 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Landmark className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-medium">
+                {industries.length === 0 ? "No dairy companies submitted yet" : "No companies match the current filters"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {industries.length === 0
+                  ? "Industry accounts will appear here once they register and submit verification details."
+                  : "Try adjusting the search or filters to see more results."}
+              </p>
+            </div>
+            {industries.length > 0 && (
+              <Button variant="outline" onClick={resetFilters} className="gap-2">
+                <RefreshCw className="h-4 w-4" /> Clear filters
+              </Button>
+            )}
+          </div>
         ) : pageItems.map((c) => {
           const st = c.verification_status;
           const badgeVariant = st === "verified" ? "default" : st === "rejected" ? "destructive" : "secondary";
