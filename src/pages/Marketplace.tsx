@@ -376,6 +376,7 @@ export default function Marketplace() {
                     toast.success(`${p.name} added to cart`);
                   }}
                   onBuy={() => buyNow(p)}
+                  onDetails={() => openDetails(p)}
                 />
               ))}
         </div>
