@@ -140,7 +140,7 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <Link
-              to="/login"
+              to="/select-role"
               className="ml-2 flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:opacity-90"
             >
               <LogIn className="h-4 w-4" />
@@ -205,7 +205,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 rounded-md bg-accent px-3 py-3 text-base font-semibold text-accent-foreground">
+              <Link to="/select-role" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 rounded-md bg-accent px-3 py-3 text-base font-semibold text-accent-foreground">
                 <LogIn className="h-5 w-5" /> {t("nav.login")}
               </Link>
             )}
