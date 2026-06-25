@@ -32,6 +32,7 @@ import IndustryPanel from "./pages/IndustryPanel";
 import MediatorPanel from "./pages/MediatorPanel";
 import VetDashboard from "./pages/VetDashboard";
 import BookVet from "./pages/BookVet";
+import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
 
 
