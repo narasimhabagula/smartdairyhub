@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee } from "lucide-react";
+import { Users, Package, ShoppingCart, Stethoscope, Landmark, Check, X, Trash2, Plus, BarChart3, IndianRupee, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -29,6 +29,14 @@ export default function AdminDashboard() {
   // Scheme form
   const [schemeForm, setSchemeForm] = useState({ title: "", description: "", eligibility: "", benefits: "", category: "subsidy", apply_url: "" });
   const [schemeOpen, setSchemeOpen] = useState(false);
+
+  // Industries filters
+  const [indSearch, setIndSearch] = useState("");
+  const [indStatus, setIndStatus] = useState<"all" | "pending" | "verified" | "rejected">("all");
+  const [indState, setIndState] = useState<string>("all");
+  const [indDistrict, setIndDistrict] = useState<string>("all");
+  const [indPage, setIndPage] = useState(1);
+  const IND_PAGE_SIZE = 10;
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -252,95 +260,17 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="industries" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display">Industry Verification</CardTitle>
-              <p className="text-sm text-muted-foreground">Review company registration, GST, and contact details. Only verified industries can publish milk rates.</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {industries.length === 0 ? (
-                <p className="py-10 text-center text-sm text-muted-foreground">No dairy companies submitted yet.</p>
-              ) : industries.map((c) => {
-                const status = c.verification_status as "pending" | "verified" | "rejected";
-                const badgeVariant = status === "verified" ? "default" : status === "rejected" ? "destructive" : "secondary";
-                return (
-                  <div key={c.id} className="rounded-lg border p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        {c.logo_url ? (
-                          <img src={c.logo_url} alt="" className="h-12 w-12 rounded-md object-cover ring-1 ring-border" />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground text-xs">Logo</div>
-                        )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold">{c.name}</p>
-                            <Badge variant={badgeVariant} className="capitalize">{status}</Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {[c.village, c.district, c.state, c.pin_code].filter(Boolean).join(", ") || "Location not provided"}
-                          </p>
-                          {c.submitted_at && (
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">Submitted {new Date(c.submitted_at).toLocaleString()}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {status !== "verified" && (
-                          <Button size="sm" onClick={() => approveIndustry(c.id)} className="gap-1">
-                            <Check className="h-4 w-4" /> Approve
-                          </Button>
-                        )}
-                        {status !== "rejected" && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="destructive" className="gap-1"><X className="h-4 w-4" /> Reject</Button>
-                            </DialogTrigger>
-                            <IndustryRejectDialog companyName={c.name} onSubmit={(r) => rejectIndustry(c.id, r)} />
-                          </Dialog>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Registration no.</p>
-                        <p className="font-mono">{c.registration_number || <span className="text-destructive">Missing</span>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">GSTIN</p>
-                        <p className="font-mono">{c.gst_number || <span className="text-destructive">Missing</span>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</p>
-                        <p>{c.phone || <span className="text-destructive">Missing</span>} {c.contact_phone_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Email</p>
-                        <p>{c.email || <span className="text-destructive">Missing</span>} {c.contact_email_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Address</p>
-                        <p>{c.address || "—"}</p>
-                      </div>
-                      {c.business_doc_url && (
-                        <div className="md:col-span-2">
-                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Business document</p>
-                          <a href={c.business_doc_url} target="_blank" rel="noopener" className="text-primary underline break-all">{c.business_doc_url}</a>
-                        </div>
-                      )}
-                      {status === "rejected" && c.rejection_reason && (
-                        <div className="md:col-span-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
-                          Rejection reason: {c.rejection_reason}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+          <IndustriesPanel
+            industries={industries}
+            search={indSearch} setSearch={setIndSearch}
+            status={indStatus} setStatus={setIndStatus}
+            stateFilter={indState} setStateFilter={setIndState}
+            districtFilter={indDistrict} setDistrictFilter={setIndDistrict}
+            page={indPage} setPage={setIndPage} pageSize={IND_PAGE_SIZE}
+            onApprove={approveIndustry} onReject={rejectIndustry}
+          />
         </TabsContent>
+
 
         <TabsContent value="orders" className="mt-4">
           <Card>
@@ -618,5 +548,234 @@ function IndustryRejectDialog({ companyName, onSubmit }: { companyName: string; 
         </DialogClose>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+type IndustryRow = {
+  id: string;
+  name: string;
+  logo_url?: string | null;
+  village?: string | null;
+  district?: string | null;
+  state?: string | null;
+  pin_code?: string | null;
+  submitted_at?: string | null;
+  verification_status: "pending" | "verified" | "rejected";
+  registration_number?: string | null;
+  gst_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  business_doc_url?: string | null;
+  rejection_reason?: string | null;
+  contact_phone_verified?: boolean;
+  contact_email_verified?: boolean;
+};
+
+function IndustriesPanel(props: {
+  industries: IndustryRow[];
+  search: string; setSearch: (v: string) => void;
+  status: "all" | "pending" | "verified" | "rejected"; setStatus: (v: "all" | "pending" | "verified" | "rejected") => void;
+  stateFilter: string; setStateFilter: (v: string) => void;
+  districtFilter: string; setDistrictFilter: (v: string) => void;
+  page: number; setPage: (n: number) => void; pageSize: number;
+  onApprove: (id: string) => void;
+  onReject: (id: string, reason: string) => void;
+}) {
+  const { industries, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
+
+  const states = useMemo(() => {
+    const set = new Set<string>();
+    industries.forEach(c => { if (c.state) set.add(c.state); });
+    return Array.from(set).sort();
+  }, [industries]);
+
+  const districts = useMemo(() => {
+    const set = new Set<string>();
+    industries.forEach(c => {
+      if (!c.district) return;
+      if (stateFilter !== "all" && c.state !== stateFilter) return;
+      set.add(c.district);
+    });
+    return Array.from(set).sort();
+  }, [industries, stateFilter]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return industries.filter(c => {
+      if (status !== "all" && c.verification_status !== status) return false;
+      if (stateFilter !== "all" && c.state !== stateFilter) return false;
+      if (districtFilter !== "all" && c.district !== districtFilter) return false;
+      if (!q) return true;
+      const hay = [c.name, c.registration_number, c.gst_number, c.phone, c.email, c.village, c.district, c.state, c.pin_code]
+        .filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }, [industries, search, status, stateFilter, districtFilter]);
+
+  const pendingCount = industries.filter(c => c.verification_status === "pending").length;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  useEffect(() => { setPage(1); }, [search, status, stateFilter, districtFilter, setPage]);
+  useEffect(() => { if (stateFilter === "all") setDistrictFilter("all"); }, [stateFilter, setDistrictFilter]);
+
+  const resetFilters = () => {
+    setSearch(""); setStatus("all"); setStateFilter("all"); setDistrictFilter("all"); setPage(1);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="font-display flex items-center gap-2">
+              Industry Verification
+              {pendingCount > 0 && <Badge variant="secondary">{pendingCount} pending</Badge>}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">Review company registration, GST, and contact details. Only verified industries can publish milk rates.</p>
+          </div>
+          <p className="text-xs text-muted-foreground self-end">{filtered.length} of {industries.length}</p>
+        </div>
+
+        <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto_auto_auto_auto]">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, GST, registration no., phone, email…"
+              className="pl-8"
+            />
+          </div>
+          <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
+            <SelectTrigger className="md:w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="verified">Verified</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={stateFilter} onValueChange={setStateFilter}>
+            <SelectTrigger className="md:w-[160px]"><SelectValue placeholder="State" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All states</SelectItem>
+              {states.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={districtFilter} onValueChange={setDistrictFilter} disabled={districts.length === 0}>
+            <SelectTrigger className="md:w-[180px]"><SelectValue placeholder="District" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All districts</SelectItem>
+              {districts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button variant="ghost" onClick={resetFilters}>Reset</Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {industries.length === 0 ? (
+          <p className="py-10 text-center text-sm text-muted-foreground">No dairy companies submitted yet.</p>
+        ) : pageItems.length === 0 ? (
+          <p className="py-10 text-center text-sm text-muted-foreground">No companies match the current filters.</p>
+        ) : pageItems.map((c) => {
+          const st = c.verification_status;
+          const badgeVariant = st === "verified" ? "default" : st === "rejected" ? "destructive" : "secondary";
+          return (
+            <div key={c.id} className="rounded-lg border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  {c.logo_url ? (
+                    <img src={c.logo_url} alt="" className="h-12 w-12 rounded-md object-cover ring-1 ring-border" />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground text-xs">Logo</div>
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">{c.name}</p>
+                      <Badge variant={badgeVariant} className="capitalize">{st}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {[c.village, c.district, c.state, c.pin_code].filter(Boolean).join(", ") || "Location not provided"}
+                    </p>
+                    {c.submitted_at && (
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">Submitted {new Date(c.submitted_at).toLocaleString()}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {st !== "verified" && (
+                    <Button size="sm" onClick={() => onApprove(c.id)} className="gap-1">
+                      <Check className="h-4 w-4" /> Approve
+                    </Button>
+                  )}
+                  {st !== "rejected" && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="destructive" className="gap-1"><X className="h-4 w-4" /> Reject</Button>
+                      </DialogTrigger>
+                      <IndustryRejectDialog companyName={c.name} onSubmit={(r) => onReject(c.id, r)} />
+                    </Dialog>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Registration no.</p>
+                  <p className="font-mono">{c.registration_number || <span className="text-destructive">Missing</span>}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">GSTIN</p>
+                  <p className="font-mono">{c.gst_number || <span className="text-destructive">Missing</span>}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</p>
+                  <p>{c.phone || <span className="text-destructive">Missing</span>} {c.contact_phone_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Email</p>
+                  <p>{c.email || <span className="text-destructive">Missing</span>} {c.contact_email_verified && <Badge variant="outline" className="ml-1 h-4 px-1 text-[10px]">verified</Badge>}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Address</p>
+                  <p>{c.address || "—"}</p>
+                </div>
+                {c.business_doc_url && (
+                  <div className="md:col-span-2">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Business document</p>
+                    <a href={c.business_doc_url} target="_blank" rel="noopener" className="text-primary underline break-all">{c.business_doc_url}</a>
+                  </div>
+                )}
+                {st === "rejected" && c.rejection_reason && (
+                  <div className="md:col-span-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+                    Rejection reason: {c.rejection_reason}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {filtered.length > pageSize && (
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-muted-foreground">
+              Page {safePage} of {totalPages} • Showing {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)}
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setPage(Math.max(1, safePage - 1))} disabled={safePage <= 1}>
+                <ChevronLeft className="h-4 w-4" /> Prev
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setPage(Math.min(totalPages, safePage + 1))} disabled={safePage >= totalPages}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
