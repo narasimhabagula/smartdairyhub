@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         supabase.from("profiles").select("*, user_roles(role)"),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("vet_doctors").select("*").order("created_at", { ascending: false }),
+        supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false }),
         supabase.from("schemes").select("*").order("created_at", { ascending: false }),
       ]);
       setUsers(u.data || []);
