@@ -48,19 +48,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization") ?? "";
-    if (!authHeader.startsWith("Bearer ")) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: u, error: authErr } = await userClient.auth.getUser(
-      authHeader.replace("Bearer ", ""),
-    );
-    if (authErr || !u?.user?.id) return json({ error: "Unauthorized" }, 401);
+    // Public endpoint: geocoding is open to all visitors (no PII).
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
