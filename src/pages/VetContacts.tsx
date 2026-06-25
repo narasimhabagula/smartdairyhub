@@ -763,7 +763,7 @@ export default function VetContacts() {
                   <p className="mt-1 text-sm text-muted-foreground">{locError}</p>
                   <div className="mt-3 flex gap-2">
                     <Button size="sm" onClick={() => locateMe()}>Try again</Button>
-                    <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>("input[placeholder^='Search village']")?.focus()}>
+                    <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>("input[aria-label='Search vets or location']")?.focus()}>
                       Search manually
                     </Button>
                   </div>
