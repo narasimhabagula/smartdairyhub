@@ -168,7 +168,12 @@ export default function BookVet() {
     setSubmitting(false);
     if (error) {
       console.error(error);
-      toast.error("Could not send request");
+      // Surface server-side validation messages from the trigger when present
+      const msg = (error as any)?.message || "";
+      const friendly = /symptoms|contact_phone|scheduled_at|mode|animal_type|location|vet/i.test(msg)
+        ? msg.replace(/^.*?:\s*/, "")
+        : "Could not send request";
+      toast.error(friendly);
       return;
     }
     toast.success("Request sent — the vet has been notified.");
