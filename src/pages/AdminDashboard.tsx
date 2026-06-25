@@ -277,6 +277,9 @@ export default function AdminDashboard() {
         <TabsContent value="industries" className="mt-4">
           <IndustriesPanel
             industries={industries}
+            loading={indLoading}
+            error={indError}
+            onRetry={fetchIndustries}
             search={indSearch} setSearch={setIndSearch}
             status={indStatus} setStatus={setIndStatus}
             stateFilter={indState} setStateFilter={setIndState}
