@@ -1,0 +1,37 @@
+CREATE TYPE public.support_ticket_status AS ENUM ('open','in_progress','resolved');
+
+CREATE TABLE public.support_tickets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_number text NOT NULL UNIQUE DEFAULT ('SDH-' || lpad((floor(random()*900000)+100000)::int::text, 6, '0')),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text,
+  category text NOT NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  status public.support_ticket_status NOT NULL DEFAULT 'open',
+  response_eta_hours int NOT NULL DEFAULT 24,
+  admin_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE ON public.support_tickets TO authenticated;
+GRANT ALL ON public.support_tickets TO service_role;
+
+ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users insert own tickets" ON public.support_tickets
+  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users read own tickets" ON public.support_tickets
+  FOR SELECT TO authenticated USING (auth.uid() = user_id OR public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins update tickets" ON public.support_tickets
+  FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+CREATE TRIGGER update_support_tickets_updated_at
+  BEFORE UPDATE ON public.support_tickets
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
