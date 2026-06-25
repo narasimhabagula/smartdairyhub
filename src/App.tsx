@@ -34,6 +34,7 @@ import MediatorPanel from "./pages/MediatorPanel";
 import VetDashboard from "./pages/VetDashboard";
 import BookVet from "./pages/BookVet";
 import MyAppointments from "./pages/MyAppointments";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 
@@ -81,6 +82,7 @@ const App = () => (
                   <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                   <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
                   <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
