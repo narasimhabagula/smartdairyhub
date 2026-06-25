@@ -654,13 +654,28 @@ export default function VetContacts() {
           )}
 
           {nearbyError && !nearbyLoading && (
-            <Card className="border-destructive/40 bg-destructive/5 p-4">
+            <Card className="border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 text-destructive" />
+                <AlertCircle className="mt-0.5 h-5 w-5 text-amber-600" />
                 <div className="flex-1">
-                  <p className="font-medium">Couldn't load nearby vets</p>
+                  <p className="font-medium">Having trouble reaching the vet service</p>
                   <p className="mt-1 text-sm text-muted-foreground">{nearbyError}</p>
-                  <Button size="sm" className="mt-3" onClick={() => fetchNearbyLive()}>Retry</Button>
+                  {retryIn > 0 ? (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Auto-retrying in <span className="font-medium text-foreground">{retryIn}s</span>
+                      {" "}(attempt {retryAttempt} of {MAX_AUTO_RETRIES})…
+                    </p>
+                  ) : retryAttempt >= MAX_AUTO_RETRIES ? (
+                    <p className="mt-2 text-sm text-muted-foreground">We tried a few times without luck. Please retry manually.</p>
+                  ) : null}
+                  <div className="mt-3 flex gap-2">
+                    <Button size="sm" onClick={() => fetchNearbyLive({ manual: true })} disabled={nearbyLoading}>
+                      Retry now
+                    </Button>
+                    {retryIn > 0 && (
+                      <Button size="sm" variant="outline" onClick={clearRetryTimers}>Cancel auto-retry</Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </Card>
