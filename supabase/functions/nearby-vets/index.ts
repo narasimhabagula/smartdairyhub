@@ -1,4 +1,6 @@
 // Nearby vet search via Google Places API (New) through Lovable connector gateway
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -10,13 +12,28 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Require an authenticated user — this function calls a paid third-party API.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return jsonResp({ error: "Unauthorized" }, 401);
+    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claims, error: authErr } = await userClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (authErr || !claims?.claims?.sub) {
+      return jsonResp({ error: "Unauthorized" }, 401);
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
     if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
-      return new Response(JSON.stringify({ error: "Google Maps connector not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("nearby-vets: connector secrets missing");
+      return jsonResp({ error: "Google Maps connector not configured" }, 500);
     }
 
     const body = await req.json().catch(() => ({}));
@@ -25,10 +42,7 @@ Deno.serve(async (req) => {
     const radius = Math.min(Math.max(Number(body.radius) || 15000, 500), 50000);
 
     if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      return new Response(JSON.stringify({ error: "Invalid latitude/longitude" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResp({ error: "Invalid latitude/longitude" }, 400);
     }
 
     const placesRes = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
@@ -51,11 +65,9 @@ Deno.serve(async (req) => {
     });
 
     if (!placesRes.ok) {
-      const txt = await placesRes.text();
-      return new Response(JSON.stringify({ error: "Places API error", status: placesRes.status, detail: txt }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const detail = await placesRes.text().catch(() => "");
+      console.error("nearby-vets: Places API error", placesRes.status, detail);
+      return jsonResp({ error: "External service error" }, 502);
     }
 
     const data = await placesRes.json();
@@ -73,13 +85,16 @@ Deno.serve(async (req) => {
       business_status: p.businessStatus ?? null,
     }));
 
-    return new Response(JSON.stringify({ places }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResp({ places }, 200);
   } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("nearby-vets: unexpected error", e);
+    return jsonResp({ error: "An unexpected error occurred. Please try again." }, 500);
   }
 });
+
+function jsonResp(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
