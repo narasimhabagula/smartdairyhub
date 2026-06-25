@@ -91,6 +91,12 @@ export default function AdminDashboard() {
     };
     fetchAll();
     fetchIndustries();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setCurrentAdminId(data.user.id);
+        resolveAdminNames([data.user.id]);
+      }
+    });
   }, []);
 
   const approveIndustry = async (id: string) => {
@@ -99,7 +105,8 @@ export default function AdminDashboard() {
       .update({ verification_status: "verified", rejection_reason: null, contact_phone_verified: true, contact_email_verified: true })
       .eq("id", id);
     if (error) { toast.error(error.message); return; }
-    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null } : c));
+    const now = new Date().toISOString();
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null, reviewed_at: now, reviewed_by: currentAdminId ?? c.reviewed_by } : c));
     toast.success("Company verified — owner notified");
   };
 
@@ -111,7 +118,8 @@ export default function AdminDashboard() {
       .update({ verification_status: "rejected", rejection_reason: trimmed })
       .eq("id", id);
     if (error) { toast.error(error.message); return; }
-    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed } : c));
+    const now = new Date().toISOString();
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed, reviewed_at: now, reviewed_by: currentAdminId ?? c.reviewed_by } : c));
     toast.success("Company rejected — owner notified");
   };
 
