@@ -531,6 +531,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_vet_contact: {
+        Args: { _vet_id: string }
+        Returns: {
+          email: string
+          phone: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
