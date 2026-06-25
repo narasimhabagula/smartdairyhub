@@ -170,7 +170,7 @@ export default function VetContacts() {
   const fetchVets = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("vet_doctors").select("*")
+      .from("vet_doctors").select(VET_SAFE_COLUMNS)
       .eq("status", "approved").eq("available", true)
       .order("rating", { ascending: false });
     if (error) toast.error(error.message);
@@ -180,7 +180,7 @@ export default function VetContacts() {
 
   const fetchPending = useCallback(async () => {
     if (!isAdmin) return;
-    const { data } = await supabase.from("vet_doctors").select("*")
+    const { data } = await supabase.from("vet_doctors").select(VET_SAFE_COLUMNS)
       .eq("status", "pending").order("created_at", { ascending: false });
     setPending((data as any[]) || []);
   }, [isAdmin]);
