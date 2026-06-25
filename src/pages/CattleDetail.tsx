@@ -120,9 +120,22 @@ export default function CattleDetail() {
             <CardContent className="grid grid-cols-2 gap-3 p-4 text-sm">
               <Field label="Type" value={listing.type} capitalize />
               <Field label="Age" value={listing.age} />
-              <Field label="Milk Yield" value={listing.milk_yield} />
+              {(listing.type === "cow" || listing.type === "buffalo") && (
+                <Field label="Milk Yield" value={listing.milk_yield ? `${listing.milk_yield} L/day` : null} />
+              )}
+              {listing.type === "cow" && <Field label="Gender" value={listing.attrs?.gender} capitalize />}
+              {(listing.type === "cow" || listing.type === "buffalo") && (
+                <Field label="FAT %" value={listing.attrs?.fat} />
+              )}
+              {listing.type === "cow" && <Field label="SNF %" value={listing.attrs?.snf} />}
+              {listing.type === "cow" && <Field label="Lactation #" value={listing.attrs?.lactation_number} />}
+              {listing.type === "hen" && <Field label="Egg Laying" value={listing.attrs?.egg_laying} capitalize />}
+              {listing.type === "hen" && <Field label="Eggs / Week" value={listing.attrs?.eggs_per_week} />}
+              {listing.weight && <Field label="Weight" value={listing.weight} />}
+              {listing.quantity != null && <Field label="Quantity" value={listing.quantity} />}
               <Field label="Vaccination" value={listing.vaccination_status} />
               <Field label="Health" value={listing.health_status} className="col-span-2" />
+              {listing.negotiable && <Field label="Price" value="Negotiable" />}
             </CardContent>
           </Card>
 
