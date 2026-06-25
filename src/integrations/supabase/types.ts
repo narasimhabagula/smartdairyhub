@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          animal_type: string | null
+          contact_phone: string | null
+          created_at: string
+          farmer_id: string
+          id: string
+          location: string | null
+          mode: string
+          notes: string | null
+          prescription: string | null
+          scheduled_at: string | null
+          status: string
+          symptoms: string
+          updated_at: string
+          vet_id: string
+        }
+        Insert: {
+          animal_type?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          farmer_id: string
+          id?: string
+          location?: string | null
+          mode?: string
+          notes?: string | null
+          prescription?: string | null
+          scheduled_at?: string | null
+          status?: string
+          symptoms: string
+          updated_at?: string
+          vet_id: string
+        }
+        Update: {
+          animal_type?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          farmer_id?: string
+          id?: string
+          location?: string | null
+          mode?: string
+          notes?: string | null
+          prescription?: string | null
+          scheduled_at?: string | null
+          status?: string
+          symptoms?: string
+          updated_at?: string
+          vet_id?: string
+        }
+        Relationships: []
+      }
       cattle_favorites: {
         Row: {
           created_at: string
@@ -622,6 +673,62 @@ export type Database = {
           village?: string | null
         }
         Relationships: []
+      }
+      vet_profiles: {
+        Row: {
+          available: boolean
+          bio: string | null
+          consultation_fee: number | null
+          created_at: string
+          experience_years: number | null
+          id: string
+          license_number: string | null
+          qualification: string | null
+          specialization: string | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+          vet_doctor_id: string | null
+        }
+        Insert: {
+          available?: boolean
+          bio?: string | null
+          consultation_fee?: number | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          license_number?: string | null
+          qualification?: string | null
+          specialization?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+          vet_doctor_id?: string | null
+        }
+        Update: {
+          available?: boolean
+          bio?: string | null
+          consultation_fee?: number | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          license_number?: string | null
+          qualification?: string | null
+          specialization?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+          vet_doctor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_profiles_vet_doctor_id_fkey"
+            columns: ["vet_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "vet_doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vet_ratings: {
         Row: {

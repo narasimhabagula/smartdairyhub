@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Sprout, Handshake, Factory, ArrowRight } from "lucide-react";
+import { Sprout, Handshake, Factory, Stethoscope, ArrowRight } from "lucide-react";
 
 const ROLES = [
   {
@@ -26,6 +26,14 @@ const ROLES = [
     Icon: Factory,
     accent: "from-sky-500/15 to-sky-500/0 border-sky-500/30",
     iconBg: "bg-sky-500/15 text-sky-700",
+  },
+  {
+    id: "vet",
+    title: "Veterinary Doctor",
+    desc: "Get verified, accept consultation requests, manage appointments and emergency calls.",
+    Icon: Stethoscope,
+    accent: "from-rose-500/15 to-rose-500/0 border-rose-500/30",
+    iconBg: "bg-rose-500/15 text-rose-700",
   },
 ] as const;
 
@@ -67,7 +75,7 @@ export default function SelectRole() {
       </div>
 
       <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
-        More roles coming soon: Veterinary Doctor, Feed Supplier, Medicine Supplier, Government Officer, Dairy Cooperative.
+        More roles coming soon: Feed Supplier, Medicine Supplier, Government Officer, Dairy Cooperative.
       </p>
     </div>
   );
