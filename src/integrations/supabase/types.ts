@@ -470,11 +470,13 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          photos: string[]
           price: number
           seller_id: string
           stock: number
           unit: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           approved?: boolean
@@ -484,11 +486,13 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          photos?: string[]
           price: number
           seller_id: string
           stock?: number
           unit?: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           approved?: boolean
@@ -498,11 +502,13 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          photos?: string[]
           price?: number
           seller_id?: string
           stock?: number
           unit?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
