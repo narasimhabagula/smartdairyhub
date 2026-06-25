@@ -155,6 +155,9 @@ export default function VetContacts() {
 
   // Vet contact info fetched via get_vet_contact RPC (returns rows only for admins / the suggester).
   const [vetContacts, setVetContacts] = useState<Record<string, { phone: string | null; email: string | null }>>({});
+  const [vetContactErrors, setVetContactErrors] = useState<Record<string, string>>({});
+  const [contactLoading, setContactLoading] = useState<Record<string, boolean>>({});
+  const contactToastShown = useRef(false);
 
   // Filters
   const [animal, setAnimal] = useState<string>("all");
@@ -190,20 +193,44 @@ export default function VetContacts() {
 
   useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
 
+  // Fetch a single vet's contact via security-definer RPC, with graceful error capture.
+  const fetchOneContact = useCallback(async (id: string) => {
+    setContactLoading((p) => ({ ...p, [id]: true }));
+    try {
+      const { data, error } = await supabase.rpc("get_vet_contact", { _vet_id: id });
+      if (error) throw error;
+      const row = (data as any[] | null)?.[0];
+      setVetContacts((prev) => ({ ...prev, [id]: { phone: row?.phone ?? null, email: row?.email ?? null } }));
+      setVetContactErrors((prev) => { const { [id]: _, ...rest } = prev; return rest; });
+      return true;
+    } catch (e: any) {
+      setVetContactErrors((prev) => ({ ...prev, [id]: e?.message || "Couldn't load contact info" }));
+      return false;
+    } finally {
+      setContactLoading((p) => { const { [id]: _, ...rest } = p; return rest; });
+    }
+  }, []);
+
   // Resolve phone/email through the security-definer RPC so we never read those columns directly.
   const loadVetContacts = useCallback(async (ids: string[]) => {
     if (!user || ids.length === 0) return;
-    const missing = ids.filter((id) => !(id in vetContacts));
+    const missing = ids.filter((id) => !(id in vetContacts) && !(id in vetContactErrors));
     if (missing.length === 0) return;
-    const results = await Promise.all(
-      missing.map(async (id) => {
-        const { data } = await supabase.rpc("get_vet_contact", { _vet_id: id });
-        const row = (data as any[] | null)?.[0];
-        return [id, { phone: row?.phone ?? null, email: row?.email ?? null }] as const;
-      }),
-    );
-    setVetContacts((prev) => ({ ...prev, ...Object.fromEntries(results) }));
-  }, [user, vetContacts]);
+    const results = await Promise.all(missing.map((id) => fetchOneContact(id)));
+    if (!contactToastShown.current && results.some((ok) => !ok)) {
+      contactToastShown.current = true;
+      toast.error("Some vet contact details couldn't be loaded. You can retry from the card.");
+    }
+  }, [user, vetContacts, vetContactErrors, fetchOneContact]);
+
+  const retryVetContact = useCallback((id: string) => fetchOneContact(id), [fetchOneContact]);
+  const retryAllFailedContacts = useCallback(async () => {
+    const ids = Object.keys(vetContactErrors);
+    if (!ids.length) return;
+    setVetContactErrors({});
+    contactToastShown.current = false;
+    await Promise.all(ids.map((id) => fetchOneContact(id)));
+  }, [vetContactErrors, fetchOneContact]);
 
   useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
   useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
