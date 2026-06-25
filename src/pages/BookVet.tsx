@@ -173,6 +173,7 @@ export default function BookVet() {
     }
     toast.success("Request sent — the vet has been notified.");
     setActiveVet(null);
+    setErrors({});
     setForm({ animal_type: "Cow", symptoms: "", mode: "in_person", contact_phone: "", location: "", scheduled_at: "" });
   };
 
