@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation,
   ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles, Stethoscope, Star,
+  Mic, MicOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
