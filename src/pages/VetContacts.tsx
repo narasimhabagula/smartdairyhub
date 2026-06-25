@@ -130,6 +130,13 @@ export default function VetContacts() {
   const [manualQuery, setManualQuery] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
 
+  // Voice search
+  const [voiceLang, setVoiceLang] = useState<string>("en-IN");
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const voiceSupported = typeof window !== "undefined" &&
+    !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
   // Nearby state
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(false);
