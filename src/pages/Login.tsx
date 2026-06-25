@@ -66,6 +66,7 @@ export default function Login() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupPhone, setSignupPhone] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
+  const [signupAcceptTerms, setSignupAcceptTerms] = useState(false);
 
   // Phone OTP
   const [otpPhone, setOtpPhone] = useState("");
@@ -119,6 +120,7 @@ export default function Login() {
     if (!name.success) return toast.error(name.error.issues[0].message);
     if (!email.success) return toast.error(email.error.issues[0].message);
     if (!pwd.success) return toast.error(pwd.error.issues[0].message);
+    if (!signupAcceptTerms) return toast.error("Please accept the Terms & Conditions to continue");
 
     let canonicalPhone = "";
     if (signupPhone.trim()) {
@@ -285,7 +287,11 @@ export default function Login() {
                   <Label>Password</Label>
                   <Input type="password" autoComplete="new-password" placeholder="Min 6 characters" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required maxLength={128} className="mt-1.5" />
                 </div>
-                <Button type="submit" className="w-full gap-2" disabled={signupLoading}>
+                <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <input type="checkbox" checked={signupAcceptTerms} onChange={(e) => setSignupAcceptTerms(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-input" />
+                  <span>I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms &amp; Conditions</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</span>
+                </label>
+                <Button type="submit" className="w-full gap-2" disabled={signupLoading || !signupAcceptTerms}>
                   <UserPlus className="h-4 w-4" />
                   {signupLoading ? "Creating account..." : "Create Account"}
                 </Button>
