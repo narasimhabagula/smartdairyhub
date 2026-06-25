@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation,
   ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles, Stethoscope, Star,
+  Mic, MicOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,14 +50,15 @@ const ANIMALS: { id: string; emoji: string; label: string }[] = [
   { id: "goat", emoji: "🐐", label: "Goat" },
   { id: "sheep", emoji: "🐑", label: "Sheep" },
   { id: "hen", emoji: "🐔", label: "Hen" },
-  { id: "chicken", emoji: "🐓", label: "Chicken" },
-  { id: "duck", emoji: "🦆", label: "Duck" },
+  { id: "chicken", emoji: "🐓", label: "Cock" },
   { id: "dog", emoji: "🐕", label: "Dog" },
   { id: "cat", emoji: "🐈", label: "Cat" },
-  { id: "rabbit", emoji: "🐇", label: "Rabbit" },
-  { id: "pig", emoji: "🐖", label: "Pig" },
-  { id: "horse", emoji: "🐎", label: "Horse" },
-  { id: "birds", emoji: "🐦", label: "Birds" },
+];
+
+const VOICE_LANGS: { code: string; label: string }[] = [
+  { code: "en-IN", label: "English" },
+  { code: "te-IN", label: "తెలుగు" },
+  { code: "hi-IN", label: "हिंदी" },
 ];
 
 const emptyForm = {
@@ -127,6 +129,13 @@ export default function VetContacts() {
   // Manual location search
   const [manualQuery, setManualQuery] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
+
+  // Voice search
+  const [voiceLang, setVoiceLang] = useState<string>("en-IN");
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const voiceSupported = typeof window !== "undefined" &&
+    !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
   // Nearby state
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
@@ -239,7 +248,11 @@ export default function VetContacts() {
     new Promise<{ lat: number; lng: number } | null>((resolve) => {
       setLocError(null);
       if (!navigator.geolocation) {
-        setLocError("Geolocation not supported on this device");
+        setLocError("Geolocation is not supported on this device. Please search manually.");
+        return resolve(null);
+      }
+      if (typeof window !== "undefined" && window.isSecureContext === false) {
+        setLocError("Location requires a secure (HTTPS) connection. Please search manually.");
         return resolve(null);
       }
       navigator.geolocation.getCurrentPosition(
@@ -250,10 +263,19 @@ export default function VetContacts() {
           resolve(loc);
         },
         (err) => {
-          setLocError(err.message || "Could not get your location. Please allow location access or search manually.");
+          const msg = err.code === err.PERMISSION_DENIED
+            ? "Location permission was denied. Please allow access in your browser settings, or search manually below."
+            : err.code === err.POSITION_UNAVAILABLE
+              ? "Couldn't determine your position. Try moving to an open area or search manually."
+              : err.code === err.TIMEOUT
+                ? "Locating you took too long. Please try again or search manually."
+                : (err.message || "Could not get your location.");
+          setLocError(msg);
           resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 10000 },
+        // High-accuracy, no cached fix — always fetch a fresh reading so users
+        // outside Hyderabad don't get a stale default position.
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
       );
     }),
   [resolveGeo]);
@@ -284,6 +306,70 @@ export default function VetContacts() {
       setManualLoading(false);
     }
   }, [manualQuery]);
+
+  const stopVoice = useCallback(() => {
+    try { recognitionRef.current?.stop(); } catch {}
+    setListening(false);
+  }, []);
+
+  const startVoice = useCallback(async () => {
+    if (listening) { stopVoice(); return; }
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error("Voice search isn't supported in this browser. Try Chrome on Android/Desktop."); return; }
+    // Request mic permission early so denial surfaces a clear toast.
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        s.getTracks().forEach((t) => t.stop());
+      }
+    } catch {
+      toast.error("Microphone access denied. Enable it in your browser settings to use voice search.");
+      return;
+    }
+    const rec = new SR();
+    rec.lang = voiceLang;
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.maxAlternatives = 1;
+    let finalText = "";
+    rec.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setManualQuery((finalText + interim).trim());
+    };
+    rec.onerror = (e: any) => {
+      setListening(false);
+      const code = e?.error || "";
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        toast.error("Microphone access denied. Please allow it and try again.");
+      } else if (code === "no-speech") {
+        toast.error("Didn't catch that. Please try again.");
+      } else if (code !== "aborted") {
+        toast.error("Voice search failed. Please try again.");
+      }
+    };
+    rec.onend = () => {
+      setListening(false);
+      const q = (finalText || manualQuery).trim();
+      if (q.length >= 2) {
+        setManualQuery(q);
+        // Auto-run a location search with the spoken text.
+        setTimeout(() => searchManual(), 50);
+      }
+    };
+    recognitionRef.current = rec;
+    setListening(true);
+    try { rec.start(); }
+    catch { setListening(false); toast.error("Couldn't start voice search."); }
+  }, [listening, stopVoice, voiceLang, manualQuery, searchManual]);
+
+  // Cleanup recognition on unmount
+  useEffect(() => () => { try { recognitionRef.current?.stop(); } catch {} }, []);
+
 
   const clearRetryTimers = useCallback(() => {
     if (retryTimer.current) { window.clearTimeout(retryTimer.current); retryTimer.current = null; }
@@ -531,21 +617,54 @@ export default function VetContacts() {
                     <span className="text-muted-foreground">Not set</span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Search village, mandal, district, PIN code or state…"
-                      className="pl-9"
+                      placeholder="Search doctor, hospital, village, mandal, district or PIN…"
+                      className="h-12 rounded-xl pl-10 pr-28 text-base shadow-sm"
                       value={manualQuery}
                       onChange={(e) => setManualQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") searchManual(); }}
+                      aria-label="Search vets or location"
                     />
+                    <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                      {voiceSupported && (
+                        <select
+                          aria-label="Voice language"
+                          value={voiceLang}
+                          onChange={(e) => setVoiceLang(e.target.value)}
+                          className="hidden h-8 rounded-md border bg-background px-1.5 text-xs sm:block"
+                        >
+                          {VOICE_LANGS.map((l) => (
+                            <option key={l.code} value={l.code}>{l.label}</option>
+                          ))}
+                        </select>
+                      )}
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant={listening ? "destructive" : "ghost"}
+                        onClick={startVoice}
+                        disabled={!voiceSupported}
+                        aria-label={listening ? "Stop voice search" : "Start voice search"}
+                        title={voiceSupported ? (listening ? "Listening… tap to stop" : "Tap to speak") : "Voice search not supported in this browser"}
+                        className={`h-9 w-9 ${listening ? "animate-pulse" : ""}`}
+                      >
+                        {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
-                  <Button variant="outline" disabled={manualLoading} onClick={searchManual} className="gap-1.5">
-                    <Search className="h-4 w-4" /> {manualLoading ? "…" : "Search"}
+                  <Button disabled={manualLoading} onClick={searchManual} className="h-12 gap-1.5 rounded-xl px-5">
+                    <Search className="h-4 w-4" /> {manualLoading ? "Searching…" : "Search"}
                   </Button>
                 </div>
+                {listening && (
+                  <p className="flex items-center gap-2 text-xs text-primary">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+                    Listening in {VOICE_LANGS.find((l) => l.code === voiceLang)?.label}… speak now (e.g. "Cow doctor near me")
+                  </p>
+                )}
               </div>
               <div className="flex items-end">
                 <Button onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))} className="gap-2 w-full sm:w-auto">
@@ -644,7 +763,7 @@ export default function VetContacts() {
                   <p className="mt-1 text-sm text-muted-foreground">{locError}</p>
                   <div className="mt-3 flex gap-2">
                     <Button size="sm" onClick={() => locateMe()}>Try again</Button>
-                    <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>("input[placeholder^='Search village']")?.focus()}>
+                    <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>("input[aria-label='Search vets or location']")?.focus()}>
                       Search manually
                     </Button>
                   </div>
