@@ -1009,7 +1009,16 @@ export default function VetContacts() {
                   distance_km: dist, maps_url: v.google_maps_url,
                   lat: v.latitude, lng: v.longitude,
                 };
-                return <VetCard key={v.id} vet={data} />;
+                return (
+                  <VetCard
+                    key={v.id}
+                    vet={data}
+                    isLoading={!!contactLoading[v.id]}
+                    contactError={vetContactErrors[v.id] || null}
+                    retryIn={vetContactRetryIn[v.id]}
+                    onRetry={() => retryVetContact(v.id)}
+                  />
+                );
               })
             )}
           </div>
