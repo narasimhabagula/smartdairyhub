@@ -245,44 +245,80 @@ export default function BookVet() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Animal</Label>
-                <Select value={form.animal_type} onValueChange={(v) => setForm({ ...form, animal_type: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <Select value={form.animal_type} onValueChange={(v) => { setForm({ ...form, animal_type: v }); setErrors((e) => ({ ...e, animal_type: undefined })); }}>
+                  <SelectTrigger className={`mt-1.5 ${errors.animal_type ? "border-destructive" : ""}`}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["Cow","Buffalo","Goat","Sheep","Poultry","Other"].map((a) => (
+                    {ANIMAL_TYPES.map((a) => (
                       <SelectItem key={a} value={a}>{a}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.animal_type && <p className="mt-1 text-xs text-destructive">{errors.animal_type}</p>}
               </div>
               <div>
                 <Label>Mode</Label>
-                <Select value={form.mode} onValueChange={(v: any) => setForm({ ...form, mode: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <Select value={form.mode} onValueChange={(v: any) => { setForm({ ...form, mode: v }); setErrors((e) => ({ ...e, mode: undefined })); }}>
+                  <SelectTrigger className={`mt-1.5 ${errors.mode ? "border-destructive" : ""}`}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="in_person">In-person visit</SelectItem>
                     <SelectItem value="online">Online consultation</SelectItem>
                     <SelectItem value="emergency"><span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-rose-600" /> Emergency</span></SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.mode && <p className="mt-1 text-xs text-destructive">{errors.mode}</p>}
               </div>
             </div>
             <div>
-              <Label>Symptoms / reason *</Label>
-              <Textarea className="mt-1.5" rows={3} value={form.symptoms} onChange={(e) => setForm({ ...form, symptoms: e.target.value })} placeholder="e.g. Cow has been off feed for 2 days, mild fever, reduced milk yield." />
+              <div className="flex items-center justify-between">
+                <Label>Symptoms / reason *</Label>
+                <span className="text-xs text-muted-foreground">{form.symptoms.length}/1000</span>
+              </div>
+              <Textarea
+                className={`mt-1.5 ${errors.symptoms ? "border-destructive" : ""}`}
+                rows={3}
+                maxLength={1000}
+                value={form.symptoms}
+                onChange={(e) => { setForm({ ...form, symptoms: e.target.value }); setErrors((er) => ({ ...er, symptoms: undefined })); }}
+                placeholder="e.g. Cow has been off feed for 2 days, mild fever, reduced milk yield."
+              />
+              {errors.symptoms && <p className="mt-1 text-xs text-destructive">{errors.symptoms}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Contact phone *</Label>
-                <Input className="mt-1.5" inputMode="numeric" placeholder="10-digit mobile" value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
+                <Input
+                  className={`mt-1.5 ${errors.contact_phone ? "border-destructive" : ""}`}
+                  inputMode="numeric"
+                  maxLength={15}
+                  placeholder="10-digit mobile"
+                  value={form.contact_phone}
+                  onChange={(e) => { setForm({ ...form, contact_phone: e.target.value.replace(/[^\d+\s-]/g, "") }); setErrors((er) => ({ ...er, contact_phone: undefined })); }}
+                />
+                {errors.contact_phone && <p className="mt-1 text-xs text-destructive">{errors.contact_phone}</p>}
               </div>
               <div>
                 <Label>Preferred time (optional)</Label>
-                <Input className="mt-1.5" type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
+                <Input
+                  className={`mt-1.5 ${errors.scheduled_at ? "border-destructive" : ""}`}
+                  type="datetime-local"
+                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                  max={new Date(Date.now() + MAX_FUTURE_DAYS * 86400000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                  value={form.scheduled_at}
+                  onChange={(e) => { setForm({ ...form, scheduled_at: e.target.value }); setErrors((er) => ({ ...er, scheduled_at: undefined })); }}
+                />
+                {errors.scheduled_at && <p className="mt-1 text-xs text-destructive">{errors.scheduled_at}</p>}
               </div>
             </div>
             <div>
               <Label>Location / village (optional)</Label>
-              <Input className="mt-1.5" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Village, mandal, district" />
+              <Input
+                className={`mt-1.5 ${errors.location ? "border-destructive" : ""}`}
+                maxLength={200}
+                value={form.location}
+                onChange={(e) => { setForm({ ...form, location: e.target.value }); setErrors((er) => ({ ...er, location: undefined })); }}
+                placeholder="Village, mandal, district"
+              />
+              {errors.location && <p className="mt-1 text-xs text-destructive">{errors.location}</p>}
             </div>
           </div>
           <DialogFooter>
