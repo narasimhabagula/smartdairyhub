@@ -245,7 +245,7 @@ function LivestockLeads() {
     return items.filter((i) => {
       if (animal !== "all" && i.type !== animal) return false;
       if (!ql) return true;
-      return `${i.title} ${i.breed ?? ""} ${i.district ?? ""} ${i.state ?? ""}`.toLowerCase().includes(ql);
+      return `${i.name} ${i.breed ?? ""} ${i.district ?? ""} ${i.state ?? ""}`.toLowerCase().includes(ql);
     });
   }, [items, q, animal]);
 
