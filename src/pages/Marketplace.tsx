@@ -95,6 +95,25 @@ export default function Marketplace() {
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [listening, setListening] = useState(false);
   const recogRef = useRef<any>(null);
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [contact, setContact] = useState<{ full_name: string | null; phone: string | null } | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+
+  const openDetails = async (p: Product) => {
+    setDetail(p);
+    setContact(null);
+    if (!user) return;
+    setContactLoading(true);
+    try {
+      const { data } = await supabase.rpc("get_seller_contact", { _seller_id: p.seller_id } as any);
+      const row = Array.isArray(data) ? data[0] : null;
+      setContact(row ? { full_name: row.full_name ?? null, phone: row.phone ?? null } : { full_name: null, phone: null });
+    } catch {
+      setContact({ full_name: null, phone: null });
+    } finally {
+      setContactLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
