@@ -146,6 +146,9 @@ function CompanyForm({ company, onSaved }: { company: Company | null; onSaved: (
     email: company?.email ?? "",
     working_hours: company?.working_hours ?? "",
     logo_url: company?.logo_url ?? "",
+    registration_number: company?.registration_number ?? "",
+    gst_number: company?.gst_number ?? "",
+    business_doc_url: company?.business_doc_url ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -213,8 +216,21 @@ function CompanyForm({ company, onSaved }: { company: Company | null; onSaved: (
         <Field label="Address"><Textarea rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} maxLength={400} /></Field>
         <Field label="About the company"><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={800} /></Field>
 
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4" /> Business verification</p>
+          <p className="mb-3 text-xs text-muted-foreground">An admin reviews these details before your company can publish rates. Required for verification.</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="Company registration number"><Input placeholder="e.g. CIN / Society reg. no." value={form.registration_number} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} maxLength={64} /></Field>
+            <Field label="GSTIN"><Input placeholder="15-digit GST number" value={form.gst_number} onChange={(e) => setForm({ ...form, gst_number: e.target.value.toUpperCase() })} maxLength={15} /></Field>
+          </div>
+          <div className="mt-3">
+            <Label className="mb-1.5 block text-xs">Business document URL (registration / GST certificate, PDF or image link)</Label>
+            <Input placeholder="https://…" value={form.business_doc_url} onChange={(e) => setForm({ ...form, business_doc_url: e.target.value })} maxLength={500} />
+          </div>
+        </div>
+
         <div className="flex justify-end">
-          <Button onClick={save} disabled={saving} className="gap-2"><Save className="h-4 w-4" />{saving ? "Saving…" : company ? "Save changes" : "Create company"}</Button>
+          <Button onClick={save} disabled={saving} className="gap-2"><Save className="h-4 w-4" />{saving ? "Saving…" : company ? "Save changes" : "Submit for verification"}</Button>
         </div>
       </CardContent>
     </Card>
