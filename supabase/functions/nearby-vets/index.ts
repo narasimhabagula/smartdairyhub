@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch {
-      return jsonResp({ error: "External service error" }, 502);
+      return jsonResp({ places: [], radius_used: usedRadius, expanded, error: "SERVICE_UNAVAILABLE", fallback: true }, 200);
     }
 
     return jsonResp({ places, radius_used: usedRadius, expanded }, 200);
