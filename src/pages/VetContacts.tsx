@@ -30,12 +30,16 @@ type NearbyPlace = {
 
 type Vet = {
   id: string; name: string; qualification: string | null; specialization: string | null;
-  phone: string; email: string | null; location: string; hospital_name: string | null;
+  location: string; hospital_name: string | null;
   address: string | null; district: string | null; village: string | null;
   google_maps_url: string | null; latitude: number | null; longitude: number | null;
   rating: number | null; total_ratings: number | null; available: boolean;
   status: string; suggested_by: string | null;
 };
+
+// Columns safe to read directly from vet_doctors. Phone/email require get_vet_contact RPC.
+const VET_SAFE_COLUMNS =
+  "id,name,qualification,specialization,location,hospital_name,address,district,village,google_maps_url,latitude,longitude,rating,total_ratings,available,status,suggested_by,created_at,updated_at";
 
 type GeoComponents = {
   village: string | null; mandal: string | null; district: string | null;
@@ -149,6 +153,9 @@ export default function VetContacts() {
   const tickTimer = useRef<number | null>(null);
   const MAX_AUTO_RETRIES = 3;
 
+  // Vet contact info fetched via get_vet_contact RPC (returns rows only for admins / the suggester).
+  const [vetContacts, setVetContacts] = useState<Record<string, { phone: string | null; email: string | null }>>({});
+
   // Filters
   const [animal, setAnimal] = useState<string>("all");
   const [radius, setRadius] = useState<number>(10000);
@@ -166,7 +173,7 @@ export default function VetContacts() {
   const fetchVets = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("vet_doctors").select("*")
+      .from("vet_doctors").select(VET_SAFE_COLUMNS)
       .eq("status", "approved").eq("available", true)
       .order("rating", { ascending: false });
     if (error) toast.error(error.message);
@@ -176,12 +183,31 @@ export default function VetContacts() {
 
   const fetchPending = useCallback(async () => {
     if (!isAdmin) return;
-    const { data } = await supabase.from("vet_doctors").select("*")
+    const { data } = await supabase.from("vet_doctors").select(VET_SAFE_COLUMNS)
       .eq("status", "pending").order("created_at", { ascending: false });
     setPending((data as any[]) || []);
   }, [isAdmin]);
 
   useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
+
+  // Resolve phone/email through the security-definer RPC so we never read those columns directly.
+  const loadVetContacts = useCallback(async (ids: string[]) => {
+    if (!user || ids.length === 0) return;
+    const missing = ids.filter((id) => !(id in vetContacts));
+    if (missing.length === 0) return;
+    const results = await Promise.all(
+      missing.map(async (id) => {
+        const { data } = await supabase.rpc("get_vet_contact", { _vet_id: id });
+        const row = (data as any[] | null)?.[0];
+        return [id, { phone: row?.phone ?? null, email: row?.email ?? null }] as const;
+      }),
+    );
+    setVetContacts((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+  }, [user, vetContacts]);
+
+  useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
+  useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
+
 
   const districts = useMemo(
     () => Array.from(new Set(vets.map((v) => v.district).filter(Boolean))) as string[],
@@ -465,7 +491,7 @@ export default function VetContacts() {
       const pins: { lat: number; lng: number; name: string; sub?: string; addr?: string; phone?: string; mapsUrl?: string }[] = [];
       filteredVets.forEach((v) => {
         if (v.latitude == null || v.longitude == null) return;
-        pins.push({ lat: v.latitude, lng: v.longitude, name: v.name, sub: v.hospital_name || undefined, addr: v.address || undefined, phone: v.phone, mapsUrl: v.google_maps_url || undefined });
+        pins.push({ lat: v.latitude, lng: v.longitude, name: v.name, sub: v.hospital_name || undefined, addr: v.address || undefined, phone: vetContacts[v.id]?.phone || undefined, mapsUrl: v.google_maps_url || undefined });
       });
       filteredNearby.forEach((p) => {
         if (p.lat == null || p.lng == null) return;
@@ -576,7 +602,7 @@ export default function VetContacts() {
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm">
                 <div>
                   <div className="font-medium">{p.name} {p.hospital_name && <span className="text-muted-foreground">· {p.hospital_name}</span>}</div>
-                  <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")} · {formatIndianPhoneDisplay(p.phone)}</div>
+                  <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")}{vetContacts[p.id]?.phone ? ` · ${formatIndianPhoneDisplay(vetContacts[p.id]!.phone!)}` : ""}{vetContacts[p.id]?.email ? ` · ${vetContacts[p.id]!.email}` : ""}</div>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => moderate(p.id, "approved")} className="gap-1.5"><Check className="h-3.5 w-3.5" /> Approve</Button>
@@ -878,7 +904,7 @@ export default function VetContacts() {
                   id: v.id, name: v.name,
                   hospital: v.hospital_name,
                   subtitle: [v.specialization, v.qualification].filter(Boolean).join(" · ") || null,
-                  phone: v.phone, address: v.address || [v.village, v.district].filter(Boolean).join(", "),
+                  phone: vetContacts[v.id]?.phone ?? null, address: v.address || [v.village, v.district].filter(Boolean).join(", "),
                   rating: v.rating, total_ratings: v.total_ratings,
                   distance_km: dist, maps_url: v.google_maps_url,
                   lat: v.latitude, lng: v.longitude,
