@@ -345,19 +345,31 @@ export default function SellerDashboard() {
                     )}
                   </div>
                   <div className="min-w-[180px] flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-medium">{p.name}</h3>
-                      {p.approved ? (
-                        <Badge variant="secondary">Live</Badge>
+                      {p.approval_status === "approved" ? (
+                        <Badge className="bg-emerald-600 hover:bg-emerald-600">Approved · Live</Badge>
+                      ) : p.approval_status === "rejected" ? (
+                        <Badge variant="destructive">Rejected</Badge>
                       ) : (
-                        <Badge className="bg-amber-500 hover:bg-amber-500">Pending</Badge>
+                        <Badge className="bg-amber-500 hover:bg-amber-500">Pending review</Badge>
                       )}
                       <Badge variant="outline" className="capitalize">{p.category}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Posted {new Date(p.created_at).toLocaleDateString()} • {p.photos?.length || (p.image_url ? 1 : 0)} photo(s)
                       {p.video_url ? " • 1 video" : ""}
+                      {p.reviewed_at ? ` • reviewed ${new Date(p.reviewed_at).toLocaleDateString()}` : ""}
                     </p>
+                    {p.approval_status === "rejected" && (
+                      <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                        <span className="font-medium">Reason: </span>
+                        {p.rejection_reason || "Not specified."} Edit the listing to resubmit for review.
+                      </div>
+                    )}
+                    {p.approval_status === "pending" && (
+                      <p className="mt-1 text-xs text-amber-700">Awaiting admin review. You'll be notified when it's decided.</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground">₹</Label>
