@@ -155,6 +155,9 @@ export default function VetContacts() {
 
   // Vet contact info fetched via get_vet_contact RPC (returns rows only for admins / the suggester).
   const [vetContacts, setVetContacts] = useState<Record<string, { phone: string | null; email: string | null }>>({});
+  const [vetContactErrors, setVetContactErrors] = useState<Record<string, string>>({});
+  const [contactLoading, setContactLoading] = useState<Record<string, boolean>>({});
+  const contactToastShown = useRef(false);
 
   // Filters
   const [animal, setAnimal] = useState<string>("all");
@@ -190,20 +193,44 @@ export default function VetContacts() {
 
   useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
 
+  // Fetch a single vet's contact via security-definer RPC, with graceful error capture.
+  const fetchOneContact = useCallback(async (id: string) => {
+    setContactLoading((p) => ({ ...p, [id]: true }));
+    try {
+      const { data, error } = await supabase.rpc("get_vet_contact", { _vet_id: id });
+      if (error) throw error;
+      const row = (data as any[] | null)?.[0];
+      setVetContacts((prev) => ({ ...prev, [id]: { phone: row?.phone ?? null, email: row?.email ?? null } }));
+      setVetContactErrors((prev) => { const { [id]: _, ...rest } = prev; return rest; });
+      return true;
+    } catch (e: any) {
+      setVetContactErrors((prev) => ({ ...prev, [id]: e?.message || "Couldn't load contact info" }));
+      return false;
+    } finally {
+      setContactLoading((p) => { const { [id]: _, ...rest } = p; return rest; });
+    }
+  }, []);
+
   // Resolve phone/email through the security-definer RPC so we never read those columns directly.
   const loadVetContacts = useCallback(async (ids: string[]) => {
     if (!user || ids.length === 0) return;
-    const missing = ids.filter((id) => !(id in vetContacts));
+    const missing = ids.filter((id) => !(id in vetContacts) && !(id in vetContactErrors));
     if (missing.length === 0) return;
-    const results = await Promise.all(
-      missing.map(async (id) => {
-        const { data } = await supabase.rpc("get_vet_contact", { _vet_id: id });
-        const row = (data as any[] | null)?.[0];
-        return [id, { phone: row?.phone ?? null, email: row?.email ?? null }] as const;
-      }),
-    );
-    setVetContacts((prev) => ({ ...prev, ...Object.fromEntries(results) }));
-  }, [user, vetContacts]);
+    const results = await Promise.all(missing.map((id) => fetchOneContact(id)));
+    if (!contactToastShown.current && results.some((ok) => !ok)) {
+      contactToastShown.current = true;
+      toast.error("Some vet contact details couldn't be loaded. You can retry from the card.");
+    }
+  }, [user, vetContacts, vetContactErrors, fetchOneContact]);
+
+  const retryVetContact = useCallback((id: string) => fetchOneContact(id), [fetchOneContact]);
+  const retryAllFailedContacts = useCallback(async () => {
+    const ids = Object.keys(vetContactErrors);
+    if (!ids.length) return;
+    setVetContactErrors({});
+    contactToastShown.current = false;
+    await Promise.all(ids.map((id) => fetchOneContact(id)));
+  }, [vetContactErrors, fetchOneContact]);
 
   useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
   useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
@@ -598,20 +625,49 @@ export default function VetContacts() {
         <Card className="mt-6 border-amber-300/60 bg-amber-50/40 dark:bg-amber-950/10">
           <CardHeader><CardTitle className="font-display text-lg">Pending vet submissions ({pending.length})</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {pending.map((p) => (
+            {pending.map((p) => {
+              const cErr = vetContactErrors[p.id];
+              const cLoading = !!contactLoading[p.id];
+              return (
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm">
-                <div>
+                <div className="min-w-0">
                   <div className="font-medium">{p.name} {p.hospital_name && <span className="text-muted-foreground">· {p.hospital_name}</span>}</div>
                   <div className="text-xs text-muted-foreground">{[p.village, p.district].filter(Boolean).join(", ")}{vetContacts[p.id]?.phone ? ` · ${formatIndianPhoneDisplay(vetContacts[p.id]!.phone!)}` : ""}{vetContacts[p.id]?.email ? ` · ${vetContacts[p.id]!.email}` : ""}</div>
+                  {cErr && (
+                    <div className="mt-1 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      <span>Couldn't load contact info.</span>
+                      <button type="button" disabled={cLoading} onClick={() => retryVetContact(p.id)} className="font-medium underline underline-offset-2 hover:text-amber-900 disabled:opacity-50">
+                        {cLoading ? "Retrying…" : "Retry"}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => moderate(p.id, "approved")} className="gap-1.5"><Check className="h-3.5 w-3.5" /> Approve</Button>
                   <Button size="sm" variant="outline" onClick={() => moderate(p.id, "rejected")} className="gap-1.5"><X className="h-3.5 w-3.5" /> Reject</Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
+      )}
+
+      {/* Contact load fallback banner (Directory + Map use these contacts) */}
+      {user && Object.keys(vetContactErrors).length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300/60 bg-amber-50/60 p-3 text-sm dark:bg-amber-950/20">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+            <AlertCircle className="h-4 w-4" />
+            <span>
+              Contact info couldn't be loaded for {Object.keys(vetContactErrors).length} vet{Object.keys(vetContactErrors).length > 1 ? "s" : ""}.
+              Call / WhatsApp buttons may be hidden until this succeeds.
+            </span>
+          </div>
+          <Button size="sm" variant="outline" onClick={retryAllFailedContacts} className="gap-1.5">
+            <Radar className="h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
       )}
 
       {/* Tabs */}
