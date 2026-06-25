@@ -29,7 +29,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import SelectRole from "./pages/SelectRole";
 import MilkRates from "./pages/MilkRates";
 import IndustryPanel from "./pages/IndustryPanel";
+import MediatorPanel from "./pages/MediatorPanel";
 import NotFound from "./pages/NotFound";
+
 
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
                   <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
+                  <Route path="/mediator" element={<ProtectedRoute><MediatorPanel /></ProtectedRoute>} />
+
 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
