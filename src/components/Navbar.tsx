@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
+
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -121,11 +122,17 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={() => navigate("/add-product")}>
                   <Store className="mr-2 h-4 w-4" /> {t("nav.sell")}
                 </DropdownMenuItem>
+                {(hasRole("mediator") || hasRole("admin")) && (
+                  <DropdownMenuItem onClick={() => navigate("/mediator")}>
+                    <Handshake className="mr-2 h-4 w-4" /> Mediator panel
+                  </DropdownMenuItem>
+                )}
                 {(hasRole("industry") || hasRole("admin")) && (
                   <DropdownMenuItem onClick={() => navigate("/industry")}>
                     <Factory className="mr-2 h-4 w-4" /> Industry panel
                   </DropdownMenuItem>
                 )}
+
                 {hasRole("admin") && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
                     <Shield className="mr-2 h-4 w-4" /> {t("nav.admin")}
