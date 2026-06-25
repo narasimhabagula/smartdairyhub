@@ -215,8 +215,14 @@ export default function Login() {
           <img src="/logo.png" alt="Smart Dairy Hub logo" className="mx-auto mb-2 h-16 w-16 rounded-lg object-contain" />
           <CardTitle className="font-display text-2xl">Welcome to Smart Dairy Hub</CardTitle>
           <p className="text-sm text-muted-foreground">Sign in securely to your account</p>
+          <div className="mt-3 inline-flex items-center justify-center gap-2 rounded-full border bg-muted/50 px-3 py-1.5 text-xs">
+            <RoleIcon className="h-3.5 w-3.5 text-primary" />
+            Continuing as <span className="font-semibold">{ROLE_META[role]?.label ?? "Farmer"}</span>
+            <Link to="/select-role" className="ml-1 text-primary hover:underline">change</Link>
+          </div>
         </CardHeader>
         <CardContent>
+
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="login" className="gap-1.5"><LogIn className="h-3.5 w-3.5" /> Login</TabsTrigger>
