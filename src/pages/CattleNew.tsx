@@ -360,6 +360,7 @@ export default function CattleNew() {
           <CardContent className="space-y-4">
             <div>
               <Label>Photos ({photos.length}/{MAX_PHOTOS}) — JPG/PNG/WebP, up to 5 MB each</Label>
+              <Err k="photos" />
               <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {photos.map((url) => (
                   <div key={url} className="relative group aspect-square overflow-hidden rounded-lg border">
