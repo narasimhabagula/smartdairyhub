@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [industries, setIndustries] = useState<any[]>([]);
   const [indLoading, setIndLoading] = useState(true);
   const [indError, setIndError] = useState<string | null>(null);
+  const [adminNames, setAdminNames] = useState<Record<string, string>>({});
+  const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Vet form
@@ -40,6 +42,21 @@ export default function AdminDashboard() {
   const [indPage, setIndPage] = useState(1);
   const IND_PAGE_SIZE = 10;
 
+  const resolveAdminNames = async (ids: string[]) => {
+    const unique = Array.from(new Set(ids.filter(Boolean)));
+    const missing = unique.filter((id) => !adminNames[id]);
+    if (missing.length === 0) return;
+    const { data } = await supabase.rpc("get_display_names", { _ids: missing });
+    if (data) {
+      setAdminNames((prev) => {
+        const next = { ...prev };
+        (data as any[]).forEach((r) => { next[r.user_id] = r.full_name || "Admin"; });
+        missing.forEach((id) => { if (!next[id]) next[id] = "Admin"; });
+        return next;
+      });
+    }
+  };
+
   const fetchIndustries = async () => {
     setIndLoading(true);
     setIndError(null);
@@ -47,6 +64,8 @@ export default function AdminDashboard() {
       const { data, error } = await supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false });
       if (error) throw error;
       setIndustries(data || []);
+      const reviewerIds = (data || []).map((c: any) => c.reviewed_by).filter(Boolean);
+      if (reviewerIds.length) resolveAdminNames(reviewerIds);
     } catch (err: any) {
       setIndError(err.message || "Failed to load dairy companies.");
     } finally {
@@ -72,6 +91,12 @@ export default function AdminDashboard() {
     };
     fetchAll();
     fetchIndustries();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setCurrentAdminId(data.user.id);
+        resolveAdminNames([data.user.id]);
+      }
+    });
   }, []);
 
   const approveIndustry = async (id: string) => {
@@ -80,7 +105,8 @@ export default function AdminDashboard() {
       .update({ verification_status: "verified", rejection_reason: null, contact_phone_verified: true, contact_email_verified: true })
       .eq("id", id);
     if (error) { toast.error(error.message); return; }
-    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null } : c));
+    const now = new Date().toISOString();
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null, reviewed_at: now, reviewed_by: currentAdminId ?? c.reviewed_by } : c));
     toast.success("Company verified — owner notified");
   };
 
@@ -92,7 +118,8 @@ export default function AdminDashboard() {
       .update({ verification_status: "rejected", rejection_reason: trimmed })
       .eq("id", id);
     if (error) { toast.error(error.message); return; }
-    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed } : c));
+    const now = new Date().toISOString();
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed, reviewed_at: now, reviewed_by: currentAdminId ?? c.reviewed_by } : c));
     toast.success("Company rejected — owner notified");
   };
 
@@ -286,7 +313,9 @@ export default function AdminDashboard() {
             districtFilter={indDistrict} setDistrictFilter={setIndDistrict}
             page={indPage} setPage={setIndPage} pageSize={IND_PAGE_SIZE}
             onApprove={approveIndustry} onReject={rejectIndustry}
+            adminNames={adminNames}
           />
+
         </TabsContent>
 
 
@@ -588,6 +617,8 @@ type IndustryRow = {
   rejection_reason?: string | null;
   contact_phone_verified?: boolean;
   contact_email_verified?: boolean;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
 };
 
 function IndustriesPanel(props: {
@@ -602,8 +633,9 @@ function IndustriesPanel(props: {
   page: number; setPage: (n: number) => void; pageSize: number;
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
+  adminNames: Record<string, string>;
 }) {
-  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject } = props;
+  const { industries, loading, error, onRetry, search, setSearch, status, setStatus, stateFilter, setStateFilter, districtFilter, setDistrictFilter, page, setPage, pageSize, onApprove, onReject, adminNames } = props;
 
   const states = useMemo(() => {
     const set = new Set<string>();
@@ -812,9 +844,50 @@ function IndustriesPanel(props: {
                   </div>
                 )}
               </div>
+
+              <details className="mt-3 group">
+                <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground select-none">
+                  Audit log
+                </summary>
+                <ol className="mt-2 space-y-2 border-l-2 border-border pl-4">
+                  {c.submitted_at && (
+                    <li className="relative text-xs">
+                      <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-muted-foreground/40 ring-2 ring-background" />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant="outline" className="h-5 px-1.5 text-[10px]">Submitted</Badge>
+                        <span className="text-muted-foreground">{new Date(c.submitted_at).toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">Owner submitted business details for review.</p>
+                    </li>
+                  )}
+                  {c.reviewed_at && (c.verification_status === "verified" || c.verification_status === "rejected") && (
+                    <li className="relative text-xs">
+                      <span className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background ${c.verification_status === "verified" ? "bg-primary" : "bg-destructive"}`} />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant={c.verification_status === "verified" ? "default" : "destructive"} className="h-5 px-1.5 text-[10px] capitalize">{c.verification_status}</Badge>
+                        <span className="text-muted-foreground">{new Date(c.reviewed_at).toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">
+                        by <span className="font-medium text-foreground">{c.reviewed_by ? (adminNames[c.reviewed_by] || "Admin") : "Admin"}</span>
+                        {c.verification_status === "rejected" && c.rejection_reason ? <> — {c.rejection_reason}</> : null}
+                      </p>
+                    </li>
+                  )}
+                  {!c.reviewed_at && c.verification_status === "pending" && (
+                    <li className="relative text-xs">
+                      <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-background" />
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">Awaiting review</Badge>
+                      </div>
+                      <p className="mt-0.5 text-muted-foreground">No admin action recorded yet.</p>
+                    </li>
+                  )}
+                </ol>
+              </details>
             </div>
           );
         })}
+
 
         {filtered.length > pageSize && (
           <div className="flex items-center justify-between pt-2">
