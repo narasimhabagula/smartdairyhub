@@ -241,7 +241,11 @@ export default function VetContacts() {
     new Promise<{ lat: number; lng: number } | null>((resolve) => {
       setLocError(null);
       if (!navigator.geolocation) {
-        setLocError("Geolocation not supported on this device");
+        setLocError("Geolocation is not supported on this device. Please search manually.");
+        return resolve(null);
+      }
+      if (typeof window !== "undefined" && window.isSecureContext === false) {
+        setLocError("Location requires a secure (HTTPS) connection. Please search manually.");
         return resolve(null);
       }
       navigator.geolocation.getCurrentPosition(
@@ -252,10 +256,19 @@ export default function VetContacts() {
           resolve(loc);
         },
         (err) => {
-          setLocError(err.message || "Could not get your location. Please allow location access or search manually.");
+          const msg = err.code === err.PERMISSION_DENIED
+            ? "Location permission was denied. Please allow access in your browser settings, or search manually below."
+            : err.code === err.POSITION_UNAVAILABLE
+              ? "Couldn't determine your position. Try moving to an open area or search manually."
+              : err.code === err.TIMEOUT
+                ? "Locating you took too long. Please try again or search manually."
+                : (err.message || "Could not get your location.");
+          setLocError(msg);
           resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 10000 },
+        // High-accuracy, no cached fix — always fetch a fresh reading so users
+        // outside Hyderabad don't get a stale default position.
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
       );
     }),
   [resolveGeo]);
