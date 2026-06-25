@@ -48,10 +48,11 @@ function isWhatsAppPhone(phone?: string | null) {
   return digits.length >= 10;
 }
 
-export function VetCard({ vet }: { vet: VetCardData }) {
+export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetCardProps) {
   const initials = vet.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
   const waOk = isWhatsAppPhone(vet.phone);
   const todayHours = vet.hours?.find((h) => h.toLowerCase().startsWith(new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()));
+  const showLoading = isLoading && !vet.phone; // only show contact-loading skeleton until we have a phone number
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
@@ -102,10 +103,35 @@ export function VetCard({ vet }: { vet: VetCardData }) {
             <span className="line-clamp-2">{vet.address}</span>
           </div>
         )}
-        {vet.phone && (
+        {showLoading ? (
+          <div className="flex items-center gap-2 py-0.5">
+            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+            <Skeleton className="h-3.5 w-28 rounded" />
+            <span className="ml-auto text-xs text-muted-foreground">Loading contact…</span>
+          </div>
+        ) : vet.phone ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Phone className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{vet.phone}</span>
+          </div>
+        ) : null}
+        {contactError && (
+          <div className="flex items-start gap-2 rounded-md bg-amber-50/60 p-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <div className="flex-1">
+              <p className="line-clamp-2">{contactError}</p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  disabled={retryIn !== undefined && retryIn > 0}
+                  className="mt-1 inline-flex items-center gap-1 font-medium underline underline-offset-2 disabled:opacity-50"
+                >
+                  <Radar className="h-3 w-3" />
+                  {retryIn !== undefined && retryIn > 0 ? `Retry in ${retryIn}s` : "Retry now"}
+                </button>
+              )}
+            </div>
           </div>
         )}
         {todayHours && (
@@ -121,42 +147,50 @@ export function VetCard({ vet }: { vet: VetCardData }) {
 
       {/* Actions */}
       <div className="border-t bg-muted/30 p-3">
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-9 w-full gap-1.5 font-medium"
-            disabled={!vet.phone}
-            asChild={!!vet.phone}
-          >
-            {vet.phone ? (
-              <a href={telHref(vet.phone)} aria-label={`Call ${vet.name}`}>
-                <Phone className="h-3.5 w-3.5" /> Call
+        {showLoading ? (
+          <div className="grid grid-cols-3 gap-2">
+            <Skeleton className="h-9 w-full rounded" />
+            <Skeleton className="h-9 w-full rounded" />
+            <Skeleton className="h-9 w-full rounded" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 w-full gap-1.5 font-medium"
+              disabled={!vet.phone}
+              asChild={!!vet.phone}
+            >
+              {vet.phone ? (
+                <a href={telHref(vet.phone)} aria-label={`Call ${vet.name}`}>
+                  <Phone className="h-3.5 w-3.5" /> Call
+                </a>
+              ) : (
+                <span><Phone className="h-3.5 w-3.5" /> Call</span>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              className="h-9 w-full gap-1.5 bg-[#25D366] font-medium text-white shadow-none hover:bg-[#1ebe5b] disabled:bg-muted disabled:text-muted-foreground"
+              disabled={!waOk}
+              asChild={waOk}
+            >
+              {waOk ? (
+                <a href={waHref(vet.phone!)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${vet.name}`}>
+                  <MessageCircle className="h-3.5 w-3.5" /> Chat
+                </a>
+              ) : (
+                <span><MessageCircle className="h-3.5 w-3.5" /> Chat</span>
+              )}
+            </Button>
+            <Button size="sm" variant="outline" className="h-9 w-full gap-1.5 font-medium" asChild>
+              <a href={directionsHref(vet)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${vet.name}`}>
+                <Navigation className="h-3.5 w-3.5" /> Route
               </a>
-            ) : (
-              <span><Phone className="h-3.5 w-3.5" /> Call</span>
-            )}
-          </Button>
-          <Button
-            size="sm"
-            className="h-9 w-full gap-1.5 bg-[#25D366] font-medium text-white shadow-none hover:bg-[#1ebe5b] disabled:bg-muted disabled:text-muted-foreground"
-            disabled={!waOk}
-            asChild={waOk}
-          >
-            {waOk ? (
-              <a href={waHref(vet.phone!)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${vet.name}`}>
-                <MessageCircle className="h-3.5 w-3.5" /> Chat
-              </a>
-            ) : (
-              <span><MessageCircle className="h-3.5 w-3.5" /> Chat</span>
-            )}
-          </Button>
-          <Button size="sm" variant="outline" className="h-9 w-full gap-1.5 font-medium" asChild>
-            <a href={directionsHref(vet)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${vet.name}`}>
-              <Navigation className="h-3.5 w-3.5" /> Route
-            </a>
-          </Button>
-        </div>
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );
