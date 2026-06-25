@@ -42,11 +42,20 @@ const CATEGORY_MAP: Record<string, string[]> = {
 const ALLOWED_CATEGORIES = [...CATEGORY_MAP.feed];
 
 const SORTS = [
-  { id: "newest", label: "Newest" },
-  { id: "price_asc", label: "Price: Low to High" },
-  { id: "price_desc", label: "Price: High to Low" },
+  { id: "newest", label: "Newest first" },
+  { id: "price_asc", label: "Price: Lowest first" },
+  { id: "price_desc", label: "Price: Highest first" },
   { id: "rating", label: "Top Rated" },
 ];
+
+const FEED_TYPES = [
+  "all", "Dry", "Green", "Silage", "Concentrate", "Mineral Mixture", "Pellet", "TMR", "Supplement",
+];
+const matchesFeedType = (p: Product, type: string) => {
+  if (type === "all") return true;
+  const hay = `${p.name} ${p.description || ""} ${p.category}`.toLowerCase();
+  return hay.includes(type.toLowerCase());
+};
 
 const daysAgo = (iso: string) => {
   const d = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -75,6 +84,7 @@ export default function Marketplace() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [deliveryOnly, setDeliveryOnly] = useState(false);
   const [brand, setBrand] = useState<string>("all");
+  const [feedType, setFeedType] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -156,6 +166,7 @@ export default function Marketplace() {
     if (verifiedOnly) list = list.filter((p) => !!p.seller_name);
     if (deliveryOnly) list = list.filter((p) => (p.description || "").toLowerCase().includes("delivery"));
     if (brand !== "all") list = list.filter((p) => brandFor(p) === brand);
+    if (feedType !== "all") list = list.filter((p) => matchesFeedType(p, feedType));
     list = list.filter((p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
 
     if (sort === "price_asc") list.sort((a, b) => Number(a.price) - Number(b.price));
@@ -163,7 +174,7 @@ export default function Marketplace() {
     else if (sort === "rating") list.sort((a, b) => ratingFor(b.id).stars - ratingFor(a.id).stars);
     else list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return list;
-  }, [products, tab, search, location, verifiedOnly, deliveryOnly, brand, priceRange, sort]);
+  }, [products, tab, search, location, verifiedOnly, deliveryOnly, brand, feedType, priceRange, sort]);
 
   const cartCount = useMemo(() => cartItems.reduce((s, i) => s + i.quantity, 0), [cartItems]);
 
@@ -203,7 +214,7 @@ export default function Marketplace() {
 
   const resetFilters = () => {
     setSearch(""); setLocation(""); setVerifiedOnly(false); setDeliveryOnly(false);
-    setBrand("all"); setPriceRange([0, 20000]); setSort("newest");
+    setBrand("all"); setFeedType("all"); setPriceRange([0, 20000]); setSort("newest");
   };
 
   return (
@@ -255,6 +266,17 @@ export default function Marketplace() {
                   <div>
                     <label className="text-sm font-medium">Location</label>
                     <Input className="mt-1.5" placeholder="District or state" value={location} onChange={(e) => setLocation(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Feed type</label>
+                    <Select value={feedType} onValueChange={setFeedType}>
+                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {FEED_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>{t === "all" ? "All feed types" : t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Brand</label>
