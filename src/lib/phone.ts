@@ -16,14 +16,23 @@ export function isValidIndianPhone(input: string): boolean {
   return normalizeIndianPhone(input) !== null;
 }
 
-export function telHref(canonical: string): string {
-  return `tel:${canonical}`;
+// Strip spaces/dashes/parens from any phone format. Keeps leading +.
+function cleanPhone(input: string): string {
+  const trimmed = (input || "").trim();
+  const plus = trimmed.startsWith("+") ? "+" : "";
+  return plus + trimmed.replace(/[^\d]/g, "");
 }
 
-export function waHref(canonical: string, message?: string): string {
-  // wa.me expects no '+' prefix
-  const num = canonical.replace(/^\+/, "");
-  return `https://wa.me/${num}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+export function telHref(phone: string): string {
+  return `tel:${cleanPhone(phone)}`;
+}
+
+export function waHref(phone: string, message?: string): string {
+  // wa.me expects digits only, no '+'.
+  let digits = cleanPhone(phone).replace(/^\+/, "");
+  // If 10-digit Indian, prepend country code.
+  if (/^[6-9]\d{9}$/.test(digits)) digits = "91" + digits;
+  return `https://wa.me/${digits}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
 }
 
 export function formatIndianPhoneDisplay(canonical: string): string {

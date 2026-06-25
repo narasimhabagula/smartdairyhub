@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Phone, MapPin, MessageCircle, Search, Plus, Map as MapIcon, List, Navigation,
-  ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles, Stethoscope,
+  ExternalLink, Check, X, Siren, Radar, AlertCircle, SlidersHorizontal, Sparkles, Stethoscope, Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +35,29 @@ type Vet = {
   rating: number | null; total_ratings: number | null; available: boolean;
   status: string; suggested_by: string | null;
 };
+
+type GeoComponents = {
+  village: string | null; mandal: string | null; district: string | null;
+  state: string | null; pincode: string | null; country: string | null;
+  formatted: string | null; lat: number | null; lng: number | null;
+};
+
+const ANIMALS: { id: string; emoji: string; label: string }[] = [
+  { id: "all", emoji: "🐾", label: "All Animals" },
+  { id: "cow", emoji: "🐄", label: "Cow" },
+  { id: "buffalo", emoji: "🐃", label: "Buffalo" },
+  { id: "goat", emoji: "🐐", label: "Goat" },
+  { id: "sheep", emoji: "🐑", label: "Sheep" },
+  { id: "hen", emoji: "🐔", label: "Hen" },
+  { id: "chicken", emoji: "🐓", label: "Chicken" },
+  { id: "duck", emoji: "🦆", label: "Duck" },
+  { id: "dog", emoji: "🐕", label: "Dog" },
+  { id: "cat", emoji: "🐈", label: "Cat" },
+  { id: "rabbit", emoji: "🐇", label: "Rabbit" },
+  { id: "pig", emoji: "🐖", label: "Pig" },
+  { id: "horse", emoji: "🐎", label: "Horse" },
+  { id: "birds", emoji: "🐦", label: "Birds" },
+];
 
 const emptyForm = {
   name: "", qualification: "", specialization: "", phone: "", email: "",
@@ -68,10 +91,15 @@ function loadGoogleMaps(): Promise<void> {
   return mapsLoader;
 }
 
-const GOVT_HINTS = ["government", "govt", "municipal", "district", "panchayat", "state"];
+const GOVT_HINTS = ["government", "govt", "municipal", "district", "panchayat", "state", "polyclinic"];
 function looksGovernment(p: { name: string; address?: string | null }) {
   const hay = `${p.name} ${p.address ?? ""}`.toLowerCase();
   return GOVT_HINTS.some((h) => hay.includes(h));
+}
+const EMERGENCY_HINTS = ["24", "emergency", "hours", "round the clock"];
+function looksEmergency(p: { name: string; address?: string | null }) {
+  const hay = `${p.name} ${p.address ?? ""}`.toLowerCase();
+  return EMERGENCY_HINTS.some((h) => hay.includes(h));
 }
 
 export default function VetContacts() {
@@ -85,12 +113,20 @@ export default function VetContacts() {
   const [search, setSearch] = useState("");
   const [district, setDistrict] = useState("all");
   const [view, setView] = useState<"nearby" | "list" | "map">("nearby");
+
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [userGeo, setUserGeo] = useState<GeoComponents | null>(null);
   const [locError, setLocError] = useState<string | null>(null);
+  const [resolvingGeo, setResolvingGeo] = useState(false);
+
   const [sortByNearest, setSortByNearest] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Manual location search
+  const [manualQuery, setManualQuery] = useState("");
+  const [manualLoading, setManualLoading] = useState(false);
 
   // Nearby state
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
@@ -98,10 +134,16 @@ export default function VetContacts() {
   const [nearbyFetched, setNearbyFetched] = useState(false);
   const [nearbyError, setNearbyError] = useState<string | null>(null);
   const [expandedNotice, setExpandedNotice] = useState<number | null>(null);
+
+  // Filters
+  const [animal, setAnimal] = useState<string>("all");
   const [radius, setRadius] = useState<number>(10000);
   const [minRating, setMinRating] = useState<string>("0");
   const [openOnly, setOpenOnly] = useState(false);
   const [govOnly, setGovOnly] = useState(false);
+  const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const [sameStateOnly, setSameStateOnly] = useState(true);
+  const [sortBy, setSortBy] = useState<"distance" | "rating">("distance");
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -154,13 +196,39 @@ export default function VetContacts() {
   }, [vets, district, search, sortByNearest, userLoc]);
 
   const filteredNearby = useMemo(() => {
-    return nearby.filter((p) => {
+    let list = nearby.filter((p) => {
       if (openOnly && p.open_now !== true) return false;
       if (Number(minRating) > 0 && (p.rating ?? 0) < Number(minRating)) return false;
       if (govOnly && !looksGovernment(p)) return false;
+      if (emergencyOnly && !looksEmergency(p)) return false;
       return true;
     });
-  }, [nearby, openOnly, minRating, govOnly]);
+    // Sort
+    list = [...list].sort((a, b) => {
+      if (sortBy === "rating") return (b.rating ?? 0) - (a.rating ?? 0);
+      if (userLoc && a.lat != null && b.lat != null) {
+        return distanceKm(userLoc, { lat: a.lat, lng: a.lng! }) - distanceKm(userLoc, { lat: b.lat, lng: b.lng! });
+      }
+      return 0;
+    });
+    return list;
+  }, [nearby, openOnly, minRating, govOnly, emergencyOnly, sortBy, userLoc]);
+
+  const resolveGeo = useCallback(async (lat: number, lng: number) => {
+    setResolvingGeo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("geo-resolve", {
+        body: { mode: "reverse", lat, lng },
+      });
+      if (error) throw error;
+      const r = (data as any)?.result as GeoComponents | null;
+      if (r) setUserGeo(r);
+    } catch (e) {
+      console.warn("geo-resolve reverse failed", e);
+    } finally {
+      setResolvingGeo(false);
+    }
+  }, []);
 
   const locateMe = useCallback(() =>
     new Promise<{ lat: number; lng: number } | null>((resolve) => {
@@ -172,27 +240,62 @@ export default function VetContacts() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setUserLoc(loc); setSortByNearest(true); resolve(loc);
+          setUserLoc(loc); setSortByNearest(true);
+          resolveGeo(loc.lat, loc.lng);
+          resolve(loc);
         },
         (err) => {
-          setLocError(err.message || "Could not get your location. Please allow location access.");
+          setLocError(err.message || "Could not get your location. Please allow location access or search manually.");
           resolve(null);
         },
         { enableHighAccuracy: true, timeout: 10000 },
       );
     }),
-  []);
+  [resolveGeo]);
 
-  const fetchNearbyLive = useCallback(async (overrideRadius?: number) => {
+  const searchManual = useCallback(async () => {
+    const q = manualQuery.trim();
+    if (q.length < 2) { toast.error("Enter a village, mandal, district, PIN or state"); return; }
+    setManualLoading(true);
+    setLocError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("geo-resolve", {
+        body: { mode: "forward", query: q },
+      });
+      if (error) throw error;
+      const r = (data as any)?.result as GeoComponents | null;
+      if (!r || r.lat == null || r.lng == null) {
+        toast.error("Couldn't find that location. Try a different name.");
+        return;
+      }
+      setUserLoc({ lat: r.lat, lng: r.lng });
+      setUserGeo(r);
+      setSortByNearest(true);
+      // Trigger nearby fetch
+      setNearbyFetched(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Location search failed");
+    } finally {
+      setManualLoading(false);
+    }
+  }, [manualQuery]);
+
+  const fetchNearbyLive = useCallback(async (opts?: { radius?: number; animal?: string; loc?: { lat: number; lng: number } }) => {
     setNearbyLoading(true);
     setNearbyFetched(true);
     setNearbyError(null);
     setExpandedNotice(null);
     try {
-      const loc = userLoc ?? (await locateMe());
-      if (!loc) { setNearbyError("Location required to search nearby vets."); return; }
+      const loc = opts?.loc ?? userLoc ?? (await locateMe());
+      if (!loc) { setNearbyError("Location required. Allow GPS or search a place manually."); return; }
       const { data, error } = await supabase.functions.invoke("nearby-vets", {
-        body: { lat: loc.lat, lng: loc.lng, radius: overrideRadius ?? radius },
+        body: {
+          lat: loc.lat,
+          lng: loc.lng,
+          radius: opts?.radius ?? radius,
+          animal: opts?.animal ?? animal,
+          state: sameStateOnly ? (userGeo?.state ?? "") : "",
+        },
       });
       if (error) throw error;
       const places: NearbyPlace[] = (data as any)?.places || [];
@@ -203,7 +306,7 @@ export default function VetContacts() {
     } finally {
       setNearbyLoading(false);
     }
-  }, [userLoc, radius, locateMe]);
+  }, [userLoc, radius, animal, sameStateOnly, userGeo, locateMe]);
 
   // Auto-load on first visit to Nearby tab once we have location
   useEffect(() => {
@@ -241,7 +344,7 @@ export default function VetContacts() {
         if (v.latitude == null || v.longitude == null) return;
         pins.push({ lat: v.latitude, lng: v.longitude, name: v.name, sub: v.hospital_name || undefined, addr: v.address || undefined, phone: v.phone, mapsUrl: v.google_maps_url || undefined });
       });
-      nearby.forEach((p) => {
+      filteredNearby.forEach((p) => {
         if (p.lat == null || p.lng == null) return;
         pins.push({ lat: p.lat, lng: p.lng, name: p.name, addr: p.address || undefined, phone: p.phone || undefined, mapsUrl: p.maps_url || undefined });
       });
@@ -264,7 +367,7 @@ export default function VetContacts() {
       });
     }).catch((e) => toast.error(e.message));
     return () => { cancelled = true; };
-  }, [view, filteredVets, nearby, userLoc]);
+  }, [view, filteredVets, filteredNearby, userLoc]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -294,6 +397,10 @@ export default function VetContacts() {
     toast.success(`Vet ${status}`);
     fetchPending(); fetchVets();
   };
+
+  const detectedLocLabel = userGeo
+    ? [userGeo.village, userGeo.mandal, userGeo.district, userGeo.state].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ")
+    : null;
 
   return (
     <div className="container py-8 md:py-12">
@@ -366,24 +473,92 @@ export default function VetContacts() {
           <TabsTrigger value="map" className="gap-1.5"><MapIcon className="h-4 w-4" /> Map</TabsTrigger>
         </TabsList>
 
-        {/* NEARBY (Google Places live) */}
+        {/* NEARBY */}
         <TabsContent value="nearby" className="mt-6 space-y-5">
+          {/* Location bar */}
+          <Card className="overflow-hidden border-border/60">
+            <div className="grid gap-3 p-4 sm:grid-cols-[1fr_auto]">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Your location:</span>
+                  {detectedLocLabel ? (
+                    <span className="text-muted-foreground">{detectedLocLabel}</span>
+                  ) : resolvingGeo ? (
+                    <span className="text-muted-foreground">Detecting…</span>
+                  ) : userLoc ? (
+                    <span className="text-muted-foreground">
+                      {userLoc.lat.toFixed(3)}, {userLoc.lng.toFixed(3)}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Not set</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search village, mandal, district, PIN code or state…"
+                      className="pl-9"
+                      value={manualQuery}
+                      onChange={(e) => setManualQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") searchManual(); }}
+                    />
+                  </div>
+                  <Button variant="outline" disabled={manualLoading} onClick={searchManual} className="gap-1.5">
+                    <Search className="h-4 w-4" /> {manualLoading ? "…" : "Search"}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-end">
+                <Button onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))} className="gap-2 w-full sm:w-auto">
+                  <Navigation className="h-4 w-4" /> Use my GPS
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Animal selector */}
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+              <Stethoscope className="h-4 w-4 text-primary" /> Animal type
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ANIMALS.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => { setAnimal(a.id); if (userLoc) fetchNearbyLive({ animal: a.id }); }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
+                    animal === a.id
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border bg-background hover:border-primary/50 hover:bg-primary/5"
+                  }`}
+                >
+                  <span className="text-base leading-none">{a.emoji}</span> {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filters */}
           <Card className="overflow-hidden border-border/60">
             <div className="flex flex-wrap items-center gap-3 border-b bg-muted/30 p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <SlidersHorizontal className="h-4 w-4 text-primary" /> Filters
               </div>
-              <Select value={String(radius)} onValueChange={(v) => { setRadius(Number(v)); if (userLoc) fetchNearbyLive(Number(v)); }}>
-                <SelectTrigger className="w-[130px]"><SelectValue placeholder="Radius" /></SelectTrigger>
+              <Select value={String(radius)} onValueChange={(v) => { setRadius(Number(v)); if (userLoc) fetchNearbyLive({ radius: Number(v) }); }}>
+                <SelectTrigger className="w-[120px]"><SelectValue placeholder="Radius" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="5000">5 km</SelectItem>
                   <SelectItem value="10000">10 km</SelectItem>
                   <SelectItem value="25000">25 km</SelectItem>
                   <SelectItem value="50000">50 km</SelectItem>
+                  <SelectItem value="100000">100 km</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={minRating} onValueChange={setMinRating}>
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Rating" /></SelectTrigger>
+                <SelectTrigger className="w-[130px]"><SelectValue placeholder="Rating" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">Any rating</SelectItem>
                   <SelectItem value="3">3.0+</SelectItem>
@@ -391,11 +566,21 @@ export default function VetContacts() {
                   <SelectItem value="4.5">4.5+</SelectItem>
                 </SelectContent>
               </Select>
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={openOnly} onCheckedChange={setOpenOnly} /> Open now
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={govOnly} onCheckedChange={setGovOnly} /> Government
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="distance">Sort: Distance</SelectItem>
+                  <SelectItem value="rating">Sort: Rating</SelectItem>
+                </SelectContent>
+              </Select>
+              <label className="flex items-center gap-2 text-sm"><Switch checked={openOnly} onCheckedChange={setOpenOnly} /> Open now</label>
+              <label className="flex items-center gap-2 text-sm"><Switch checked={govOnly} onCheckedChange={setGovOnly} /> Government</label>
+              <label className="flex items-center gap-2 text-sm"><Switch checked={emergencyOnly} onCheckedChange={setEmergencyOnly} /> Emergency</label>
+              <label className="flex items-center gap-2 text-sm" title="Only show results from your state">
+                <Switch
+                  checked={sameStateOnly}
+                  onCheckedChange={(v) => { setSameStateOnly(v); if (userLoc) fetchNearbyLive(); }}
+                /> Same state
               </label>
               <div className="ml-auto">
                 <Button onClick={() => fetchNearbyLive()} disabled={nearbyLoading} className="gap-2">
@@ -420,7 +605,12 @@ export default function VetContacts() {
                 <div className="flex-1">
                   <p className="font-medium">Location access denied</p>
                   <p className="mt-1 text-sm text-muted-foreground">{locError}</p>
-                  <Button size="sm" className="mt-3" onClick={() => locateMe()}>Try again</Button>
+                  <div className="mt-3 flex gap-2">
+                    <Button size="sm" onClick={() => locateMe()}>Try again</Button>
+                    <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>("input[placeholder^='Search village']")?.focus()}>
+                      Search manually
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -446,17 +636,22 @@ export default function VetContacts() {
               <Card className="col-span-full p-10 text-center">
                 <Radar className="mx-auto h-10 w-10 text-muted-foreground" />
                 <h3 className="mt-3 font-display text-lg font-semibold">Find vets near you</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Allow location access to discover veterinary doctors, hospitals & clinics around you.</p>
-                <Button className="mt-4 gap-2" onClick={() => fetchNearbyLive()}><Navigation className="h-4 w-4" /> Use my location</Button>
+                <p className="mt-1 text-sm text-muted-foreground">Use your GPS or search by village, mandal, district or PIN code.</p>
+                <div className="mt-4 flex justify-center gap-2">
+                  <Button className="gap-2" onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))}>
+                    <Navigation className="h-4 w-4" /> Use my GPS
+                  </Button>
+                </div>
               </Card>
             ) : filteredNearby.length === 0 ? (
               <Card className="col-span-full p-10 text-center">
                 <MapPin className="mx-auto h-10 w-10 text-muted-foreground" />
                 <h3 className="mt-3 font-display text-lg font-semibold">No nearby veterinary services found</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Try increasing the radius or clearing filters.</p>
-                <div className="mt-4 flex justify-center gap-2">
-                  <Button variant="outline" onClick={() => { setOpenOnly(false); setGovOnly(false); setMinRating("0"); }}>Clear filters</Button>
-                  <Button onClick={() => { setRadius(50000); fetchNearbyLive(50000); }}>Expand to 50 km</Button>
+                <p className="mt-1 text-sm text-muted-foreground">Try expanding the radius, clearing filters, or turning off "Same state".</p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <Button variant="outline" onClick={() => { setOpenOnly(false); setGovOnly(false); setEmergencyOnly(false); setMinRating("0"); }}>Clear filters</Button>
+                  <Button variant="outline" onClick={() => { setSameStateOnly(false); fetchNearbyLive(); }}>Allow other states</Button>
+                  <Button onClick={() => { setRadius(100000); fetchNearbyLive({ radius: 100000 }); }}>Expand to 100 km</Button>
                 </div>
               </Card>
             ) : (
@@ -474,7 +669,7 @@ export default function VetContacts() {
           </div>
         </TabsContent>
 
-        {/* DIRECTORY (curated DB) */}
+        {/* DIRECTORY */}
         <TabsContent value="list" className="mt-6 space-y-5">
           <Card className="overflow-hidden border-border/60">
             <div className="flex flex-wrap items-center gap-3 p-4">
@@ -573,4 +768,3 @@ export default function VetContacts() {
     </div>
   );
 }
-
