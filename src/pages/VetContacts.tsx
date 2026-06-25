@@ -491,7 +491,7 @@ export default function VetContacts() {
       const pins: { lat: number; lng: number; name: string; sub?: string; addr?: string; phone?: string; mapsUrl?: string }[] = [];
       filteredVets.forEach((v) => {
         if (v.latitude == null || v.longitude == null) return;
-        pins.push({ lat: v.latitude, lng: v.longitude, name: v.name, sub: v.hospital_name || undefined, addr: v.address || undefined, phone: v.phone, mapsUrl: v.google_maps_url || undefined });
+        pins.push({ lat: v.latitude, lng: v.longitude, name: v.name, sub: v.hospital_name || undefined, addr: v.address || undefined, phone: vetContacts[v.id]?.phone || undefined, mapsUrl: v.google_maps_url || undefined });
       });
       filteredNearby.forEach((p) => {
         if (p.lat == null || p.lng == null) return;
