@@ -83,7 +83,7 @@ export default function VetDashboard() {
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) console.error("[vet] profile load", error);
-      const row = data as VetProfile | null;
+      const row = data as unknown as VetProfile | null;
       setProfileRow(row);
       if (row) {
         setForm({
@@ -113,7 +113,7 @@ export default function VetDashboard() {
       console.error("[vet] appts load", error);
       toast.error("Could not load appointments");
     }
-    const rows = (data ?? []) as Appointment[];
+    const rows = (data ?? []) as unknown as Appointment[];
     setAppts(rows);
     // Resolve farmer display names
     const ids = Array.from(new Set(rows.map((r) => r.farmer_id)));
@@ -168,7 +168,7 @@ export default function VetDashboard() {
     toast.success("Profile saved. Verification stays pending until reviewed.");
     const { data } = await supabase
       .from("vet_profiles" as any).select("*").eq("user_id", user.id).maybeSingle();
-    setProfileRow(data as VetProfile);
+    setProfileRow(data as unknown as VetProfile);
   };
 
   const setStatus = async (a: Appointment, status: Status) => {
