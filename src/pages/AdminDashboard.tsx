@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [vets, setVets] = useState<any[]>([]);
   const [schemes, setSchemes] = useState<any[]>([]);
+  const [industries, setIndustries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Vet form
@@ -31,22 +32,46 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [u, p, o, v, s] = await Promise.all([
+      const [u, p, o, v, s, i] = await Promise.all([
         supabase.from("profiles").select("*, user_roles(role)"),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("vet_doctors").select("id,name,qualification,specialization,location,hospital_name,address,district,village,rating,total_ratings,available,status,suggested_by,created_at,updated_at").order("created_at", { ascending: false }),
         supabase.from("schemes").select("*").order("created_at", { ascending: false }),
+        supabase.from("dairy_companies").select("*").order("submitted_at", { ascending: false }),
       ]);
       setUsers(u.data || []);
       setProducts(p.data || []);
       setOrders(o.data || []);
       setVets(v.data || []);
       setSchemes(s.data || []);
+      setIndustries(i.data || []);
       setLoading(false);
     };
     fetchAll();
   }, []);
+
+  const approveIndustry = async (id: string) => {
+    const { error } = await supabase
+      .from("dairy_companies")
+      .update({ verification_status: "verified", rejection_reason: null, contact_phone_verified: true, contact_email_verified: true })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "verified", verified: true, rejection_reason: null } : c));
+    toast.success("Company verified — owner notified");
+  };
+
+  const rejectIndustry = async (id: string, reason: string) => {
+    const trimmed = reason.trim();
+    if (trimmed.length < 5) { toast.error("Please give a reason (min 5 chars)"); return; }
+    const { error } = await supabase
+      .from("dairy_companies")
+      .update({ verification_status: "rejected", rejection_reason: trimmed })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setIndustries(industries.map(c => c.id === id ? { ...c, verification_status: "rejected", verified: false, rejection_reason: trimmed } : c));
+    toast.success("Company rejected — owner notified");
+  };
 
   const approveProduct = async (id: string) => {
     const { error } = await supabase.from("products").update({ approval_status: "approved", rejection_reason: null }).eq("id", id);
