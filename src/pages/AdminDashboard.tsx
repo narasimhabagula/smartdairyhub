@@ -342,6 +342,7 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="orders" className="mt-4">
           <Card>
             <CardHeader><CardTitle className="font-display">All Orders</CardTitle></CardHeader>
             <CardContent>
