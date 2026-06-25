@@ -1,5 +1,5 @@
 // Server-authoritative checkout: re-reads product prices and computes totals
-// to prevent client-side price tampering.
+// to prevent client-side price tampering. Atomically decrements stock.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -59,7 +59,10 @@ Deno.serve(async (req) => {
       .from("products")
       .select("id, price, stock, approved")
       .in("id", ids);
-    if (prodErr) return json({ error: "Failed to load products" }, 500);
+    if (prodErr) {
+      console.error("place-order: failed to load products", prodErr);
+      return json({ error: "Failed to load products" }, 500);
+    }
     if (!products || products.length !== ids.length) {
       return json({ error: "One or more products not found" }, 400);
     }
@@ -75,24 +78,62 @@ Deno.serve(async (req) => {
       orderItemsPayload.push({ product_id: p.id, quantity: qty, price });
     }
 
+    // Atomically decrement stock for each product via SECURITY DEFINER RPC
+    // that uses SELECT ... FOR UPDATE. Roll back any successful decrements
+    // if a later product cannot be decremented.
+    const decremented: { id: string; qty: number }[] = [];
+    for (const item of orderItemsPayload) {
+      const { data: ok, error: decErr } = await admin.rpc("decrement_product_stock", {
+        _product_id: item.product_id,
+        _qty: item.quantity,
+      });
+      if (decErr || ok !== true) {
+        // Roll back already-decremented items
+        for (const d of decremented) {
+          await admin.rpc("decrement_product_stock", { _product_id: d.id, _qty: -d.qty }).catch(
+            (e) => console.error("place-order: rollback failed", e),
+          );
+        }
+        if (decErr) console.error("place-order: decrement failed", decErr);
+        return json({ error: "Insufficient stock" }, 400);
+      }
+      decremented.push({ id: item.product_id, qty: item.quantity });
+    }
+
     const { data: order, error: orderErr } = await admin
       .from("orders")
       .insert({ buyer_id: userId, total, shipping_address: shipping })
       .select()
       .single();
-    if (orderErr || !order) return json({ error: "Failed to create order" }, 500);
+    if (orderErr || !order) {
+      // Restore stock on failure
+      for (const d of decremented) {
+        await admin.rpc("decrement_product_stock", { _product_id: d.id, _qty: -d.qty }).catch(
+          (e) => console.error("place-order: rollback failed", e),
+        );
+      }
+      console.error("place-order: order insert failed", orderErr);
+      return json({ error: "Failed to create order" }, 500);
+    }
 
     const { error: itemsErr } = await admin
       .from("order_items")
       .insert(orderItemsPayload.map((i) => ({ ...i, order_id: order.id })));
     if (itemsErr) {
       await admin.from("orders").delete().eq("id", order.id);
+      for (const d of decremented) {
+        await admin.rpc("decrement_product_stock", { _product_id: d.id, _qty: -d.qty }).catch(
+          (e) => console.error("place-order: rollback failed", e),
+        );
+      }
+      console.error("place-order: order items insert failed", itemsErr);
       return json({ error: "Failed to save order items" }, 500);
     }
 
     return json({ order_id: order.id, total }, 200);
   } catch (e) {
-    return json({ error: (e as Error).message || "Unexpected error" }, 500);
+    console.error("place-order: unexpected error", e);
+    return json({ error: "An unexpected error occurred. Please try again." }, 500);
   }
 });
 
