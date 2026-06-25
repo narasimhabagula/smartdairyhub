@@ -42,11 +42,20 @@ const CATEGORY_MAP: Record<string, string[]> = {
 const ALLOWED_CATEGORIES = [...CATEGORY_MAP.feed];
 
 const SORTS = [
-  { id: "newest", label: "Newest" },
-  { id: "price_asc", label: "Price: Low to High" },
-  { id: "price_desc", label: "Price: High to Low" },
+  { id: "newest", label: "Newest first" },
+  { id: "price_asc", label: "Price: Lowest first" },
+  { id: "price_desc", label: "Price: Highest first" },
   { id: "rating", label: "Top Rated" },
 ];
+
+const FEED_TYPES = [
+  "all", "Dry", "Green", "Silage", "Concentrate", "Mineral Mixture", "Pellet", "TMR", "Supplement",
+];
+const matchesFeedType = (p: Product, type: string) => {
+  if (type === "all") return true;
+  const hay = `${p.name} ${p.description || ""} ${p.category}`.toLowerCase();
+  return hay.includes(type.toLowerCase());
+};
 
 const daysAgo = (iso: string) => {
   const d = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
