@@ -427,7 +427,8 @@ function ProductCard({
   const hasDelivery = (p.description || "").toLowerCase().includes("delivery");
   return (
     <Card className="group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl">
-      <div className="relative block aspect-[4/3] overflow-hidden bg-muted">
+      <button type="button" onClick={onDetails} aria-label="View details"
+        className="relative block aspect-[4/3] overflow-hidden bg-muted text-left">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name} loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
