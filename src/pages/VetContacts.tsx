@@ -157,44 +157,31 @@ export default function VetContacts() {
   const [vetContacts, setVetContacts] = useState<Record<string, { phone: string | null; email: string | null }>>({});
   const [vetContactErrors, setVetContactErrors] = useState<Record<string, string>>({});
   const [contactLoading, setContactLoading] = useState<Record<string, boolean>>({});
+  const [vetContactRetryIn, setVetContactRetryIn] = useState<Record<string, number>>({});
+  const vetContactRetryTimers = useRef<Record<string, number>>({});
+  const vetContactTickTimers = useRef<Record<string, number>>({});
   const contactToastShown = useRef(false);
+  const MAX_VET_CONTACT_RETRIES = 3;
 
-  // Filters
-  const [animal, setAnimal] = useState<string>("all");
-  const [radius, setRadius] = useState<number>(10000);
-  const [minRating, setMinRating] = useState<string>("0");
-  const [openOnly, setOpenOnly] = useState(false);
-  const [govOnly, setGovOnly] = useState(false);
-  const [emergencyOnly, setEmergencyOnly] = useState(false);
-  const [sameStateOnly, setSameStateOnly] = useState(true);
-  const [sortBy, setSortBy] = useState<"distance" | "rating">("distance");
-
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-
-  const fetchVets = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("vet_doctors").select(VET_SAFE_COLUMNS)
-      .eq("status", "approved").eq("available", true)
-      .order("rating", { ascending: false });
-    if (error) toast.error(error.message);
-    setVets((data as any[]) || []);
-    setLoading(false);
+  const clearVetContactRetryTimer = useCallback((id: string) => {
+    if (vetContactRetryTimers.current[id]) {
+      window.clearTimeout(vetContactRetryTimers.current[id]);
+      delete vetContactRetryTimers.current[id];
+    }
+    if (vetContactTickTimers.current[id]) {
+      window.clearInterval(vetContactTickTimers.current[id]);
+      delete vetContactTickTimers.current[id];
+    }
+    setVetContactRetryIn((prev) => { const { [id]: _, ...rest } = prev; return rest; });
   }, []);
 
-  const fetchPending = useCallback(async () => {
-    if (!isAdmin) return;
-    const { data } = await supabase.from("vet_doctors").select(VET_SAFE_COLUMNS)
-      .eq("status", "pending").order("created_at", { ascending: false });
-    setPending((data as any[]) || []);
-  }, [isAdmin]);
+  const clearAllVetContactRetryTimers = useCallback(() => {
+    Object.keys(vetContactRetryTimers.current).forEach((id) => clearVetContactRetryTimer(id));
+  }, [clearVetContactRetryTimer]);
 
-  useEffect(() => { fetchVets(); fetchPending(); }, [fetchVets, fetchPending]);
-
-  // Fetch a single vet's contact via security-definer RPC, with graceful error capture.
-  const fetchOneContact = useCallback(async (id: string) => {
+  // Fetch a single vet's contact via security-definer RPC, with graceful error capture and auto-retry.
+  const fetchOneContact = useCallback(async (id: string, attempt = 0) => {
+    clearVetContactRetryTimer(id);
     setContactLoading((p) => ({ ...p, [id]: true }));
     try {
       const { data, error } = await supabase.rpc("get_vet_contact", { _vet_id: id });
@@ -205,32 +192,56 @@ export default function VetContacts() {
       return true;
     } catch (e: any) {
       setVetContactErrors((prev) => ({ ...prev, [id]: e?.message || "Couldn't load contact info" }));
+      const next = attempt + 1;
+      if (next <= MAX_VET_CONTACT_RETRIES) {
+        const delay = Math.pow(2, next); // seconds: 2, 4, 8
+        setVetContactRetryIn((prev) => ({ ...prev, [id]: delay }));
+        vetContactTickTimers.current[id] = window.setInterval(() => {
+          setVetContactRetryIn((prev) => {
+            const current = prev[id] ?? 0;
+            return current > 0 ? { ...prev, [id]: current - 1 } : prev;
+          });
+        }, 1000);
+        vetContactRetryTimers.current[id] = window.setTimeout(() => {
+          clearVetContactRetryTimer(id);
+          fetchOneContact(id, next);
+        }, delay * 1000);
+      }
       return false;
     } finally {
       setContactLoading((p) => { const { [id]: _, ...rest } = p; return rest; });
     }
-  }, []);
+  }, [clearVetContactRetryTimer]);
 
   // Resolve phone/email through the security-definer RPC so we never read those columns directly.
   const loadVetContacts = useCallback(async (ids: string[]) => {
     if (!user || ids.length === 0) return;
     const missing = ids.filter((id) => !(id in vetContacts) && !(id in vetContactErrors));
     if (missing.length === 0) return;
-    const results = await Promise.all(missing.map((id) => fetchOneContact(id)));
+    const results = await Promise.all(missing.map((id) => fetchOneContact(id, 0)));
     if (!contactToastShown.current && results.some((ok) => !ok)) {
       contactToastShown.current = true;
-      toast.error("Some vet contact details couldn't be loaded. You can retry from the card.");
+      toast.error("Some vet contact details couldn't be loaded. Auto-retrying…");
     }
   }, [user, vetContacts, vetContactErrors, fetchOneContact]);
 
-  const retryVetContact = useCallback((id: string) => fetchOneContact(id), [fetchOneContact]);
+  const retryVetContact = useCallback((id: string) => {
+    clearVetContactRetryTimer(id);
+    setVetContactErrors((prev) => { const { [id]: _, ...rest } = prev; return rest; });
+    return fetchOneContact(id, 0);
+  }, [clearVetContactRetryTimer, fetchOneContact]);
+
   const retryAllFailedContacts = useCallback(async () => {
     const ids = Object.keys(vetContactErrors);
     if (!ids.length) return;
+    ids.forEach((id) => clearVetContactRetryTimer(id));
     setVetContactErrors({});
     contactToastShown.current = false;
-    await Promise.all(ids.map((id) => fetchOneContact(id)));
-  }, [vetContactErrors, fetchOneContact]);
+    await Promise.all(ids.map((id) => fetchOneContact(id, 0)));
+  }, [vetContactErrors, clearVetContactRetryTimer, fetchOneContact]);
+
+  // Clean up contact retry timers on unmount
+  useEffect(() => () => { clearAllVetContactRetryTimers(); }, [clearAllVetContactRetryTimers]);
 
   useEffect(() => { if (vets.length) loadVetContacts(vets.map((v) => v.id)); }, [vets, loadVetContacts]);
   useEffect(() => { if (pending.length) loadVetContacts(pending.map((p) => p.id)); }, [pending, loadVetContacts]);
