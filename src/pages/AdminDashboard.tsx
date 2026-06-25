@@ -49,9 +49,19 @@ export default function AdminDashboard() {
   }, []);
 
   const approveProduct = async (id: string) => {
-    await supabase.from("products").update({ approved: true }).eq("id", id);
-    setProducts(products.map(p => p.id === id ? { ...p, approved: true } : p));
+    const { error } = await supabase.from("products").update({ approval_status: "approved", rejection_reason: null }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setProducts(products.map(p => p.id === id ? { ...p, approval_status: "approved", approved: true, rejection_reason: null } : p));
     toast.success("Product approved");
+  };
+
+  const rejectProduct = async (id: string, reason: string) => {
+    const trimmed = reason.trim();
+    if (trimmed.length < 5) { toast.error("Please give a reason (min 5 chars)"); return; }
+    const { error } = await supabase.from("products").update({ approval_status: "rejected", rejection_reason: trimmed }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setProducts(products.map(p => p.id === id ? { ...p, approval_status: "rejected", approved: false, rejection_reason: trimmed } : p));
+    toast.success("Product rejected — seller notified");
   };
 
   const deleteProduct = async (id: string) => {
