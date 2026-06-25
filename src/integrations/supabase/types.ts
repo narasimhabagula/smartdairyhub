@@ -97,11 +97,14 @@ export type Database = {
       cattle_listings: {
         Row: {
           age: string | null
+          attrs: Json
           breed: string
           contact_phone: string | null
           created_at: string
           description: string | null
           district: string | null
+          gps_lat: number | null
+          gps_lng: number | null
           health_status: string | null
           id: string
           image_url: string | null
@@ -109,8 +112,10 @@ export type Database = {
           location: string | null
           milk_yield: string | null
           name: string
+          negotiable: boolean
           photos: string[]
           price: number
+          quantity: number | null
           seller_id: string
           state: string | null
           status: string
@@ -119,14 +124,19 @@ export type Database = {
           vaccination_status: string | null
           video_url: string | null
           village: string | null
+          weight: string | null
+          whatsapp_phone: string | null
         }
         Insert: {
           age?: string | null
+          attrs?: Json
           breed: string
           contact_phone?: string | null
           created_at?: string
           description?: string | null
           district?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
           health_status?: string | null
           id?: string
           image_url?: string | null
@@ -134,8 +144,10 @@ export type Database = {
           location?: string | null
           milk_yield?: string | null
           name: string
+          negotiable?: boolean
           photos?: string[]
           price: number
+          quantity?: number | null
           seller_id: string
           state?: string | null
           status?: string
@@ -144,14 +156,19 @@ export type Database = {
           vaccination_status?: string | null
           video_url?: string | null
           village?: string | null
+          weight?: string | null
+          whatsapp_phone?: string | null
         }
         Update: {
           age?: string | null
+          attrs?: Json
           breed?: string
           contact_phone?: string | null
           created_at?: string
           description?: string | null
           district?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
           health_status?: string | null
           id?: string
           image_url?: string | null
@@ -159,8 +176,10 @@ export type Database = {
           location?: string | null
           milk_yield?: string | null
           name?: string
+          negotiable?: boolean
           photos?: string[]
           price?: number
+          quantity?: number | null
           seller_id?: string
           state?: string | null
           status?: string
@@ -169,6 +188,8 @@ export type Database = {
           vaccination_status?: string | null
           video_url?: string | null
           village?: string | null
+          weight?: string | null
+          whatsapp_phone?: string | null
         }
         Relationships: []
       }
