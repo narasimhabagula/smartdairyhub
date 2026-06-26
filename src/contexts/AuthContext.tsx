@@ -76,6 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        if (event === "PASSWORD_RECOVERY") {
+          // Don't auto-redirect — let ResetPassword own the flow.
+          setLoading(false);
+          return;
+        }
         if (session?.user) {
           // Use setTimeout to avoid potential deadlock with Supabase auth
           setTimeout(async () => {
@@ -83,14 +88,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               await applyChosenRole(session.user.id);
               // Honor stored post-login destination (e.g. from Google OAuth redirect)
               try {
+                const inRecovery = sessionStorage.getItem("inPasswordRecovery");
                 const dest = sessionStorage.getItem("postLoginRedirect");
-                if (dest && dest.startsWith("/") && window.location.pathname !== dest) {
+                if (!inRecovery && dest && dest.startsWith("/") && !dest.startsWith("//") && window.location.pathname !== dest) {
                   sessionStorage.removeItem("postLoginRedirect");
                   window.history.replaceState({}, "", dest);
                   window.dispatchEvent(new PopStateEvent("popstate"));
                 }
               } catch {}
             }
+
             await Promise.all([
               fetchProfile(session.user.id),
               fetchRoles(session.user.id),
