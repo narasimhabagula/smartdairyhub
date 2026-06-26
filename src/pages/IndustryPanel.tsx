@@ -24,8 +24,9 @@ type Company = {
 
 type Rate = {
   id: string; company_id: string; milk_type: "cow" | "buffalo";
-  fat: number; snf: number; price_per_litre: number;
-  effective_date: string; collection_timing: string | null; notes: string | null; updated_at: string;
+  fat: number; snf: number; price_per_litre: number; bonus: number | null;
+  effective_date: string; effective_time: string | null;
+  collection_timing: string | null; notes: string | null; updated_at: string;
 };
 
 export default function IndustryPanel() {
