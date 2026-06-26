@@ -181,10 +181,9 @@ export default function Login() {
         <CardContent>
 
           <Tabs defaultValue="login">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login" className="gap-1.5"><LogIn className="h-3.5 w-3.5" /> Login</TabsTrigger>
               <TabsTrigger value="signup" className="gap-1.5"><UserPlus className="h-3.5 w-3.5" /> Sign Up</TabsTrigger>
-              <TabsTrigger value="phone" className="gap-1.5"><Phone className="h-3.5 w-3.5" /> Phone</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
@@ -224,7 +223,8 @@ export default function Login() {
                 </div>
                 <div>
                   <Label>Password</Label>
-                  <Input type="password" autoComplete="new-password" placeholder="Min 6 characters" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required maxLength={128} className="mt-1.5" />
+                  <Input type="password" autoComplete="new-password" placeholder="8+ chars, letters & number" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required maxLength={128} className="mt-1.5" />
+                  <p className="mt-1 text-xs text-muted-foreground">Min 8 characters, must include letters and a number. Breached passwords are blocked.</p>
                 </div>
                 <label className="flex items-start gap-2 text-xs text-muted-foreground">
                   <input type="checkbox" checked={signupAcceptTerms} onChange={(e) => setSignupAcceptTerms(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-input" />
@@ -236,55 +236,8 @@ export default function Login() {
                 </Button>
               </form>
             </TabsContent>
-
-            <TabsContent value="phone">
-              {phoneProviderUnavailable && (
-                <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">SMS provider not configured</p>
-                    <p className="mt-0.5 text-destructive/80">Phone OTP requires Twilio. Use Email login for now, or ask the admin to connect Twilio in backend settings.</p>
-                  </div>
-                </div>
-              )}
-              {!otpSent ? (
-                <form onSubmit={handleSendOtp} className="mt-4 space-y-4">
-                  <div>
-                    <Label>Indian Mobile Number</Label>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className="rounded-md border bg-muted px-3 py-2 text-sm text-muted-foreground">+91</span>
-                      <Input type="tel" inputMode="numeric" placeholder="9876543210" value={otpPhone} onChange={(e) => setOtpPhone(e.target.value)} required maxLength={15} />
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">10-digit mobile starting with 6-9.</p>
-                  </div>
-                  <Button type="submit" className="w-full gap-2" disabled={otpLoading}>
-                    <Phone className="h-4 w-4" />
-                    {otpLoading ? "Sending..." : "Send OTP"}
-                  </Button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="mt-4 space-y-4">
-                  <div>
-                    <Label>6-digit Code</Label>
-                    <Input type="text" inputMode="numeric" pattern="\d{6}" placeholder="123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} required maxLength={6} className="mt-1.5" />
-                    <p className="mt-1 text-xs text-muted-foreground">Sent to {formatIndianPhoneDisplay(otpPhone)}</p>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={otpLoading}>
-                    {otpLoading ? "Verifying..." : "Verify & Login"}
-                  </Button>
-                  <div className="flex items-center justify-between">
-                    <Button type="button" variant="ghost" size="sm" onClick={() => { setOtpSent(false); setOtpCode(""); setResendIn(0); }}>
-                      Change number
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" className="gap-1.5" disabled={resendIn > 0 || otpLoading} onClick={handleResendOtp}>
-                      <RotateCw className="h-3.5 w-3.5" />
-                      {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </TabsContent>
           </Tabs>
+
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
