@@ -187,15 +187,8 @@ export default function Navbar() {
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Follow us on Instagram"
-            className="flex items-center justify-center rounded-full p-2 text-foreground/70 transition-all hover:scale-110 hover:text-white"
-            style={{ background: "transparent" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-            }}
+            aria-label="Instagram"
+            className="flex items-center justify-center rounded-md p-2 text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
           >
             <Instagram className="h-5 w-5" />
           </a>
