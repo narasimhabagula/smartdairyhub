@@ -31,7 +31,7 @@ export default function SelectRole() {
   return (
     <div className="container py-12">
       <div className="mx-auto max-w-3xl text-center">
-        <img src="/logo.png" alt="Smart Dairy Hub" className="mx-auto mb-4 h-16 w-16 rounded-xl object-contain" />
+        <img src="/logo.png" alt="Smart Dairy Hub" className="mx-auto mb-4 h-20 w-20 object-contain" />
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Select your role to continue</h1>
         <p className="mt-3 text-muted-foreground">Smart Dairy Hub is built for two roles — farmers and verified dairy industries.</p>
       </div>
