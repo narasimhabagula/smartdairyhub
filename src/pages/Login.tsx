@@ -1,17 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn, UserPlus, Phone, RotateCw, AlertCircle } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
+import { normalizeIndianPhone } from "@/lib/phone";
 import { readChosenRole } from "@/lib/roles";
 import { Sprout, Handshake, Factory, Stethoscope } from "lucide-react";
 
@@ -24,21 +24,32 @@ const ROLE_META: Record<string, { label: string; Icon: any }> = {
 
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(128)
+  .refine((v) => /[A-Za-z]/.test(v) && /\d/.test(v), "Use letters and at least one number");
 const nameSchema = z.string().trim().min(2, "Name is too short").max(100);
-const otpSchema = z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code");
-
-const RESEND_SECONDS = 30;
 
 function friendlyAuthError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Email or password is incorrect. If you just signed up, create the account first.";
   if (m.includes("email not confirmed")) return "Please verify your email before logging in.";
   if (m.includes("user already registered")) return "An account with this email already exists. Try logging in.";
-  if (m.includes("unsupported phone provider") || m.includes("phone_provider_disabled"))
-    return "Phone OTP is not configured. Admin must connect an SMS provider (Twilio).";
+  if (m.includes("pwned") || m.includes("compromised") || m.includes("breach"))
+    return "This password has appeared in a known data breach. Please choose a different one.";
+  if (m.includes("weak password") || m.includes("password should")) return "Password is too weak. Use 8+ chars with letters and numbers.";
   if (m.includes("rate limit") || m.includes("too many")) return "Too many attempts. Please wait a minute and try again.";
   return message;
+}
+
+function safePostLoginDest(): string {
+  try {
+    const dest = sessionStorage.getItem("postLoginRedirect");
+    sessionStorage.removeItem("postLoginRedirect");
+    if (dest && dest.startsWith("/") && !dest.startsWith("//")) return dest;
+  } catch {}
+  return "/dashboard";
 }
 
 export default function Login() {
