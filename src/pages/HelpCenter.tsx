@@ -96,11 +96,16 @@ export default function HelpCenter() {
     }
   }, [transcript]);
 
-  // Auto-save recent searches after the user pauses typing or voice stops.
+  // Auto-save recent searches and log a search event after the user pauses.
   useEffect(() => {
     const trimmed = typedQuery.trim();
     if (!trimmed || listening) return;
-    const timer = setTimeout(() => addRecent(trimmed), 1500);
+    const timer = setTimeout(() => {
+      addRecent(trimmed);
+      void supabase
+        .from("help_search_events")
+        .insert({ event_type: "search", term: trimmed.slice(0, 120) });
+    }, 1500);
     return () => clearTimeout(timer);
   }, [typedQuery, listening, addRecent]);
 
@@ -108,6 +113,35 @@ export default function HelpCenter() {
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Analytics: top searches and top FAQs (last 30 days)
+  const [topSearches, setTopSearches] = useState<{ term: string; hits: number }[]>([]);
+  const [topFaqs, setTopFaqs] = useState<{ faq_index: number; hits: number }[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const loadStats = useCallback(async () => {
+    setLoadingStats(true);
+    const [s, f] = await Promise.all([
+      supabase.rpc("get_top_help_searches", { _limit: 8 }),
+      supabase.rpc("get_top_help_faqs", { _limit: 5 }),
+    ]);
+    if (!s.error && Array.isArray(s.data)) setTopSearches(s.data as any);
+    if (!f.error && Array.isArray(f.data)) setTopFaqs(f.data as any);
+    setLoadingStats(false);
+  }, []);
+
+  useEffect(() => {
+    void loadStats();
+    const id = setInterval(() => void loadStats(), 60_000);
+    return () => clearInterval(id);
+  }, [loadStats]);
+
+  function logFaqOpen(index: number) {
+    void supabase
+      .from("help_search_events")
+      .insert({ event_type: "faq_open", faq_index: index });
+  }
+
 
   const query = typedQuery + interimTranscript;
 
