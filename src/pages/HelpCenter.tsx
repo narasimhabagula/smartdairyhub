@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle, Clock, Trash2 } from "lucide-react";
+import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle, Clock, Trash2, TrendingUp, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const FAQS: { q: string; a: string; tags: string[] }[] = [
   { q: "How do I create an account?", a: "Tap Login, choose your role (Farmer or Industry), then sign up with email & password or Google. Phone OTP is also supported.", tags: ["account", "signup", "register"] },
