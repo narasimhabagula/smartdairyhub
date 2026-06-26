@@ -393,6 +393,13 @@ export type Database = {
             referencedRelation: "dairy_companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "milk_rates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "dairy_companies_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       milk_records: {
@@ -911,7 +918,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dairy_companies_public: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          id: string | null
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          name: string | null
+          phone: string | null
+          pin_code: string | null
+          state: string | null
+          verified: boolean | null
+          village: string | null
+          working_hours: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          id?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+          pin_code?: string | null
+          state?: string | null
+          verified?: boolean | null
+          village?: string | null
+          working_hours?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          id?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+          pin_code?: string | null
+          state?: string | null
+          verified?: boolean | null
+          village?: string | null
+          working_hours?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       decrement_product_stock: {

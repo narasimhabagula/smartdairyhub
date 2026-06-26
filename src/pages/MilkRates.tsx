@@ -82,7 +82,7 @@ export default function MilkRates() {
   const load = async () => {
     setLoading(true);
     const [{ data: c }, { data: r }] = await Promise.all([
-      supabase.from("dairy_companies").select("id,name,logo_url,district,state,phone,working_hours,verified,address,latitude,longitude"),
+      supabase.from("dairy_companies_public").select("id,name,logo_url,district,state,phone,working_hours,verified,address,latitude,longitude"),
       supabase.from("milk_rates").select("id,company_id,milk_type,fat,snf,price_per_litre,effective_date,collection_timing,updated_at").order("effective_date", { ascending: false }).order("updated_at", { ascending: false }),
     ]);
     setCompanies((c as Company[]) ?? []);
