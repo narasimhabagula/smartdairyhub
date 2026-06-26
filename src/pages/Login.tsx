@@ -79,27 +79,10 @@ export default function Login() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupAcceptTerms, setSignupAcceptTerms] = useState(false);
 
-  // Phone OTP
-  const [otpPhone, setOtpPhone] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [resendIn, setResendIn] = useState(0);
-  const [phoneProviderUnavailable, setPhoneProviderUnavailable] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
+    if (user) navigate(safePostLoginDest(), { replace: true });
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (resendIn <= 0) {
-      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-      return;
-    }
-    timerRef.current = setInterval(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [resendIn]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
