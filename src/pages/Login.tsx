@@ -157,68 +157,13 @@ export default function Login() {
       }
       if (result.redirected) return; // browser will redirect
       // Popup flow: session is set, go to dashboard
-      navigate("/dashboard");
+      navigate(safePostLoginDest());
     } catch (e: any) {
       console.error("[google] unexpected", e);
       toast.error("Google login failed. Please try again.");
     }
   };
 
-  const sendOtp = async (phoneE164: string) => {
-    setOtpLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: phoneE164 });
-    setOtpLoading(false);
-    if (error) {
-      console.error("[otp] send failed", error);
-      const friendly = friendlyAuthError(error.message);
-      toast.error(friendly);
-      if (error.message.toLowerCase().includes("phone") || (error as any).code === "phone_provider_disabled") {
-        setPhoneProviderUnavailable(true);
-      }
-      return false;
-    }
-    setOtpSent(true);
-    setResendIn(RESEND_SECONDS);
-    toast.success(`OTP sent to ${formatIndianPhoneDisplay(phoneE164)}`);
-    return true;
-  };
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const normalized = normalizeIndianPhone(otpPhone);
-    if (!normalized) return toast.error("Enter a valid 10-digit Indian mobile (e.g. 9876543210)");
-    setOtpPhone(normalized);
-    await sendOtp(normalized);
-  };
-
-  const handleResendOtp = async () => {
-    if (resendIn > 0) return;
-    const normalized = normalizeIndianPhone(otpPhone);
-    if (!normalized) return;
-    await sendOtp(normalized);
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const normalized = normalizeIndianPhone(otpPhone);
-    const code = otpSchema.safeParse(otpCode);
-    if (!normalized) return toast.error("Invalid phone number");
-    if (!code.success) return toast.error(code.error.issues[0].message);
-    setOtpLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      phone: normalized,
-      token: code.data,
-      type: "sms",
-    });
-    setOtpLoading(false);
-    if (error) {
-      console.error("[otp] verify failed", error);
-      toast.error(friendlyAuthError(error.message));
-    } else {
-      toast.success("Phone verified!");
-      navigate("/dashboard");
-    }
-  };
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
