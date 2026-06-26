@@ -22,8 +22,8 @@ export default function MyListings() {
     if (!user) return;
     setLoading(true);
     const [{ data: m }, { data: f }] = await Promise.all([
-      supabase.from("cattle_listings").select("*").eq("seller_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("cattle_favorites" as any).select("listing_id, cattle_listings(*)").eq("user_id", user.id),
+      supabase.from("cattle_listings_public" as any).select("*").eq("seller_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("cattle_favorites" as any).select("listing_id, cattle_listings:cattle_listings_public(*)").eq("user_id", user.id),
     ]);
     setMine(m || []);
     setFavs(((f as any[]) || []).map((r) => r.cattle_listings).filter(Boolean));

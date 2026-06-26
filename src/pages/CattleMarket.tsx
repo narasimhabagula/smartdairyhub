@@ -46,7 +46,7 @@ export default function CattleMarket() {
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
-      let q = supabase.from("cattle_listings").select("*")
+      let q = supabase.from("cattle_listings_public" as any).select("*")
         .eq("status", "active").eq("listing_type", "sell")
         .in("type", ALLOWED);
       if (animal !== "all") q = q.eq("type", animal);
