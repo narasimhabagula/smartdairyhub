@@ -92,6 +92,13 @@ export type Database = {
             referencedRelation: "cattle_listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cattle_favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "cattle_listings_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cattle_listings: {
@@ -224,6 +231,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "cattle_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cattle_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "cattle_listings_public"
             referencedColumns: ["id"]
           },
         ]
@@ -885,6 +899,13 @@ export type Database = {
             referencedRelation: "vet_doctors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vet_profiles_vet_doctor_id_fkey"
+            columns: ["vet_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "vet_doctors_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       vet_ratings: {
@@ -920,10 +941,110 @@ export type Database = {
             referencedRelation: "vet_doctors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vet_ratings_vet_id_fkey"
+            columns: ["vet_id"]
+            isOneToOne: false
+            referencedRelation: "vet_doctors_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
+      cattle_listings_public: {
+        Row: {
+          age: string | null
+          attrs: Json | null
+          breed: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          health_status: string | null
+          id: string | null
+          image_url: string | null
+          listing_type: string | null
+          location: string | null
+          milk_yield: string | null
+          name: string | null
+          negotiable: boolean | null
+          photos: string[] | null
+          price: number | null
+          quantity: number | null
+          seller_id: string | null
+          state: string | null
+          status: string | null
+          type: string | null
+          updated_at: string | null
+          vaccination_status: string | null
+          video_url: string | null
+          village: string | null
+          weight: string | null
+        }
+        Insert: {
+          age?: string | null
+          attrs?: Json | null
+          breed?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          health_status?: string | null
+          id?: string | null
+          image_url?: string | null
+          listing_type?: string | null
+          location?: string | null
+          milk_yield?: string | null
+          name?: string | null
+          negotiable?: boolean | null
+          photos?: string[] | null
+          price?: number | null
+          quantity?: number | null
+          seller_id?: string | null
+          state?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          vaccination_status?: string | null
+          video_url?: string | null
+          village?: string | null
+          weight?: string | null
+        }
+        Update: {
+          age?: string | null
+          attrs?: Json | null
+          breed?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          health_status?: string | null
+          id?: string | null
+          image_url?: string | null
+          listing_type?: string | null
+          location?: string | null
+          milk_yield?: string | null
+          name?: string | null
+          negotiable?: boolean | null
+          photos?: string[] | null
+          price?: number | null
+          quantity?: number | null
+          seller_id?: string | null
+          state?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          vaccination_status?: string | null
+          video_url?: string | null
+          village?: string | null
+          weight?: string | null
+        }
+        Relationships: []
+      }
       dairy_companies_public: {
         Row: {
           address: string | null
@@ -978,11 +1099,84 @@ export type Database = {
         }
         Relationships: []
       }
+      vet_doctors_public: {
+        Row: {
+          address: string | null
+          available: boolean | null
+          created_at: string | null
+          district: string | null
+          google_maps_url: string | null
+          hospital_name: string | null
+          id: string | null
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          name: string | null
+          qualification: string | null
+          rating: number | null
+          specialization: string | null
+          status: string | null
+          suggested_by: string | null
+          total_ratings: number | null
+          updated_at: string | null
+          village: string | null
+        }
+        Insert: {
+          address?: string | null
+          available?: boolean | null
+          created_at?: string | null
+          district?: string | null
+          google_maps_url?: string | null
+          hospital_name?: string | null
+          id?: string | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          name?: string | null
+          qualification?: string | null
+          rating?: number | null
+          specialization?: string | null
+          status?: string | null
+          suggested_by?: string | null
+          total_ratings?: number | null
+          updated_at?: string | null
+          village?: string | null
+        }
+        Update: {
+          address?: string | null
+          available?: boolean | null
+          created_at?: string | null
+          district?: string | null
+          google_maps_url?: string | null
+          hospital_name?: string | null
+          id?: string | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          name?: string | null
+          qualification?: string | null
+          rating?: number | null
+          specialization?: string | null
+          status?: string | null
+          suggested_by?: string | null
+          total_ratings?: number | null
+          updated_at?: string | null
+          village?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       decrement_product_stock: {
         Args: { _product_id: string; _qty: number }
         Returns: boolean
+      }
+      get_cattle_contact: {
+        Args: { _listing_id: string }
+        Returns: {
+          contact_phone: string
+          whatsapp_phone: string
+        }[]
       }
       get_display_names: {
         Args: { _ids: string[] }
@@ -990,6 +1184,47 @@ export type Database = {
           full_name: string
           user_id: string
         }[]
+      }
+      get_own_cattle_listing: {
+        Args: { _listing_id: string }
+        Returns: {
+          age: string | null
+          attrs: Json
+          breed: string
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          district: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          health_status: string | null
+          id: string
+          image_url: string | null
+          listing_type: string
+          location: string | null
+          milk_yield: string | null
+          name: string
+          negotiable: boolean
+          photos: string[]
+          price: number
+          quantity: number | null
+          seller_id: string
+          state: string | null
+          status: string
+          type: string
+          updated_at: string
+          vaccination_status: string | null
+          video_url: string | null
+          village: string | null
+          weight: string | null
+          whatsapp_phone: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "cattle_listings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_seller_contact: {
         Args: { _seller_id: string }
