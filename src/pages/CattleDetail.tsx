@@ -170,13 +170,32 @@ export default function CattleDetail() {
             </CardContent>
           </Card>
 
-          <div className="flex gap-2">
-            <Button variant={fav ? "default" : "outline"} onClick={toggleFav} className="flex-1 gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button variant={fav ? "default" : "outline"} onClick={toggleFav} className="flex-1 gap-2 min-w-[120px]">
               <Heart className={`h-4 w-4 ${fav ? "fill-current" : ""}`} /> {fav ? "Saved" : "Save"}
             </Button>
+            <Button
+              variant="outline"
+              className="flex-1 gap-2 min-w-[120px]"
+              onClick={() => {
+                const url = window.location.href;
+                const text = `${listing.name} — ${listing.breed || listing.type} on Smart Dairy Hub`;
+                if (navigator.share) navigator.share({ title: listing.name, text, url }).catch(() => {});
+                else navigator.clipboard?.writeText(url).then(() => toast.success("Link copied"));
+              }}
+            >
+              <Share2 className="h-4 w-4" /> Share
+            </Button>
+            {loc && (
+              <Button variant="outline" className="flex-1 gap-2 min-w-[120px]" asChild>
+                <a target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`}>
+                  <Navigation className="h-4 w-4" /> Directions
+                </a>
+              </Button>
+            )}
             <Dialog open={reportOpen} onOpenChange={setReportOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex-1 gap-2"><Flag className="h-4 w-4" /> Report</Button>
+                <Button variant="outline" className="flex-1 gap-2 min-w-[120px]"><Flag className="h-4 w-4" /> Report</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Report this listing</DialogTitle></DialogHeader>
