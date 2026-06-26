@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle } from "lucide-react";
+import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle, Clock, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -35,14 +35,35 @@ const LANG_TO_SR_LOCALE: Record<string, string> = {
   pa: "pa-IN",
 };
 
+const RECENT_KEY = "sdh-help-searches";
+const MAX_RECENT = 10;
+
 function getSpeechLocale(i18nLang: string) {
   const base = i18nLang?.slice(0, 2).toLowerCase() || "en";
   return LANG_TO_SR_LOCALE[base] || "en-IN";
 }
 
+function loadRecent(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistRecent(list: string[]) {
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+  } catch {
+    // ignore storage errors (e.g. private mode)
+  }
+}
+
 export default function HelpCenter() {
   const { i18n } = useTranslation();
   const [typedQuery, setTypedQuery] = useState("");
+  const [recent, setRecent] = useState<string[]>(loadRecent);
   const {
     transcript,
     interimTranscript,
@@ -54,7 +75,17 @@ export default function HelpCenter() {
     reset,
   } = useSpeechRecognition(getSpeechLocale(i18n.language));
 
-  // Combine typed text with dictated transcript. Dictation appends to the query.
+  const addRecent = useCallback((term: string) => {
+    const trimmed = term.trim();
+    if (trimmed.length < 2) return;
+    setRecent((prev) => {
+      const next = [trimmed, ...prev.filter((s) => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, MAX_RECENT);
+      persistRecent(next);
+      return next;
+    });
+  }, []);
+
+  // Append dictated transcript to the typed query.
   useEffect(() => {
     if (transcript) {
       setTypedQuery((prev) => {
@@ -63,6 +94,14 @@ export default function HelpCenter() {
       });
     }
   }, [transcript]);
+
+  // Auto-save recent searches after the user pauses typing or voice stops.
+  useEffect(() => {
+    const trimmed = typedQuery.trim();
+    if (!trimmed || listening) return;
+    const timer = setTimeout(() => addRecent(trimmed), 1500);
+    return () => clearTimeout(timer);
+  }, [typedQuery, listening, addRecent]);
 
   // Surface permission/network errors as a toast (once per error)
   useEffect(() => {
@@ -82,6 +121,18 @@ export default function HelpCenter() {
   function clearQuery() {
     setTypedQuery("");
     reset();
+  }
+
+  function runRecent(term: string) {
+    stop();
+    setTypedQuery(term);
+    reset();
+    addRecent(term);
+  }
+
+  function clearRecent() {
+    setRecent([]);
+    persistRecent([]);
   }
 
   function toggleVoice() {
@@ -169,6 +220,39 @@ export default function HelpCenter() {
           )}
         </div>
       </div>
+
+      {recent.length > 0 && (
+        <div className="mx-auto mt-4 max-w-3xl">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-muted-foreground">Recent searches</p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearRecent}
+              className="h-7 text-xs text-muted-foreground hover:text-destructive"
+              aria-label="Clear recent searches"
+            >
+              <Trash2 className="mr-1 h-3 w-3" /> Clear all
+            </Button>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {recent.map((term, idx) => (
+              <Button
+                key={idx}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => runRecent(term)}
+                title="Re-run this search"
+              >
+                <Clock className="mr-1.5 h-3 w-3 text-muted-foreground" /> {term}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Card id="faqs" className="mx-auto mt-8 max-w-3xl">
         <CardHeader>
