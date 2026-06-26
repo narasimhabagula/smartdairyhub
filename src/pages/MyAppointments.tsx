@@ -45,12 +45,14 @@ export default function MyAppointments() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("all");
 
+  const APPT_COLS = "id,farmer_id,vet_id,animal_type,symptoms,mode,status,scheduled_at,location,notes,prescription,created_at,updated_at";
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
     const { data, error } = await supabase
       .from("appointments")
-      .select("*")
+      .select(APPT_COLS)
       .eq("farmer_id", user.id)
       .order("created_at", { ascending: false });
     if (error) {
@@ -58,7 +60,14 @@ export default function MyAppointments() {
       setLoading(false);
       return;
     }
-    const rows = (data ?? []) as Appointment[];
+    const baseRows = (data ?? []) as unknown as Appointment[];
+    // Fetch contact phone for each appointment via secure RPC (farmer's own phone)
+    const phones = await Promise.all(
+      baseRows.map((r) =>
+        supabase.rpc("get_appointment_contact_phone" as any, { _appointment_id: r.id } as any).then(({ data }) => data as unknown as string | null),
+      ),
+    );
+    const rows = baseRows.map((r, i) => ({ ...r, contact_phone: phones[i] ?? null }));
     setItems(rows);
     const ids = Array.from(new Set(rows.map((r) => r.vet_id)));
     if (ids.length) {

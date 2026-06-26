@@ -1171,6 +1171,10 @@ export type Database = {
         Args: { _product_id: string; _qty: number }
         Returns: boolean
       }
+      get_appointment_contact_phone: {
+        Args: { _appointment_id: string }
+        Returns: string
+      }
       get_cattle_contact: {
         Args: { _listing_id: string }
         Returns: {
