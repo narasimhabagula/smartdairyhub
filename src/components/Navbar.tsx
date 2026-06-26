@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Instagram } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Headset } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
 
