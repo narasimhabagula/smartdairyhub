@@ -20,7 +20,14 @@ export default function ProtectedRoute({ children, requiredRole }: Props) {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    // Preserve the destination so AuthContext can restore it after login.
+    try {
+      const dest = window.location.pathname + window.location.search;
+      if (dest && dest !== "/login") sessionStorage.setItem("postLoginRedirect", dest);
+    } catch {}
+    return <Navigate to="/login" replace />;
+  }
   if (requiredRole && !hasRole(requiredRole) && !hasRole("admin")) {
     return <Navigate to="/dashboard" replace />;
   }
