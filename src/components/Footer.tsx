@@ -22,7 +22,23 @@ export default function Footer() {
             <div className="mt-4 flex gap-3 text-muted-foreground">
               <a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Facebook className="h-5 w-5" /></a>
               <a href="https://twitter.com" aria-label="Twitter" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Twitter className="h-5 w-5" /></a>
-              <a href={INSTAGRAM_URL} aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110 hover:text-[#E1306C]"><Instagram className="h-5 w-5" /></a>
+              <a
+                href={INSTAGRAM_URL}
+                aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full p-1 text-foreground/70 transition-all hover:scale-110 hover:text-white"
+                style={{ background: "transparent" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "";
+                }}
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
               <a href="https://youtube.com" aria-label="YouTube" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Youtube className="h-5 w-5" /></a>
               <a href="https://linkedin.com" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Linkedin className="h-5 w-5" /></a>
             </div>
