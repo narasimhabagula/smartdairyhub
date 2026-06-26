@@ -23,7 +23,7 @@ export default function Navbar() {
 
   const navItems = [
     { label: t("nav.dashboard"), to: "/dashboard", icon: LayoutDashboard, auth: true },
-    { label: "Milk Rates", to: "/milk-rates", icon: TrendingUp, auth: false },
+    { label: t("nav.milkRates", { defaultValue: "Milk Rates" }), to: "/milk-rates", icon: TrendingUp, auth: false },
     { label: t("nav.marketplace"), to: "/marketplace", icon: Store, auth: false },
     { label: t("nav.cattle"), to: "/cattle-market", icon: ShoppingCart, auth: false },
     { label: t("nav.vet"), to: "/vet-contacts", icon: Stethoscope, auth: false },
