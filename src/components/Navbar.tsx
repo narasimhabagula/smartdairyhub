@@ -59,7 +59,7 @@ export default function Navbar() {
             width={48}
             height={48}
             decoding="async"
-            fetchPriority="high"
+            loading="eager"
             className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9 md:h-11 md:w-11"
           />
           <span className="hidden sm:inline">{t("brand")}</span>
