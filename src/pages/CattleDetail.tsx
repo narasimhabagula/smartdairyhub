@@ -26,7 +26,7 @@ export default function CattleDetail() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from("cattle_listings").select("*").eq("id", id!).single();
+      const { data } = await supabase.from("cattle_listings_public" as any).select("*").eq("id", id!).single();
       if (!data) { setLoading(false); return; }
       setListing(data);
       const { data: prof } = await supabase.rpc("get_display_names", { _ids: [(data as any).seller_id] } as any);

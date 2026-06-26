@@ -99,7 +99,8 @@ export default function CattleNew() {
       return;
     }
     (async () => {
-      const { data, error } = await supabase.from("cattle_listings").select("*").eq("id", id!).single();
+      const { data: rows, error } = await supabase.rpc("get_own_cattle_listing" as any, { _listing_id: id! } as any);
+      const data: any = Array.isArray(rows) ? rows[0] : rows;
       if (error || !data) { toast.error("Listing not found"); navigate("/my-listings"); return; }
       if (data.seller_id !== user?.id) { toast.error("Not your listing"); navigate("/my-listings"); return; }
       const d: any = data;
