@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, MessageCircle, MapPin, IndianRupee, Heart, Flag, User, ArrowLeft, Loader2 } from "lucide-react";
+import { Phone, MessageCircle, MapPin, IndianRupee, Heart, Flag, User, ArrowLeft, Loader2, Share2, Navigation } from "lucide-react";
 import { telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
 import { toast } from "sonner";
 
