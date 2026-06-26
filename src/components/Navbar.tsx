@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Instagram } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
 
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
+
+const INSTAGRAM_URL = "https://www.instagram.com/smart_dairy_hub";
 
 export default function Navbar() {
   const location = useLocation();
@@ -88,6 +90,23 @@ export default function Navbar() {
           </Link>
 
           {user && <NotificationBell />}
+
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Follow us on Instagram"
+            className="ml-1 hidden items-center justify-center rounded-full p-2 text-foreground/70 transition-all hover:scale-110 hover:text-white hover:shadow-md lg:flex"
+            style={{ background: "transparent" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <Instagram className="h-[18px] w-[18px]" />
+          </a>
 
 
           <DropdownMenu>
@@ -170,9 +189,27 @@ export default function Navbar() {
         </div>
 
         {/* Mobile toggle */}
-        <button onClick={() => setOpen(!open)} className="lg:hidden text-foreground" aria-label="Toggle menu">
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-1 lg:hidden">
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Follow us on Instagram"
+            className="flex items-center justify-center rounded-full p-2 text-foreground/70 transition-all hover:scale-110 hover:text-white"
+            style={{ background: "transparent" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <Instagram className="h-5 w-5" />
+          </a>
+          <button onClick={() => setOpen(!open)} className="text-foreground" aria-label="Toggle menu">
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

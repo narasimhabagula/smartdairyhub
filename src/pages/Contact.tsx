@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Send, Instagram } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,10 +60,22 @@ export default function Contact() {
         <p className="mt-2 text-muted-foreground">We'd love to hear from you.</p>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
+      <div className="mt-8 grid gap-6 md:grid-cols-4">
         <Card><CardContent className="p-5"><Mail className="h-5 w-5 text-primary" /><p className="mt-2 font-semibold">Company Email</p><a href="mailto:contact@smartdairyhub.in" className="text-sm text-muted-foreground hover:text-primary">contact@smartdairyhub.in</a></CardContent></Card>
         <Card><CardContent className="p-5"><Phone className="h-5 w-5 text-primary" /><p className="mt-2 font-semibold">Customer Care</p><a href="tel:18001801551" className="text-sm text-muted-foreground hover:text-primary">1800-180-1551</a></CardContent></Card>
         <Card><CardContent className="p-5"><Clock className="h-5 w-5 text-primary" /><p className="mt-2 font-semibold">Business Hours</p><p className="text-sm text-muted-foreground">Mon – Sat, 9:00 AM – 7:00 PM</p></CardContent></Card>
+        <Card><CardContent className="p-5">
+          <Instagram className="h-5 w-5 text-primary" />
+          <p className="mt-2 font-semibold">Instagram</p>
+          <a
+            href="https://www.instagram.com/smart_dairy_hub"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-primary"
+          >
+            @smart_dairy_hub
+          </a>
+        </CardContent></Card>
       </div>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
