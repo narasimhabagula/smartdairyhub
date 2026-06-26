@@ -347,10 +347,12 @@ export type Database = {
       }
       milk_rates: {
         Row: {
+          bonus: number | null
           collection_timing: string | null
           company_id: string
           created_at: string
           effective_date: string
+          effective_time: string | null
           fat: number
           id: string
           milk_type: string
@@ -360,10 +362,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bonus?: number | null
           collection_timing?: string | null
           company_id: string
           created_at?: string
           effective_date?: string
+          effective_time?: string | null
           fat: number
           id?: string
           milk_type: string
@@ -373,10 +377,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bonus?: number | null
           collection_timing?: string | null
           company_id?: string
           created_at?: string
           effective_date?: string
+          effective_time?: string | null
           fat?: number
           id?: string
           milk_type?: string
