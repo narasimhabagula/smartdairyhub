@@ -101,19 +101,27 @@ export default function VetDashboard() {
   }, [user]);
 
   // Load appointments
+  const APPT_COLS = "id,farmer_id,vet_id,animal_type,symptoms,mode,status,scheduled_at,location,notes,prescription,created_at,updated_at";
   const loadAppts = async () => {
     if (!user) return;
     setApptLoading(true);
     const { data, error } = await supabase
       .from("appointments" as any)
-      .select("*")
+      .select(APPT_COLS)
       .eq("vet_id", user.id)
       .order("created_at", { ascending: false });
     if (error) {
       console.error("[vet] appts load", error);
       toast.error("Could not load appointments");
     }
-    const rows = (data ?? []) as unknown as Appointment[];
+    const baseRows = (data ?? []) as unknown as Appointment[];
+    // Vet fetches farmer contact phone via secure RPC (allowed: assigned vet)
+    const phones = await Promise.all(
+      baseRows.map((r) =>
+        supabase.rpc("get_appointment_contact_phone" as any, { _appointment_id: r.id } as any).then(({ data }) => data as unknown as string | null),
+      ),
+    );
+    const rows = baseRows.map((r, i) => ({ ...r, contact_phone: phones[i] ?? null }));
     setAppts(rows);
     // Resolve farmer display names
     const ids = Array.from(new Set(rows.map((r) => r.farmer_id)));
