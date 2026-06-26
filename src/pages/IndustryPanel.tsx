@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Factory, Plus, Trash2, ImagePlus, Save, ShieldCheck, ShieldAlert, ShieldQuestion, FileText, Lock } from "lucide-react";
+import { Factory, Plus, Trash2, ImagePlus, Save, ShieldCheck, ShieldAlert, ShieldQuestion, FileText, Lock, Pencil, X, Check } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,8 +24,9 @@ type Company = {
 
 type Rate = {
   id: string; company_id: string; milk_type: "cow" | "buffalo";
-  fat: number; snf: number; price_per_litre: number;
-  effective_date: string; collection_timing: string | null; notes: string | null; updated_at: string;
+  fat: number; snf: number; price_per_litre: number; bonus: number | null;
+  effective_date: string; effective_time: string | null;
+  collection_timing: string | null; notes: string | null; updated_at: string;
 };
 
 export default function IndustryPanel() {
@@ -252,34 +254,52 @@ function RatesManager({ company, rates, onChange }: { company: Company; rates: R
     fat: "3.5",
     snf: "8.5",
     price_per_litre: "",
+    bonus: "",
     effective_date: new Date().toISOString().slice(0, 10),
-    collection_timing: "",
+    effective_time: "",
+    collection_timing: "morning",
     notes: "",
   };
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<typeof empty | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const refresh = async () => {
-    const { data } = await supabase.from("milk_rates").select("*").eq("company_id", company.id).order("effective_date", { ascending: false });
+    const { data } = await supabase.from("milk_rates").select("*").eq("company_id", company.id).order("effective_date", { ascending: false }).order("updated_at", { ascending: false });
     onChange((data as Rate[]) ?? []);
   };
 
+  const validate = (f: typeof empty): string | null => {
+    const price = parseFloat(f.price_per_litre);
+    const fat = parseFloat(f.fat);
+    const snf = parseFloat(f.snf);
+    if (!isFinite(price) || price <= 0) return "Enter a valid price (> 0)";
+    if (!isFinite(fat) || fat < 1 || fat > 15) return "FAT must be between 1 and 15";
+    if (!isFinite(snf) || snf < 1 || snf > 15) return "SNF must be between 1 and 15";
+    if (f.bonus && (!isFinite(parseFloat(f.bonus)) || parseFloat(f.bonus) < 0)) return "Bonus must be 0 or more";
+    if (!f.collection_timing) return "Session is required";
+    if (!f.effective_date) return "Effective date is required";
+    return null;
+  };
+
+  const toPayload = (f: typeof empty) => ({
+    milk_type: f.milk_type,
+    fat: parseFloat(f.fat),
+    snf: parseFloat(f.snf),
+    price_per_litre: parseFloat(f.price_per_litre),
+    bonus: f.bonus ? parseFloat(f.bonus) : null,
+    effective_date: f.effective_date,
+    effective_time: f.effective_time || null,
+    collection_timing: f.collection_timing || null,
+    notes: f.notes || null,
+  });
+
   const add = async () => {
-    const price = parseFloat(form.price_per_litre);
-    const fat = parseFloat(form.fat);
-    const snf = parseFloat(form.snf);
-    if (!isFinite(price) || price <= 0) return toast.error("Enter a valid price");
-    if (!isFinite(fat) || fat <= 0 || fat > 15) return toast.error("FAT must be between 0 and 15");
-    if (!isFinite(snf) || snf <= 0 || snf > 15) return toast.error("SNF must be between 0 and 15");
+    const err = validate(form); if (err) return toast.error(err);
     setSaving(true);
-    const { error } = await supabase.from("milk_rates").insert({
-      company_id: company.id,
-      milk_type: form.milk_type,
-      fat, snf, price_per_litre: price,
-      effective_date: form.effective_date,
-      collection_timing: form.collection_timing || null,
-      notes: form.notes || null,
-    });
+    const { error } = await supabase.from("milk_rates").insert({ company_id: company.id, ...toPayload(form) });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Rate published");
@@ -287,22 +307,52 @@ function RatesManager({ company, rates, onChange }: { company: Company; rates: R
     refresh();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Delete this rate?")) return;
-    const { error } = await supabase.from("milk_rates").delete().eq("id", id);
+  const startEdit = (r: Rate) => {
+    setEditingId(r.id);
+    setEditForm({
+      milk_type: r.milk_type,
+      fat: String(r.fat), snf: String(r.snf),
+      price_per_litre: String(r.price_per_litre),
+      bonus: r.bonus != null ? String(r.bonus) : "",
+      effective_date: r.effective_date,
+      effective_time: r.effective_time ? r.effective_time.slice(0,5) : "",
+      collection_timing: r.collection_timing || "morning",
+      notes: r.notes || "",
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !editForm) return;
+    const err = validate(editForm); if (err) return toast.error(err);
+    const { error } = await supabase.from("milk_rates").update(toPayload(editForm)).eq("id", editingId);
     if (error) return toast.error(error.message);
+    toast.success("Rate updated");
+    setEditingId(null); setEditForm(null);
+    refresh();
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from("milk_rates").delete().eq("id", deleteId);
+    setDeleteId(null);
+    if (error) return toast.error(error.message);
+    toast.success("Rate deleted");
     refresh();
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Publish today's rates</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between gap-3">
+        <div>
+          <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Update Today's Milk Rates</CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">Publish a new rate or edit any existing one. Farmers see updates instantly.</p>
+        </div>
+        <Badge variant="secondary" className="hidden sm:inline-flex">{rates.length} published</Badge>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-7">
-          <div className="md:col-span-1">
-            <Label className="mb-1.5 block text-xs">Milk</Label>
+        <div className="grid gap-3 md:grid-cols-4">
+          <div>
+            <Label className="mb-1.5 block text-xs">Milk type *</Label>
             <Select value={form.milk_type} onValueChange={(v) => setForm({ ...form, milk_type: v as any })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -311,50 +361,121 @@ function RatesManager({ company, rates, onChange }: { company: Company; rates: R
               </SelectContent>
             </Select>
           </div>
-          <Field label="FAT %"><Input inputMode="decimal" value={form.fat} onChange={(e) => setForm({ ...form, fat: e.target.value })} /></Field>
-          <Field label="SNF %"><Input inputMode="decimal" value={form.snf} onChange={(e) => setForm({ ...form, snf: e.target.value })} /></Field>
-          <Field label="₹/Litre"><Input inputMode="decimal" placeholder="42.00" value={form.price_per_litre} onChange={(e) => setForm({ ...form, price_per_litre: e.target.value })} /></Field>
-          <Field label="Effective"><Input type="date" value={form.effective_date} onChange={(e) => setForm({ ...form, effective_date: e.target.value })} /></Field>
-          <Field label="Timing"><Input placeholder="Morning / Evening" value={form.collection_timing} onChange={(e) => setForm({ ...form, collection_timing: e.target.value })} /></Field>
-          <div className="flex items-end">
-            <Button className="w-full gap-2" onClick={add} disabled={saving}><Plus className="h-4 w-4" />{saving ? "Saving…" : "Publish"}</Button>
+          <div>
+            <Label className="mb-1.5 block text-xs">Session *</Label>
+            <Select value={form.collection_timing} onValueChange={(v) => setForm({ ...form, collection_timing: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="morning">Morning</SelectItem>
+                <SelectItem value="evening">Evening</SelectItem>
+                <SelectItem value="both">Both</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          <Field label="FAT % *"><Input inputMode="decimal" value={form.fat} onChange={(e) => setForm({ ...form, fat: e.target.value })} /></Field>
+          <Field label="SNF % *"><Input inputMode="decimal" value={form.snf} onChange={(e) => setForm({ ...form, snf: e.target.value })} /></Field>
+          <Field label="Base price ₹/L *"><Input inputMode="decimal" placeholder="42.00" value={form.price_per_litre} onChange={(e) => setForm({ ...form, price_per_litre: e.target.value })} /></Field>
+          <Field label="Bonus ₹/L"><Input inputMode="decimal" placeholder="optional" value={form.bonus} onChange={(e) => setForm({ ...form, bonus: e.target.value })} /></Field>
+          <Field label="Effective date *"><Input type="date" value={form.effective_date} onChange={(e) => setForm({ ...form, effective_date: e.target.value })} /></Field>
+          <Field label="Effective time"><Input type="time" value={form.effective_time} onChange={(e) => setForm({ ...form, effective_time: e.target.value })} /></Field>
         </div>
         <Field label="Notes (optional)"><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} maxLength={300} /></Field>
+        <div className="flex justify-end">
+          <Button onClick={add} disabled={saving} className="gap-2"><Plus className="h-4 w-4" />{saving ? "Saving…" : "Publish rate"}</Button>
+        </div>
 
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs">
               <tr>
                 <th className="px-3 py-2">Date</th>
+                <th className="px-3 py-2">Session</th>
                 <th className="px-3 py-2">Type</th>
                 <th className="px-3 py-2">FAT</th>
                 <th className="px-3 py-2">SNF</th>
                 <th className="px-3 py-2">₹/L</th>
-                <th className="px-3 py-2">Timing</th>
-                <th className="px-3 py-2"></th>
+                <th className="px-3 py-2">Bonus</th>
+                <th className="px-3 py-2">Time</th>
+                <th className="px-3 py-2">Updated</th>
+                <th className="px-3 py-2 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {rates.length === 0 ? (
-                <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">No rates published yet.</td></tr>
-              ) : rates.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-3 py-2">{r.effective_date}</td>
-                  <td className="px-3 py-2"><Badge variant="outline">{r.milk_type}</Badge></td>
-                  <td className="px-3 py-2">{r.fat}</td>
-                  <td className="px-3 py-2">{r.snf}</td>
-                  <td className="px-3 py-2 font-semibold">₹{Number(r.price_per_litre).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.collection_timing || "—"}</td>
-                  <td className="px-3 py-2 text-right">
-                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>
-                  </td>
-                </tr>
-              ))}
+                <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">No rates published yet.</td></tr>
+              ) : rates.map((r) => {
+                const isEditing = editingId === r.id && editForm;
+                if (isEditing) {
+                  return (
+                    <tr key={r.id} className="border-t bg-muted/20">
+                      <td className="px-2 py-2"><Input type="date" className="h-8" value={editForm!.effective_date} onChange={(e) => setEditForm({ ...editForm!, effective_date: e.target.value })} /></td>
+                      <td className="px-2 py-2">
+                        <Select value={editForm!.collection_timing} onValueChange={(v) => setEditForm({ ...editForm!, collection_timing: v })}>
+                          <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="morning">Morning</SelectItem>
+                            <SelectItem value="evening">Evening</SelectItem>
+                            <SelectItem value="both">Both</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-2 py-2">
+                        <Select value={editForm!.milk_type} onValueChange={(v) => setEditForm({ ...editForm!, milk_type: v as any })}>
+                          <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cow">Cow</SelectItem>
+                            <SelectItem value="buffalo">Buffalo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-2 py-2"><Input className="h-8 w-16" inputMode="decimal" value={editForm!.fat} onChange={(e) => setEditForm({ ...editForm!, fat: e.target.value })} /></td>
+                      <td className="px-2 py-2"><Input className="h-8 w-16" inputMode="decimal" value={editForm!.snf} onChange={(e) => setEditForm({ ...editForm!, snf: e.target.value })} /></td>
+                      <td className="px-2 py-2"><Input className="h-8 w-20" inputMode="decimal" value={editForm!.price_per_litre} onChange={(e) => setEditForm({ ...editForm!, price_per_litre: e.target.value })} /></td>
+                      <td className="px-2 py-2"><Input className="h-8 w-20" inputMode="decimal" value={editForm!.bonus} onChange={(e) => setEditForm({ ...editForm!, bonus: e.target.value })} /></td>
+                      <td className="px-2 py-2"><Input type="time" className="h-8" value={editForm!.effective_time} onChange={(e) => setEditForm({ ...editForm!, effective_time: e.target.value })} /></td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap">
+                        <Button size="sm" variant="ghost" onClick={saveEdit} className="text-emerald-700"><Check className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setEditForm(null); }}><X className="h-4 w-4" /></Button>
+                      </td>
+                    </tr>
+                  );
+                }
+                return (
+                  <tr key={r.id} className="border-t">
+                    <td className="px-3 py-2">{r.effective_date}</td>
+                    <td className="px-3 py-2 capitalize">{r.collection_timing || "—"}</td>
+                    <td className="px-3 py-2"><Badge variant="outline">{r.milk_type}</Badge></td>
+                    <td className="px-3 py-2">{r.fat}</td>
+                    <td className="px-3 py-2">{r.snf}</td>
+                    <td className="px-3 py-2 font-semibold">₹{Number(r.price_per_litre).toFixed(2)}</td>
+                    <td className="px-3 py-2">{r.bonus != null ? `₹${Number(r.bonus).toFixed(2)}` : "—"}</td>
+                    <td className="px-3 py-2">{r.effective_time ? r.effective_time.slice(0,5) : "—"}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(r.updated_at).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
+                      <Button size="sm" variant="ghost" onClick={() => startEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setDeleteId(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </CardContent>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this rate?</AlertDialogTitle>
+            <AlertDialogDescription>This permanently removes the rate entry. Farmers will no longer see it.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
