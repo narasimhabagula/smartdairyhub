@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 font-display text-lg font-bold text-primary">
-              <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-9 w-9 rounded-md object-contain" />
+              <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-12 w-12 object-contain" />
               {t("brand")}
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
