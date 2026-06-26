@@ -50,8 +50,16 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold text-primary sm:text-xl">
-          <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-10 w-10 object-contain sm:h-12 sm:w-12" />
+        <Link to="/" className="flex items-center gap-2.5 font-display text-lg font-bold text-primary sm:text-xl">
+          <img
+            src="/logo.png"
+            alt="Smart Dairy Hub logo"
+            width={48}
+            height={48}
+            decoding="async"
+            fetchPriority="high"
+            className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9 md:h-11 md:w-11"
+          />
           <span className="hidden sm:inline">{t("brand")}</span>
         </Link>
 
