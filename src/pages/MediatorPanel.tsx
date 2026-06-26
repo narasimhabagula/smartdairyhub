@@ -116,8 +116,8 @@ function IndustriesDirectory() {
     (async () => {
       setLoading(true);
       const { data } = await supabase
-        .from("dairy_companies")
-        .select("id,name,logo_url,district,state,village,phone,email,working_hours,verified")
+        .from("dairy_companies_public")
+        .select("id,name,logo_url,district,state,village,phone,working_hours,verified")
         .order("verified", { ascending: false })
         .order("name");
       setCompanies((data as Company[]) ?? []);
