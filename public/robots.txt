@@ -12,3 +12,15 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /vet-dashboard
+Disallow: /industry
+Disallow: /mediator
+Disallow: /seller
+Disallow: /orders
+Disallow: /notifications
+Disallow: /my-listings
+Disallow: /my-appointments
+Disallow: /cart
+
+Sitemap: https://dairy-dream.lovable.app/sitemap.xml
