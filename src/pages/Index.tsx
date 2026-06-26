@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight, Store, Instagram } from "lucide-react";
+import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import heroImg from "@/assets/hero-dairy.jpg";
-
-const INSTAGRAM_URL = "https://www.instagram.com/smart_dairy_hub";
-const instagramGradient = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -77,41 +74,6 @@ export default function Landing() {
               </span>
             </Link>
           ))}
-        </div>
-      </section>
-
-      <section className="container py-16">
-        <div className="relative overflow-hidden rounded-2xl border bg-card p-8 text-center shadow-sm md:p-12">
-          <div
-            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-10 blur-3xl"
-            style={{ background: instagramGradient }}
-          />
-          <div
-            className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full opacity-10 blur-3xl"
-            style={{ background: instagramGradient }}
-          />
-          <div className="relative z-10 mx-auto max-w-2xl">
-            <div
-              className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-110"
-              style={{ background: instagramGradient }}
-            >
-              <Instagram className="h-7 w-7" />
-            </div>
-            <h2 className="font-display text-2xl font-bold sm:text-3xl">Follow Us on Instagram</h2>
-            <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-              Follow Smart Dairy Hub for dairy farming tips, milk market updates, livestock information, and product updates.
-            </p>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg"
-              style={{ background: instagramGradient }}
-            >
-              <Instagram className="h-4 w-4" />
-              Follow @smart_dairy_hub
-            </a>
-          </div>
         </div>
       </section>
     </div>
