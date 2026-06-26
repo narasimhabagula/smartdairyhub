@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
 
-const INSTAGRAM_URL = "https://www.instagram.com/smart_dairy_hub";
+const SUPPORT_PATH = "/support";
 
 export default function Navbar() {
   const location = useLocation();
@@ -91,15 +91,13 @@ export default function Navbar() {
 
           {user && <NotificationBell />}
 
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
+          <Link
+            to={SUPPORT_PATH}
+            aria-label="Customer Support"
             className="ml-1 hidden items-center justify-center rounded-md p-2 text-foreground/70 transition-colors hover:bg-muted hover:text-foreground lg:flex"
           >
-            <Instagram className="h-4 w-4" />
-          </a>
+            <Headset className="h-4 w-4" />
+          </Link>
 
 
           <DropdownMenu>
@@ -183,15 +181,13 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <div className="flex items-center gap-1 lg:hidden">
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
+          <Link
+            to={SUPPORT_PATH}
+            aria-label="Customer Support"
             className="flex items-center justify-center rounded-md p-2 text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
           >
-            <Instagram className="h-5 w-5" />
-          </a>
+            <Headset className="h-5 w-5" />
+          </Link>
           <button onClick={() => setOpen(!open)} className="text-foreground" aria-label="Toggle menu">
             {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
