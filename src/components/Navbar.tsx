@@ -51,7 +51,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold text-primary sm:text-xl">
-          <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-9 w-9 rounded-md object-contain" />
+          <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-10 w-10 object-contain sm:h-12 sm:w-12" />
           <span className="hidden sm:inline">{t("brand")}</span>
         </Link>
 
