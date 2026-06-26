@@ -130,6 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    try {
+      sessionStorage.removeItem("postLoginRedirect");
+      sessionStorage.removeItem("inPasswordRecovery");
+    } catch {}
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
