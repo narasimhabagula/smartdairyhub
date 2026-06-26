@@ -27,15 +27,7 @@ export default function Footer() {
                 aria-label="Instagram"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full p-1 text-foreground/70 transition-all hover:scale-110 hover:text-white"
-                style={{ background: "transparent" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "";
-                }}
+                className="hover:text-primary"
               >
                 <Instagram className="h-5 w-5" />
               </a>
