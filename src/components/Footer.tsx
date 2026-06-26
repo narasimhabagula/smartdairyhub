@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
 
 const linkCls = "text-sm text-muted-foreground hover:text-primary transition-colors";
+const INSTAGRAM_URL = "https://www.instagram.com/smart_dairy_hub";
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export default function Footer() {
             <div className="mt-4 flex gap-3 text-muted-foreground">
               <a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Facebook className="h-5 w-5" /></a>
               <a href="https://twitter.com" aria-label="Twitter" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Twitter className="h-5 w-5" /></a>
-              <a href="https://instagram.com" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Instagram className="h-5 w-5" /></a>
+              <a href={INSTAGRAM_URL} aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110 hover:text-[#E1306C]"><Instagram className="h-5 w-5" /></a>
               <a href="https://youtube.com" aria-label="YouTube" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Youtube className="h-5 w-5" /></a>
               <a href="https://linkedin.com" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer" className="hover:text-primary"><Linkedin className="h-5 w-5" /></a>
             </div>
