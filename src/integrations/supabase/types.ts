@@ -321,6 +321,30 @@ export type Database = {
         }
         Relationships: []
       }
+      help_search_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          faq_index: number | null
+          id: string
+          term: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          faq_index?: number | null
+          id?: string
+          term?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          faq_index?: number | null
+          id?: string
+          term?: string | null
+        }
+        Relationships: []
+      }
       milk_rates: {
         Row: {
           collection_timing: string | null
@@ -906,6 +930,20 @@ export type Database = {
         Returns: {
           full_name: string
           phone: string
+        }[]
+      }
+      get_top_help_faqs: {
+        Args: { _limit?: number }
+        Returns: {
+          faq_index: number
+          hits: number
+        }[]
+      }
+      get_top_help_searches: {
+        Args: { _limit?: number }
+        Returns: {
+          hits: number
+          term: string
         }[]
       }
       get_vet_contact: {

@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle, Clock, Trash2 } from "lucide-react";
+import { Search, Mic, MicOff, X, LifeBuoy, MessageCircle, Mail, Phone, AlertCircle, Clock, Trash2, TrendingUp, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const FAQS: { q: string; a: string; tags: string[] }[] = [
   { q: "How do I create an account?", a: "Tap Login, choose your role (Farmer or Industry), then sign up with email & password or Google. Phone OTP is also supported.", tags: ["account", "signup", "register"] },
@@ -95,11 +96,16 @@ export default function HelpCenter() {
     }
   }, [transcript]);
 
-  // Auto-save recent searches after the user pauses typing or voice stops.
+  // Auto-save recent searches and log a search event after the user pauses.
   useEffect(() => {
     const trimmed = typedQuery.trim();
     if (!trimmed || listening) return;
-    const timer = setTimeout(() => addRecent(trimmed), 1500);
+    const timer = setTimeout(() => {
+      addRecent(trimmed);
+      void supabase
+        .from("help_search_events")
+        .insert({ event_type: "search", term: trimmed.slice(0, 120) });
+    }, 1500);
     return () => clearTimeout(timer);
   }, [typedQuery, listening, addRecent]);
 
@@ -107,6 +113,35 @@ export default function HelpCenter() {
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Analytics: top searches and top FAQs (last 30 days)
+  const [topSearches, setTopSearches] = useState<{ term: string; hits: number }[]>([]);
+  const [topFaqs, setTopFaqs] = useState<{ faq_index: number; hits: number }[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const loadStats = useCallback(async () => {
+    setLoadingStats(true);
+    const [s, f] = await Promise.all([
+      supabase.rpc("get_top_help_searches", { _limit: 8 }),
+      supabase.rpc("get_top_help_faqs", { _limit: 5 }),
+    ]);
+    if (!s.error && Array.isArray(s.data)) setTopSearches(s.data as any);
+    if (!f.error && Array.isArray(f.data)) setTopFaqs(f.data as any);
+    setLoadingStats(false);
+  }, []);
+
+  useEffect(() => {
+    void loadStats();
+    const id = setInterval(() => void loadStats(), 60_000);
+    return () => clearInterval(id);
+  }, [loadStats]);
+
+  function logFaqOpen(index: number) {
+    void supabase
+      .from("help_search_events")
+      .insert({ event_type: "faq_open", faq_index: index });
+  }
+
 
   const query = typedQuery + interimTranscript;
 
@@ -262,7 +297,19 @@ export default function HelpCenter() {
           {filtered.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">No articles matched your search.</p>
           ) : (
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              onValueChange={(val) => {
+                if (!val) return;
+                const idx = filtered.findIndex((_, i) => `faq-${i}` === val);
+                if (idx >= 0) {
+                  const originalIndex = FAQS.indexOf(filtered[idx]);
+                  if (originalIndex >= 0) logFaqOpen(originalIndex);
+                }
+              }}
+            >
               {filtered.map((f, i) => (
                 <AccordionItem key={i} value={`faq-${i}`}>
                   <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
@@ -273,6 +320,75 @@ export default function HelpCenter() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="mx-auto mt-6 max-w-3xl">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BarChart3 className="h-4 w-4 text-primary" /> What others are searching
+          </CardTitle>
+          <span className="text-xs text-muted-foreground">Last 30 days</span>
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" /> Top searches
+            </p>
+            {loadingStats ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : topSearches.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No searches yet — be the first!</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {topSearches.map((s, i) => (
+                  <Button
+                    key={i}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => runRecent(s.term)}
+                    title={`${s.hits} ${s.hits === 1 ? "search" : "searches"}`}
+                  >
+                    {s.term}
+                    <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                      {s.hits}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <LifeBuoy className="h-3.5 w-3.5" /> Most opened FAQs
+            </p>
+            {loadingStats ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : topFaqs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No FAQ views yet.</p>
+            ) : (
+              <ol className="space-y-1.5">
+                {topFaqs.map((f, i) => {
+                  const faq = FAQS[f.faq_index];
+                  if (!faq) return null;
+                  return (
+                    <li key={i} className="flex items-start justify-between gap-3 text-sm">
+                      <span className="text-foreground/90">
+                        <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
+                        {faq.q}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        {f.hits}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
 
       <div className="mx-auto mt-8 grid max-w-3xl gap-4 md:grid-cols-3">
         <Link to="/support"><Card className="h-full transition hover:border-primary"><CardContent className="flex items-center gap-3 p-4"><MessageCircle className="h-5 w-5 text-primary" /><div><p className="font-semibold">Live Support</p><p className="text-xs text-muted-foreground">Chat with our team</p></div></CardContent></Card></Link>
