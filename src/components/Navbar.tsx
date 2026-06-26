@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake } from "lucide-react";
+import { ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut, Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Instagram } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
 
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
+
+const INSTAGRAM_URL = "https://www.instagram.com/smart_dairy_hub";
 
 export default function Navbar() {
   const location = useLocation();
