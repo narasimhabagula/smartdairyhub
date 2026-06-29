@@ -143,6 +143,18 @@ export default function ChatBot() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+
+  const addImages = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const arr = Array.from(files).slice(0, 4);
+    const compressed = await Promise.all(arr.map((f) => compressImage(f)));
+    setPendingImages((prev) => [...prev, ...compressed].slice(0, 4));
+  };
+  const removePending = (idx: number) =>
+    setPendingImages((prev) => prev.filter((_, i) => i !== idx));
 
   const { transcript, listening, supported, start, stop, reset } = useSpeechRecognition(voiceLang);
 
