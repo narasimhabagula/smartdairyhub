@@ -483,7 +483,8 @@ export default function ChatBot() {
 
       {/* Floating button */}
       <button
-        aria-label="Open chat assistant"
+        aria-label="Ask Jerry"
+        title="Need help? Chat with Jerry"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -491,7 +492,7 @@ export default function ChatBot() {
         className={`fixed z-[9998] h-16 w-16 touch-none select-none rounded-full bg-white shadow-xl ring-2 ring-primary/30 transition-transform hover:scale-105 active:scale-95 sm:h-[72px] sm:w-[72px] ${open && !minimized ? "scale-0 pointer-events-none" : "scale-100"}`}
       >
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
-        <img src={chatbotIcon} alt="Dairy Mitra" className="h-full w-full rounded-full object-cover" draggable={false} />
+        <img src={chatbotIcon} alt="Jerry — Smart Dairy AI Assistant" className="h-full w-full rounded-full object-cover" draggable={false} />
         {hasNew && (
           <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
             <Sparkles className="h-3 w-3" />
