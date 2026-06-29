@@ -172,17 +172,36 @@ export default function SmartHeroSearch() {
           </button>
         )}
         {supported && (
-          <button
-            type="button"
-            onClick={() => (listening ? stop() : start())}
-            className={`rounded-full p-2 transition-colors ${
-              listening ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-accent text-accent-foreground hover:opacity-90"
-            }`}
-            aria-label={listening ? "Stop voice search" : "Start voice search"}
-          >
-            {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </button>
+          <>
+            <select
+              value={voiceLang}
+              onChange={(e) => setVoiceLang(e.target.value)}
+              className="hidden rounded-full bg-muted px-2 py-1 text-xs font-semibold text-foreground focus:outline-none sm:block"
+              aria-label="Voice language"
+              title="Voice search language"
+            >
+              {VOICE_LANGS.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={toggleMic}
+              className={`rounded-full p-2 transition-colors ${
+                listening
+                  ? "bg-destructive text-destructive-foreground animate-pulse"
+                  : "bg-accent text-accent-foreground hover:opacity-90"
+              }`}
+              aria-label={listening ? "Stop voice search" : "Start voice search"}
+              title={listening ? "Listening… tap to stop" : `Voice search (${voiceLang})`}
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+          </>
         )}
+
       </form>
 
       {open && (results.length > 0 || error) && (
