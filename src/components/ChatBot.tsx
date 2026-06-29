@@ -587,11 +587,36 @@ export default function ChatBot() {
                           : "rounded-tl-sm bg-card"
                       }`}
                     >
+                      {m.role === "user" && m.images?.length ? (
+                        <div className="mb-1.5 flex flex-wrap gap-1.5">
+                          {m.images.map((src, k) => (
+                            <img key={k} src={src} alt="" className="h-16 w-16 rounded-md object-cover ring-1 ring-white/30" />
+                          ))}
+                        </div>
+                      ) : null}
                       {m.role === "assistant" ? (
                         m.content ? (
-                          <div className="prose prose-sm dark:prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-4 [&_li]:my-0.5">
-                            <ReactMarkdown>{m.content}</ReactMarkdown>
-                          </div>
+                          <>
+                            <div className="prose prose-sm dark:prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-4 [&_li]:my-0.5">
+                              <ReactMarkdown>{m.content}</ReactMarkdown>
+                            </div>
+                            {m.hadImages && !loading && (
+                              <div className="mt-2.5 grid grid-cols-2 gap-1.5 border-t border-border/60 pt-2">
+                                <button onClick={() => navigate("/vet-contacts")} className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15">
+                                  <MapPin className="h-3.5 w-3.5" /> Find Vets
+                                </button>
+                                <a href="tel:1962" className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15">
+                                  <Phone className="h-3.5 w-3.5" /> Call Vet (1962)
+                                </a>
+                                <button onClick={() => shareReport(m.content)} className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium hover:bg-muted">
+                                  <Share2 className="h-3.5 w-3.5" /> Share
+                                </button>
+                                <button onClick={() => downloadReport(m.content)} className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium hover:bg-muted">
+                                  <Download className="h-3.5 w-3.5" /> Save Report
+                                </button>
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div className="flex gap-1 py-1">
                             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]" />
@@ -613,7 +638,44 @@ export default function ChatBot() {
 
               {/* Input */}
               <div className="border-t border-border bg-background p-2">
+                {pendingImages.length > 0 && (
+                  <div className="mb-1.5 flex flex-wrap gap-1.5">
+                    {pendingImages.map((src, k) => (
+                      <div key={k} className="relative">
+                        <img src={src} alt="" className="h-14 w-14 rounded-md object-cover ring-1 ring-border" />
+                        <button
+                          type="button"
+                          onClick={() => removePending(k)}
+                          className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-end gap-1.5 rounded-xl border border-border bg-card px-2 py-1.5 focus-within:border-primary">
+                  <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addImages(e.target.files); e.target.value = ""; }} />
+                  <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { addImages(e.target.files); e.target.value = ""; }} />
+                  <button
+                    type="button"
+                    onClick={() => galleryRef.current?.click()}
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-muted"
+                    aria-label="Attach photo"
+                    title="Upload photo from gallery"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cameraRef.current?.click()}
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-muted"
+                    aria-label="Take photo"
+                    title="Capture photo with camera"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -625,7 +687,7 @@ export default function ChatBot() {
                       }
                     }}
                     rows={1}
-                    placeholder={placeholder}
+                    placeholder={pendingImages.length ? "Describe the symptoms (optional)…" : placeholder}
                     className="max-h-24 flex-1 resize-none bg-transparent text-sm outline-none"
                   />
                   {supported && (
@@ -642,7 +704,7 @@ export default function ChatBot() {
                   <button
                     type="button"
                     onClick={() => send()}
-                    disabled={!input.trim() || loading}
+                    disabled={(!input.trim() && pendingImages.length === 0) || loading}
                     className="shrink-0 rounded-lg bg-primary p-2 text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
                     aria-label="Send"
                   >
