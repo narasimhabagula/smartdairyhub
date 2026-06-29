@@ -33,7 +33,7 @@ export default function Landing() {
         {/* Same left-to-right overlay on all viewports for desktop-parity */}
         <div className="hero-overlay absolute inset-0" />
         {user && (
-          <div className="absolute left-1/2 top-4 z-20 w-[92%] -translate-x-1/2 sm:top-6 md:top-8 md:w-[70%] lg:w-[65%]">
+          <div className="absolute left-1/2 top-4 z-20 w-[92%] -translate-x-1/2 sm:top-6 md:top-8 md:w-[55%] lg:w-[48%] xl:w-[40%]">
             <SmartHeroSearch />
           </div>
         )}
