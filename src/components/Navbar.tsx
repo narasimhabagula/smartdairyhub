@@ -2,13 +2,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut,
   Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Headset,
-  MoreVertical, Settings, HelpCircle, Wheat, Bot,
+  MoreVertical, Settings as SettingsIcon, HelpCircle, Wheat, Bot, Sun, Moon, Monitor,
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,7 @@ export default function Navbar() {
   const { user, profile, signOut, hasRole } = useAuth();
   const { count } = useCart();
   const { t, i18n } = useTranslation();
+  const { theme, resolved, setTheme } = useTheme();
 
   // Desktop nav items. `iconOnly` hides the text label on desktop while keeping the icon clickable.
   const navItems = [
@@ -191,7 +193,7 @@ export default function Navbar() {
 
                   <DropdownMenuSeparator />
 
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
                     <User className="mr-2 h-4 w-4" /> My Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/orders")}>
@@ -227,9 +229,24 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   )}
 
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                    <Settings className="mr-2 h-4 w-4" /> Settings
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <SettingsIcon className="mr-2 h-4 w-4" /> Settings
                   </DropdownMenuItem>
+
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      {resolved === "dark" ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
+                      <span>Theme</span>
+                      <span className="ml-auto text-xs text-muted-foreground capitalize">{theme}</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => setTheme("light")}><Sun className="mr-2 h-4 w-4" /> Light {theme === "light" && <Check className="ml-auto h-4 w-4" />}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")}><Moon className="mr-2 h-4 w-4" /> Dark {theme === "dark" && <Check className="ml-auto h-4 w-4" />}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")}><Monitor className="mr-2 h-4 w-4" /> System {theme === "system" && <Check className="ml-auto h-4 w-4" />}</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
 
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
