@@ -258,10 +258,10 @@ export default function AIChat() {
             {speaking && <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-3 w-3 rounded-full bg-primary" /></span>}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold">Smart Dairy Hub AI Assistant</h1>
+            <h1 className="text-base font-bold">Jerry</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
-              {speaking ? <span className="text-primary font-medium">Speaking…</span> : loading ? "Thinking…" : "Online"}
+              {speaking ? <span className="text-primary font-medium">Jerry is speaking…</span> : loading ? "Jerry is thinking…" : "Your Smart Dairy AI Assistant"}
               <span>•</span>
               <span>{LANG_OPTIONS.find((l) => l.code === voiceLang)?.label}</span>
             </div>
