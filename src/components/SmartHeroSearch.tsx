@@ -44,29 +44,33 @@ function score(entry: Entry, q: string): number {
   return s;
 }
 
+const VOICE_LANGS = [
+  { code: "en-IN", label: "EN" },
+  { code: "te-IN", label: "తె" },
+  { code: "hi-IN", label: "हि" },
+] as const;
+
 export default function SmartHeroSearch() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const autoSubmitRef = useRef(false);
 
-  const langMap: Record<string, string> = { en: "en-IN", te: "te-IN", hi: "hi-IN" };
-  const speechLang = langMap[i18n.language?.slice(0, 2) ?? "en"] ?? "en-IN";
-  const { transcript, listening, supported, start, stop, reset, error } = useSpeechRecognition(speechLang);
+  const initialLang =
+    VOICE_LANGS.find((l) => l.code.startsWith(i18n.language?.slice(0, 2) ?? "en"))?.code ?? "en-IN";
+  const [voiceLang, setVoiceLang] = useState<string>(initialLang);
 
+  const { transcript, listening, supported, start, stop, reset, error } =
+    useSpeechRecognition(voiceLang);
+
+  // Mirror transcript into query field
   useEffect(() => {
     if (transcript) setQuery(transcript);
   }, [transcript]);
 
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
-
+  // Compute results
   const results = useMemo(() => {
     const q = query.trim();
     if (!q) return [];
@@ -76,6 +80,37 @@ export default function SmartHeroSearch() {
       .slice(0, 6)
       .map((r) => r.e);
   }, [query]);
+
+  // Auto-submit when voice produces a final transcript
+  useEffect(() => {
+    if (!autoSubmitRef.current) return;
+    if (!transcript) return;
+    const timer = setTimeout(() => {
+      stop();
+      const top = ENTRIES.map((e) => ({ e, s: score(e, transcript) }))
+        .filter((r) => r.s > 0)
+        .sort((a, b) => b.s - a.s)[0]?.e;
+      autoSubmitRef.current = false;
+      if (top) {
+        setOpen(false);
+        setQuery("");
+        reset();
+        navigate(top.to);
+      } else {
+        setOpen(true);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcript]);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   const go = (to: string) => {
     setOpen(false);
@@ -89,6 +124,20 @@ export default function SmartHeroSearch() {
     e.preventDefault();
     if (results[0]) go(results[0].to);
   };
+
+  const toggleMic = () => {
+    if (listening) {
+      autoSubmitRef.current = false;
+      stop();
+    } else {
+      reset();
+      setQuery("");
+      autoSubmitRef.current = true;
+      start();
+    }
+  };
+
+
 
   return (
     <div ref={wrapRef} className="relative w-full max-w-xl">
@@ -123,17 +172,36 @@ export default function SmartHeroSearch() {
           </button>
         )}
         {supported && (
-          <button
-            type="button"
-            onClick={() => (listening ? stop() : start())}
-            className={`rounded-full p-2 transition-colors ${
-              listening ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-accent text-accent-foreground hover:opacity-90"
-            }`}
-            aria-label={listening ? "Stop voice search" : "Start voice search"}
-          >
-            {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </button>
+          <>
+            <select
+              value={voiceLang}
+              onChange={(e) => setVoiceLang(e.target.value)}
+              className="hidden rounded-full bg-muted px-2 py-1 text-xs font-semibold text-foreground focus:outline-none sm:block"
+              aria-label="Voice language"
+              title="Voice search language"
+            >
+              {VOICE_LANGS.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={toggleMic}
+              className={`rounded-full p-2 transition-colors ${
+                listening
+                  ? "bg-destructive text-destructive-foreground animate-pulse"
+                  : "bg-accent text-accent-foreground hover:opacity-90"
+              }`}
+              aria-label={listening ? "Stop voice search" : "Start voice search"}
+              title={listening ? "Listening… tap to stop" : `Voice search (${voiceLang})`}
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+          </>
         )}
+
       </form>
 
       {open && (results.length > 0 || error) && (
