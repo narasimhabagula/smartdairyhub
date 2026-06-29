@@ -195,8 +195,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="container py-10">
-      <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
-      <p className="mt-1 text-muted-foreground">Manage your dairy marketplace platform.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
+          <p className="mt-1 text-muted-foreground">Manage your dairy marketplace platform.</p>
+        </div>
+        <Button asChild variant="outline"><a href="/admin/content">Content Management →</a></Button>
+      </div>
 
       {/* Stats */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
