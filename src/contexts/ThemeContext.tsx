@@ -4,7 +4,7 @@ export type ThemeMode = "light" | "dark" | "system";
 const STORAGE_KEY = "sdh_theme";
 
 type Ctx = { theme: ThemeMode; resolved: "light" | "dark"; setTheme: (t: ThemeMode) => void };
-const ThemeContext = createContext<Ctx>({ theme: "system", resolved: "light", setTheme: () => {} });
+const ThemeContext = createContext<Ctx>({ theme: "light", resolved: "light", setTheme: () => {} });
 export const useTheme = () => useContext(ThemeContext);
 
 function readStored(): ThemeMode {
