@@ -43,10 +43,68 @@
         "logo": "https://smartdairyhub.online/logo.png"
       }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      #sdh-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        gap: 18px;
+        transition: opacity 300ms ease;
+      }
+      #sdh-splash img {
+        width: 128px;
+        height: 128px;
+        object-fit: contain;
+      }
+      #sdh-splash .sdh-title {
+        font-family: 'Poppins', 'Inter', 'Montserrat', system-ui, -apple-system, sans-serif;
+        font-weight: 700;
+        font-size: 30px;
+        line-height: 1.2;
+        color: #1B5E20;
+        letter-spacing: 0.2px;
+        text-align: center;
+      }
+      @media (min-width: 768px) {
+        #sdh-splash img { width: 144px; height: 144px; }
+        #sdh-splash .sdh-title { font-size: 34px; }
+      }
+      #sdh-splash.sdh-hide { opacity: 0; pointer-events: none; }
+    </style>
   </head>
 
   <body>
+    <div id="sdh-splash" role="status" aria-label="Smart Dairy Hub loading">
+      <img src="/logo.png" alt="Smart Dairy Hub" />
+      <div class="sdh-title">Smart Dairy Hub</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        function hide() {
+          var s = document.getElementById('sdh-splash');
+          if (!s) return;
+          s.classList.add('sdh-hide');
+          setTimeout(function () { s && s.parentNode && s.parentNode.removeChild(s); }, 350);
+        }
+        var root = document.getElementById('root');
+        if (root) {
+          var mo = new MutationObserver(function () {
+            if (root.childNodes.length > 0) { mo.disconnect(); hide(); }
+          });
+          mo.observe(root, { childList: true });
+        }
+        window.addEventListener('load', function () { setTimeout(hide, 1500); });
+      })();
+    </script>
   </body>
 </html>
