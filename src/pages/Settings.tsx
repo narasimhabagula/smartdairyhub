@@ -205,7 +205,7 @@ export default function Settings() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Volume2 className="h-4 w-4" /> Voice Settings</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Toggle label="Enable Voice Chat" desc="Use voice input & spoken replies with Dairy Mitra." checked={voice.enabled} onCheckedChange={(v) => setVoice({ ...voice, enabled: v })} />
+            <Toggle label="Enable Voice Chat" desc="Talk to Jerry and hear spoken replies." checked={voice.enabled} onCheckedChange={(v) => setVoice({ ...voice, enabled: v })} />
             <div className="space-y-2">
               <Label className="text-sm">Preferred Voice Language</Label>
               <Select value={voice.preferredLang} onValueChange={(v) => setVoice({ ...voice, preferredLang: v })}>
