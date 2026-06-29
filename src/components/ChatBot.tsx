@@ -390,7 +390,7 @@ export default function ChatBot() {
       case "gu": return "નમસ્તે! હું ડેરી મિત્ર 🐄. દૂધનો ભાવ, પશુ સંભાળ, રોગો વિશે પૂછો.";
       case "or": return "ନମସ୍କାର! ମୁଁ ଡେଇରୀ ମିତ୍ର 🐄. କ୍ଷୀର ଦର, ପଶୁ ଯତ୍ନ, ରୋଗ ବିଷୟରେ ପଚାରନ୍ତୁ।";
       case "as": return "নমস্কাৰ! মই ডেইৰী মিত্ৰ 🐄. গাখীৰৰ দাম, পশু যত্ন, ৰোগৰ বিষয়ে সোধক।";
-      default: return "Namaste! I'm Dairy Mitra 🐄 — your AI dairy assistant. Speak or type in any Indian language about milk rates, animal care, diseases, schemes & the marketplace.";
+      default: return "Hi 👋 I'm Jerry, your Smart Dairy AI Assistant. Ask me about animal diseases, milk production, feed, vet guidance, schemes, loans, weather, milk rates & the marketplace. Chat by text, voice, or upload a photo of your animal.";
     }
   }, [greetingLang]);
 
