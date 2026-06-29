@@ -245,19 +245,27 @@ export default function ChatBot() {
 
   const send = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
-    if (!text || loading) return;
+    const imgs = pendingImages;
+    if ((!text && imgs.length === 0) || loading) return;
     setError(null);
     setInput("");
+    setPendingImages([]);
     reset();
-    // Adapt voice language to what the user is speaking/typing
-    const detected = detectLang(text);
+    const detected = detectLang(text || "");
     if (detected !== "en-IN") setVoiceLang(detected);
 
-    const userMsg: Msg = { role: "user", content: text };
+    // Default question if user only sent images
+    const userText =
+      text ||
+      (imgs.length
+        ? "Please analyse the attached animal photo(s) and provide a probable disease report."
+        : "");
+
+    const userMsg: Msg = { role: "user", content: userText, images: imgs.length ? imgs : undefined };
     const next = [...messages, userMsg];
     setMessages(next);
     setLoading(true);
-    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+    setMessages((m) => [...m, { role: "assistant", content: "", hadImages: imgs.length > 0 }]);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -265,6 +273,21 @@ export default function ChatBot() {
         throw new Error("Please sign in to use the AI assistant.");
       }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
+
+      // Build multimodal payload: image messages use content blocks.
+      const payloadMessages = next.map((m) => {
+        if (m.role === "user" && m.images?.length) {
+          return {
+            role: "user",
+            content: [
+              { type: "text", text: m.content || "Analyse the attached image(s)." },
+              ...m.images.map((url) => ({ type: "image_url", image_url: { url } })),
+            ],
+          };
+        }
+        return { role: m.role, content: m.content };
+      });
+
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -272,7 +295,7 @@ export default function ChatBot() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({ messages: payloadMessages }),
       });
 
       if (!res.ok || !res.body) {
@@ -303,7 +326,8 @@ export default function ChatBot() {
               acc += delta;
               setMessages((m) => {
                 const copy = [...m];
-                copy[copy.length - 1] = { role: "assistant", content: acc };
+                const last = copy[copy.length - 1];
+                copy[copy.length - 1] = { ...last, role: "assistant", content: acc };
                 return copy;
               });
             }
@@ -311,7 +335,6 @@ export default function ChatBot() {
         }
       }
 
-      // Speak the final answer in the user's detected language
       if (speakOn && acc) {
         const replyLang = detectLang(acc) !== "en-IN" ? detectLang(acc) : detected;
         speak(acc, replyLang);
@@ -327,7 +350,31 @@ export default function ChatBot() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages, open, minimized, reset, speakOn]);
+  }, [input, loading, messages, open, minimized, reset, speakOn, pendingImages]);
+
+  // Action helpers for veterinary report follow-ups.
+  const shareReport = async (text: string) => {
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title: "Dairy Mitra — AI Report", text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert("Report copied to clipboard.");
+      }
+    } catch {}
+  };
+  const downloadReport = (text: string, ext: "txt" | "pdf" = "txt") => {
+    // Lightweight: download as .txt (works as a printable text report). True PDF
+    // generation is intentionally avoided to keep the bundle small; users can
+    // print to PDF from the browser.
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dairy-mitra-report.${ext === "pdf" ? "txt" : "txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const greetingLang = voiceLang.split("-")[0];
   const greeting = useMemo(() => {
