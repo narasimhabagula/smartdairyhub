@@ -448,7 +448,7 @@ export default function ChatBot() {
               onClick={() => { setShowMenu(false); setConfirmHide(true); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
             >
-              <EyeOff className="h-4 w-4" /> Hide Chatbot
+              <EyeOff className="h-4 w-4" /> Hide Jerry
             </button>
           </div>
         </>
