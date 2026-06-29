@@ -86,7 +86,7 @@ function KnowledgePanel() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Chatbot Knowledge Base</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Custom snippets injected into Dairy Mitra's context.</p>
+          <p className="text-sm text-muted-foreground mt-1">Custom snippets injected into Jerry's context.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />Add</Button></DialogTrigger>
