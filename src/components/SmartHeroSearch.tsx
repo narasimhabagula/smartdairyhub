@@ -137,7 +137,7 @@ export default function SmartHeroSearch() {
     }
   };
 
-  };
+
 
   return (
     <div ref={wrapRef} className="relative w-full max-w-xl">
