@@ -345,8 +345,75 @@ export default function ChatBot() {
     }
   }, [greetingLang]);
 
+  if (hidden) return null;
+
   const ui = (
     <>
+      {/* Long-press / context menu */}
+      {showMenu && (
+        <>
+          <div className="fixed inset-0 z-[10000]" onClick={() => setShowMenu(false)} />
+          <div
+            className="fixed z-[10001] min-w-[220px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+            style={{ left: Math.min(pos.x, window.innerWidth - 240), top: Math.max(8, pos.y - 200) }}
+          >
+            <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              Dairy Mitra
+            </div>
+            <button
+              onClick={() => { setShowMenu(false); setOpen(true); setMinimized(false); setHasNew(false); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <Sparkles className="h-4 w-4" /> Open Chat
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); navigate("/ai-chat"); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <Maximize2 className="h-4 w-4" /> Open Full AI Chat
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); resetPosition(); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <RotateCcw className="h-4 w-4" /> Reset Position
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); setConfirmHide(true); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
+            >
+              <EyeOff className="h-4 w-4" /> Hide Chatbot
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Hide confirmation */}
+      {confirmHide && (
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-2xl">
+            <h3 className="text-base font-semibold">Hide the floating chatbot?</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You can restore it anytime from the menu → <strong>AI Chat Assistant</strong>.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmHide(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setConfirmHide(false); setOpen(false); setChatbotHidden(true); }}
+                className="rounded-lg bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground hover:opacity-90"
+              >
+                Yes, hide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating button */}
       <button
         aria-label="Open chat assistant"
