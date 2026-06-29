@@ -4,7 +4,7 @@ export type ThemeMode = "light" | "dark" | "system";
 const STORAGE_KEY = "sdh_theme";
 
 type Ctx = { theme: ThemeMode; resolved: "light" | "dark"; setTheme: (t: ThemeMode) => void };
-const ThemeContext = createContext<Ctx>({ theme: "system", resolved: "light", setTheme: () => {} });
+const ThemeContext = createContext<Ctx>({ theme: "light", resolved: "light", setTheme: () => {} });
 export const useTheme = () => useContext(ThemeContext);
 
 function readStored(): ThemeMode {
@@ -12,7 +12,8 @@ function readStored(): ThemeMode {
     const v = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     if (v === "light" || v === "dark" || v === "system") return v;
   } catch {}
-  return "system";
+  // New users default to Light Mode (not system) per product policy.
+  return "light";
 }
 
 function systemPref(): "light" | "dark" {

@@ -2,14 +2,14 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw, ImagePlus, Camera, Phone, MapPin, Share2, Download } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { speak as ttsSpeak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; images?: string[]; hadImages?: boolean };
 
 const QUICK_ACTIONS = [
   { emoji: "🥛", q: "What is today's milk rate and how is it calculated from FAT & SNF?" },
@@ -69,6 +69,32 @@ function speak(text: string, lang: string) {
   ttsSpeak(text, lang);
 }
 
+// Compress a File into a JPEG data URL bounded by maxDim, target ~0.8 quality.
+async function compressImage(file: File, maxDim = 1280): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  return new Promise<string>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(dataUrl);
+      ctx.drawImage(img, 0, 0, w, h);
+      try { resolve(canvas.toDataURL("image/jpeg", 0.82)); } catch { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export default function ChatBot() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
@@ -117,6 +143,18 @@ export default function ChatBot() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+
+  const addImages = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const arr = Array.from(files).slice(0, 4);
+    const compressed = await Promise.all(arr.map((f) => compressImage(f)));
+    setPendingImages((prev) => [...prev, ...compressed].slice(0, 4));
+  };
+  const removePending = (idx: number) =>
+    setPendingImages((prev) => prev.filter((_, i) => i !== idx));
 
   const { transcript, listening, supported, start, stop, reset } = useSpeechRecognition(voiceLang);
 
@@ -207,19 +245,27 @@ export default function ChatBot() {
 
   const send = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
-    if (!text || loading) return;
+    const imgs = pendingImages;
+    if ((!text && imgs.length === 0) || loading) return;
     setError(null);
     setInput("");
+    setPendingImages([]);
     reset();
-    // Adapt voice language to what the user is speaking/typing
-    const detected = detectLang(text);
+    const detected = detectLang(text || "");
     if (detected !== "en-IN") setVoiceLang(detected);
 
-    const userMsg: Msg = { role: "user", content: text };
+    // Default question if user only sent images
+    const userText =
+      text ||
+      (imgs.length
+        ? "Please analyse the attached animal photo(s) and provide a probable disease report."
+        : "");
+
+    const userMsg: Msg = { role: "user", content: userText, images: imgs.length ? imgs : undefined };
     const next = [...messages, userMsg];
     setMessages(next);
     setLoading(true);
-    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+    setMessages((m) => [...m, { role: "assistant", content: "", hadImages: imgs.length > 0 }]);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -227,6 +273,21 @@ export default function ChatBot() {
         throw new Error("Please sign in to use the AI assistant.");
       }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
+
+      // Build multimodal payload: image messages use content blocks.
+      const payloadMessages = next.map((m) => {
+        if (m.role === "user" && m.images?.length) {
+          return {
+            role: "user",
+            content: [
+              { type: "text", text: m.content || "Analyse the attached image(s)." },
+              ...m.images.map((url) => ({ type: "image_url", image_url: { url } })),
+            ],
+          };
+        }
+        return { role: m.role, content: m.content };
+      });
+
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -234,7 +295,7 @@ export default function ChatBot() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({ messages: payloadMessages }),
       });
 
       if (!res.ok || !res.body) {
@@ -265,7 +326,8 @@ export default function ChatBot() {
               acc += delta;
               setMessages((m) => {
                 const copy = [...m];
-                copy[copy.length - 1] = { role: "assistant", content: acc };
+                const last = copy[copy.length - 1];
+                copy[copy.length - 1] = { ...last, role: "assistant", content: acc };
                 return copy;
               });
             }
@@ -273,7 +335,6 @@ export default function ChatBot() {
         }
       }
 
-      // Speak the final answer in the user's detected language
       if (speakOn && acc) {
         const replyLang = detectLang(acc) !== "en-IN" ? detectLang(acc) : detected;
         speak(acc, replyLang);
@@ -289,7 +350,31 @@ export default function ChatBot() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages, open, minimized, reset, speakOn]);
+  }, [input, loading, messages, open, minimized, reset, speakOn, pendingImages]);
+
+  // Action helpers for veterinary report follow-ups.
+  const shareReport = async (text: string) => {
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title: "Dairy Mitra — AI Report", text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert("Report copied to clipboard.");
+      }
+    } catch {}
+  };
+  const downloadReport = (text: string, ext: "txt" | "pdf" = "txt") => {
+    // Lightweight: download as .txt (works as a printable text report). True PDF
+    // generation is intentionally avoided to keep the bundle small; users can
+    // print to PDF from the browser.
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dairy-mitra-report.${ext === "pdf" ? "txt" : "txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const greetingLang = voiceLang.split("-")[0];
   const greeting = useMemo(() => {
@@ -502,11 +587,36 @@ export default function ChatBot() {
                           : "rounded-tl-sm bg-card"
                       }`}
                     >
+                      {m.role === "user" && m.images?.length ? (
+                        <div className="mb-1.5 flex flex-wrap gap-1.5">
+                          {m.images.map((src, k) => (
+                            <img key={k} src={src} alt="" className="h-16 w-16 rounded-md object-cover ring-1 ring-white/30" />
+                          ))}
+                        </div>
+                      ) : null}
                       {m.role === "assistant" ? (
                         m.content ? (
-                          <div className="prose prose-sm dark:prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-4 [&_li]:my-0.5">
-                            <ReactMarkdown>{m.content}</ReactMarkdown>
-                          </div>
+                          <>
+                            <div className="prose prose-sm dark:prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-4 [&_li]:my-0.5">
+                              <ReactMarkdown>{m.content}</ReactMarkdown>
+                            </div>
+                            {m.hadImages && !loading && (
+                              <div className="mt-2.5 grid grid-cols-2 gap-1.5 border-t border-border/60 pt-2">
+                                <button onClick={() => navigate("/vet-contacts")} className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15">
+                                  <MapPin className="h-3.5 w-3.5" /> Find Vets
+                                </button>
+                                <a href="tel:1962" className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15">
+                                  <Phone className="h-3.5 w-3.5" /> Call Vet (1962)
+                                </a>
+                                <button onClick={() => shareReport(m.content)} className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium hover:bg-muted">
+                                  <Share2 className="h-3.5 w-3.5" /> Share
+                                </button>
+                                <button onClick={() => downloadReport(m.content)} className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium hover:bg-muted">
+                                  <Download className="h-3.5 w-3.5" /> Save Report
+                                </button>
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div className="flex gap-1 py-1">
                             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]" />
@@ -528,7 +638,44 @@ export default function ChatBot() {
 
               {/* Input */}
               <div className="border-t border-border bg-background p-2">
+                {pendingImages.length > 0 && (
+                  <div className="mb-1.5 flex flex-wrap gap-1.5">
+                    {pendingImages.map((src, k) => (
+                      <div key={k} className="relative">
+                        <img src={src} alt="" className="h-14 w-14 rounded-md object-cover ring-1 ring-border" />
+                        <button
+                          type="button"
+                          onClick={() => removePending(k)}
+                          className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-end gap-1.5 rounded-xl border border-border bg-card px-2 py-1.5 focus-within:border-primary">
+                  <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addImages(e.target.files); e.target.value = ""; }} />
+                  <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { addImages(e.target.files); e.target.value = ""; }} />
+                  <button
+                    type="button"
+                    onClick={() => galleryRef.current?.click()}
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-muted"
+                    aria-label="Attach photo"
+                    title="Upload photo from gallery"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cameraRef.current?.click()}
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-muted"
+                    aria-label="Take photo"
+                    title="Capture photo with camera"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -540,7 +687,7 @@ export default function ChatBot() {
                       }
                     }}
                     rows={1}
-                    placeholder={placeholder}
+                    placeholder={pendingImages.length ? "Describe the symptoms (optional)…" : placeholder}
                     className="max-h-24 flex-1 resize-none bg-transparent text-sm outline-none"
                   />
                   {supported && (
@@ -557,7 +704,7 @@ export default function ChatBot() {
                   <button
                     type="button"
                     onClick={() => send()}
-                    disabled={!input.trim() || loading}
+                    disabled={(!input.trim() && pendingImages.length === 0) || loading}
                     className="shrink-0 rounded-lg bg-primary p-2 text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
                     aria-label="Send"
                   >
