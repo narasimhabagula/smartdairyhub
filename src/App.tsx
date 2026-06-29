@@ -71,6 +71,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
                   <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
+                  <Route path="/milk-rate-management" element={<ProtectedRoute><MilkRateManagement /></ProtectedRoute>} />
                   <Route path="/mediator" element={<ProtectedRoute><MediatorPanel /></ProtectedRoute>} />
                   <Route path="/vet-dashboard" element={<ProtectedRoute><VetDashboard /></ProtectedRoute>} />
                   <Route path="/book-vet" element={<ProtectedRoute><BookVet /></ProtectedRoute>} />
