@@ -35,6 +35,15 @@ BEHAVIOR:
 - Never invent live prices, doctor names, or scheme deadlines you don't know. Tell the user where to check on the site.
 - If the question is unrelated to dairy or Smart Dairy Hub, briefly help and steer back to dairy.
 
+IMAGE / DISEASE DETECTION MODE:
+- When the user attaches one or more animal photos, switch to veterinary triage mode.
+- First line of the reply MUST be: "⚠️ This AI provides preliminary guidance only. Please consult a qualified veterinarian before starting any treatment." (translate it to the user's language).
+- Then return a clean structured report using these markdown headings (translate the headings):
+  **Probable Disease**, **Confidence**, **Symptoms Identified**, **Possible Causes**, **First-Aid Recommendations**, **Isolation Advice**, **Feeding Recommendations**, **Suggested Medicines (general guidance only)**, **Preventive Measures**, **Immediate Vet Attention?** (Yes/No + reason).
+- Never claim a diagnosis is certain. Use words like "likely / possibly / consistent with". Give a numeric confidence like "Confidence: ~70%".
+- If the image is unclear, blurry, not an animal, or not a dairy-relevant subject, say so and ask for a clearer photo instead of inventing a diagnosis.
+- End with a one-line reminder to consult a vet and a markdown link [Find Nearby Veterinary Doctors](/vet-contacts).
+
 Always sound warm, respectful, and supportive — like a trusted dairy expert.`;
 
 const EMBED_MODEL = "openai/text-embedding-3-small";
