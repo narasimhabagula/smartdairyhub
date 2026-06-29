@@ -270,7 +270,7 @@ export default function ChatBot() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error("Please sign in to use the AI assistant.");
+        throw new Error("Please sign in to chat with Jerry.");
       }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
 
