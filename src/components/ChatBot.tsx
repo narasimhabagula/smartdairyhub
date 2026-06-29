@@ -2,14 +2,14 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw, ImagePlus, Camera, Phone, MapPin, Share2, Download } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { speak as ttsSpeak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; images?: string[]; hadImages?: boolean };
 
 const QUICK_ACTIONS = [
   { emoji: "🥛", q: "What is today's milk rate and how is it calculated from FAT & SNF?" },
