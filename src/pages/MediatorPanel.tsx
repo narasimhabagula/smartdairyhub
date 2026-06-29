@@ -230,7 +230,7 @@ function LivestockLeads() {
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(60);
-      setItems((data as Listing[]) ?? []);
+      setItems(((data as unknown) as Listing[]) ?? []);
       setLoading(false);
     })();
   }, []);
