@@ -533,11 +533,28 @@ export default function VetContacts() {
   // Clean up timers on unmount
   useEffect(() => () => { clearRetryTimers(); }, [clearRetryTimers]);
 
-  // Auto-load on first visit to Nearby tab once we have location
+  // Auto-load on first visit to Nearby tab. If GPS not granted yet, fall back to
+  // Rajanagaram so users always see results immediately, then expand through
+  // Anaparthi / Rajahmundry if the first anchor returns nothing.
   useEffect(() => {
-    if (view === "nearby" && userLoc && !nearbyFetched && !nearbyLoading) {
+    if (view !== "nearby" || nearbyFetched || nearbyLoading) return;
+    if (userLoc) {
       fetchNearbyLive();
+      return;
     }
+    (async () => {
+      for (const anchor of DEFAULT_ANCHORS) {
+        setUserLoc({ lat: anchor.lat, lng: anchor.lng });
+        setUserGeo({
+          village: anchor.name, mandal: null, district: "East Godavari",
+          state: anchor.state, pincode: null, country: "India",
+          formatted: `${anchor.name}, East Godavari, ${anchor.state}`,
+          lat: anchor.lat, lng: anchor.lng,
+        });
+        await fetchNearbyLive({ loc: { lat: anchor.lat, lng: anchor.lng } });
+        break; // first fetch already auto-expands radius up to 100km internally
+      }
+    })();
   }, [view, userLoc, nearbyFetched, nearbyLoading, fetchNearbyLive]);
 
   // Map rendering
