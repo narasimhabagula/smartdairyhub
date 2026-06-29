@@ -130,9 +130,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find the latest user message for retrieval
+    // Find the latest user message for retrieval (handle string OR array content)
     const lastUser = [...(messages || [])].reverse().find((m: { role: string }) => m.role === "user");
-    const query = typeof lastUser?.content === "string" ? lastUser.content : "";
+    let query = "";
+    if (typeof lastUser?.content === "string") query = lastUser.content;
+    else if (Array.isArray(lastUser?.content)) {
+      query = lastUser.content
+        .filter((p: any) => p?.type === "text" && typeof p.text === "string")
+        .map((p: any) => p.text)
+        .join(" ");
+    }
     const ragBlock = await retrieveContext(query, LOVABLE_API_KEY);
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
