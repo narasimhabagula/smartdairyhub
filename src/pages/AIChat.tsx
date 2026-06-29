@@ -58,6 +58,7 @@ export default function AIChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [continuous, setContinuous] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
