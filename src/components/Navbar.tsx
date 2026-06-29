@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut,
   Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Headset,
-  MoreVertical, Settings, HelpCircle, Wheat,
+  MoreVertical, Settings, HelpCircle, Wheat, Bot,
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
