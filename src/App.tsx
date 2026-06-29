@@ -54,6 +54,7 @@ import SearchResults from "./pages/SearchResults";
 import AIChat from "./pages/AIChat";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import LanguageSelect from "./pages/LanguageSelect";
 
 
 
