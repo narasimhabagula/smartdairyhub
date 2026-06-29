@@ -90,6 +90,10 @@ function speak(text: string, lang: string) {
 
 export default function ChatBot() {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [hidden, setHidden] = useState<boolean>(() => isChatbotHidden());
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmHide, setConfirmHide] = useState(false);
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [input, setInput] = useState("");
