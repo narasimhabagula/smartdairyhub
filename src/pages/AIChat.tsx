@@ -135,10 +135,18 @@ export default function AIChat() {
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("Please sign in to use the AI assistant.");
+      }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ messages: next }),
       });
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
