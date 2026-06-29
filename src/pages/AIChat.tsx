@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot, Radio } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot, Radio, Play, Pause, Square } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
 import { setChatbotHidden, isChatbotHidden } from "@/components/ChatBot";
-import { speak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
+import { speak, cancelSpeech, pauseSpeech, resumeSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
@@ -58,6 +58,7 @@ export default function AIChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [continuous, setContinuous] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,7 +93,7 @@ export default function AIChat() {
     if (!transcript) return;
     setInput((p) => (p ? p + " " : "") + transcript);
     // Barge-in: cancel TTS the moment user speaks
-    if (speaking) { cancelSpeech(); setSpeaking(false); }
+    if (speaking) { cancelSpeech(); setSpeaking(false); setPaused(false); }
     if (continuousRef.current) {
       if (silenceTimerRef.current) window.clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = window.setTimeout(() => { void send(); }, 1100);
@@ -118,6 +119,32 @@ export default function AIChat() {
   const toggleFloating = (enabled: boolean) => {
     setFloatingEnabled(enabled);
     setChatbotHidden(!enabled);
+  };
+
+  // Voice control: Start / Pause-Resume / Stop
+  const lastAssistant = useMemo(
+    () => [...messages].reverse().find((m) => m.role === "assistant" && m.content)?.content || "",
+    [messages]
+  );
+  const handleVoiceStart = () => {
+    if (speaking && paused) { resumeSpeech(); setPaused(false); return; }
+    if (speaking) return;
+    if (!lastAssistant) return;
+    const lang = detectLang(lastAssistant) !== "en-IN" ? detectLang(lastAssistant) : voiceLang;
+    speak(lastAssistant, lang, {
+      onStart: () => { setSpeaking(true); setPaused(false); },
+      onEnd: () => { setSpeaking(false); setPaused(false); },
+      onError: () => { setSpeaking(false); setPaused(false); },
+    });
+  };
+  const handleVoicePause = () => {
+    if (speaking && !paused) { pauseSpeech(); setPaused(true); }
+    else if (speaking && paused) { resumeSpeech(); setPaused(false); }
+  };
+  const handleVoiceStop = () => {
+    cancelSpeech();
+    setSpeaking(false);
+    setPaused(false);
   };
 
   const send = useCallback(async (textOverride?: string) => {
@@ -319,6 +346,62 @@ export default function AIChat() {
             </div>
           )}
           {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
+        </div>
+      </div>
+
+      {/* Voice Control Bar — Start / Pause / Stop */}
+      <div className="border-t border-border bg-background px-3 py-2">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-xl bg-muted/40 px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Volume2 className={`h-4 w-4 ${speaking && !paused ? "text-primary animate-pulse" : ""}`} />
+            <span className="font-medium">
+              {!speakOn ? "Voice muted" : speaking ? (paused ? "Paused" : "Speaking…") : "Voice ready"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleVoiceStart}
+              disabled={!speakOn || !lastAssistant || (speaking && !paused)}
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+              title={speaking && paused ? "Resume" : "Play last reply"}
+              aria-label="Start speaking"
+            >
+              <Play className="h-3.5 w-3.5" /> {speaking && paused ? "Resume" : "Start"}
+            </button>
+            <button
+              type="button"
+              onClick={handleVoicePause}
+              disabled={!speaking}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              title={paused ? "Resume" : "Pause"}
+              aria-label="Pause speaking"
+            >
+              <Pause className="h-3.5 w-3.5" /> Pause
+            </button>
+            <button
+              type="button"
+              onClick={handleVoiceStop}
+              disabled={!speaking}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              title="Stop"
+              aria-label="Stop speaking"
+            >
+              <Square className="h-3.5 w-3.5" /> Stop
+            </button>
+            {supported && (
+              <button
+                type="button"
+                onClick={() => { if (listening) stop(); else { cancelSpeech(); setSpeaking(false); setPaused(false); start(); } }}
+                className={`ml-1 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${listening ? "bg-red-500 text-white animate-pulse" : "border border-border bg-background hover:bg-muted"}`}
+                title={listening ? "Stop listening" : "Start microphone"}
+                aria-label={listening ? "Stop microphone" : "Start microphone"}
+              >
+                {listening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                {listening ? "Listening" : "Mic"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

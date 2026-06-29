@@ -35,6 +35,22 @@ export function cancelSpeech() {
   try { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); } catch {}
 }
 
+export function pauseSpeech() {
+  try { if ("speechSynthesis" in window) window.speechSynthesis.pause(); } catch {}
+}
+
+export function resumeSpeech() {
+  try { if ("speechSynthesis" in window) window.speechSynthesis.resume(); } catch {}
+}
+
+export function isSpeechPaused(): boolean {
+  try { return "speechSynthesis" in window && window.speechSynthesis.paused; } catch { return false; }
+}
+
+export function isSpeechActive(): boolean {
+  try { return "speechSynthesis" in window && window.speechSynthesis.speaking; } catch { return false; }
+}
+
 function pickBestVoice(lang: string): SpeechSynthesisVoice | undefined {
   if (!("speechSynthesis" in window)) return;
   const voices = window.speechSynthesis.getVoices();
