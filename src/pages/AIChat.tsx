@@ -239,13 +239,13 @@ export default function AIChat() {
   const greeting = useMemo(() => {
     const lang = voiceLang.split("-")[0];
     const map: Record<string, string> = {
-      te: "నమస్తే! నేను డెయిరీ మిత్ర. మీకు ఎలా సహాయం చేయాలి?",
-      hi: "नमस्ते! मैं डेयरी मित्र हूँ। मैं आपकी कैसे मदद कर सकता हूँ?",
-      ta: "வணக்கம்! நான் டெய்ரி மித்ரா. நான் எப்படி உதவ முடியும்?",
-      ml: "നമസ്കാരം! ഞാൻ ഡെയറി മിത്ര.",
-      kn: "ನಮಸ್ಕಾರ! ನಾನು ಡೈರಿ ಮಿತ್ರ.",
+      te: "నమస్తే 👋 నేను జెర్రీ — మీ స్మార్ట్ డెయిరీ AI అసిస్టెంట్. మీకు ఎలా సహాయం చేయాలి?",
+      hi: "नमस्ते 👋 मैं Jerry हूँ — आपका Smart Dairy AI Assistant। मैं आपकी कैसे मदद कर सकता हूँ?",
+      ta: "வணக்கம் 👋 நான் Jerry — உங்கள் Smart Dairy AI Assistant.",
+      ml: "നമസ്കാരം 👋 ഞാൻ Jerry — നിങ്ങളുടെ Smart Dairy AI Assistant.",
+      kn: "ನಮಸ್ಕಾರ 👋 ನಾನು Jerry — ನಿಮ್ಮ Smart Dairy AI Assistant.",
     };
-    return map[lang] || "Hello! I'm Dairy Mitra — your AI dairy farming assistant. Ask me anything in your language.";
+    return map[lang] || "Hi 👋 I'm Jerry, your Smart Dairy AI Assistant. Ask me anything about dairy farming — type, speak, or upload a photo of your animal.";
   }, [voiceLang]);
 
   return (
