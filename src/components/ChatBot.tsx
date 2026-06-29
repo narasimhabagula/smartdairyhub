@@ -23,6 +23,16 @@ const QUICK_ACTIONS = [
 const STORAGE_POS = "sdh_chatbot_pos";
 const STORAGE_HIST = "sdh_chatbot_history_v1";
 const STORAGE_SPEAK = "sdh_chatbot_speak";
+const STORAGE_HIDDEN = "sdh_chatbot_hidden";
+const VISIBILITY_EVENT = "sdh-chatbot-visibility";
+
+export function setChatbotHidden(hidden: boolean) {
+  try { localStorage.setItem(STORAGE_HIDDEN, hidden ? "1" : "0"); } catch {}
+  window.dispatchEvent(new CustomEvent(VISIBILITY_EVENT, { detail: { hidden } }));
+}
+export function isChatbotHidden(): boolean {
+  try { return localStorage.getItem(STORAGE_HIDDEN) === "1"; } catch { return false; }
+}
 
 // Detect language from text using Unicode script ranges + Latin fallback
 function detectLang(text: string): string {
