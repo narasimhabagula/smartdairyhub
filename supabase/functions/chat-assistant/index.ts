@@ -50,6 +50,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Pull admin-managed knowledge snippets to ground answers
+    let knowledgeBlock = "";
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+      if (supabaseUrl && anonKey) {
+        const kRes = await fetch(
+          `${supabaseUrl}/rest/v1/chatbot_knowledge?select=title,content,category&active=eq.true&order=priority.desc&limit=40`,
+          { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } },
+        );
+        if (kRes.ok) {
+          const rows = await kRes.json();
+          if (Array.isArray(rows) && rows.length) {
+            knowledgeBlock = "\n\nADMIN KNOWLEDGE BASE (use as authoritative facts when relevant):\n" +
+              rows.map((r: any, i: number) => `${i + 1}. [${r.category}] ${r.title}\n${r.content}`).join("\n\n");
+          }
+        }
+      }
+    } catch (_) { /* non-fatal */ }
+
+
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
