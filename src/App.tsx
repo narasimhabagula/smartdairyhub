@@ -66,6 +66,7 @@ const App = () => (
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
               <Navbar />
+              <NotificationBanners />
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
