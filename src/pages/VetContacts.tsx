@@ -564,7 +564,7 @@ export default function VetContacts() {
     loadGoogleMaps().then(() => {
       if (cancelled || !mapRef.current) return;
       const g = (window as any).google;
-      const center = userLoc ?? { lat: 16.5062, lng: 80.648 };
+      const center = userLoc ?? { lat: DEFAULT_LOCATION.lat, lng: DEFAULT_LOCATION.lng };
       if (!mapInstance.current) {
         mapInstance.current = new g.maps.Map(mapRef.current, {
           center, zoom: userLoc ? 12 : 7,
