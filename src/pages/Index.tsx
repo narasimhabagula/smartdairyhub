@@ -16,32 +16,35 @@ export default function Landing() {
 
   return (
     <div>
-      <section className="relative h-[85vh] min-h-[500px] overflow-hidden">
+      <section className="relative h-[100svh] min-h-[560px] w-full overflow-hidden md:h-[85vh] md:min-h-[500px]">
         <img
           src={heroImg}
           alt="Dairy farm with cows grazing on green hills"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="hero-overlay absolute inset-0" />
-        <div className="relative z-10 container flex h-full flex-col justify-center">
+        {/* Mobile: stronger vertical gradient for premium readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 md:hidden" />
+        {/* Desktop: original left-to-right overlay preserved */}
+        <div className="hero-overlay absolute inset-0 hidden md:block" />
+        <div className="relative z-10 container flex h-full flex-col justify-center px-5 sm:px-6 md:px-8">
           <div className="max-w-xl animate-fade-in">
-            <h1 className="font-display text-4xl font-extrabold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="font-display text-[2rem] font-extrabold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
               {t("home.title")}
             </h1>
-            <p className="mt-4 text-lg text-primary-foreground/80 sm:text-xl">
+            <p className="mt-4 text-base text-primary-foreground/85 sm:text-xl">
               {t("home.subtitle")}
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-accent-foreground transition-transform hover:scale-105"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105"
               >
                 {t("home.getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/select-role"
-                className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/30 px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-6 py-3.5 font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10"
               >
                 {t("home.farmerLogin")}
               </Link>
@@ -49,6 +52,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
 
       <section className="container py-20">
         <h2 className="text-center font-display text-3xl font-bold sm:text-4xl">
