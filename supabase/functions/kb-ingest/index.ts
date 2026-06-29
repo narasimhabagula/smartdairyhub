@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
       );
     }
     const base = requestedBase;
+    const routes: string[] = Array.isArray(body?.routes) && body.routes.length ? body.routes : [...DEFAULT_ROUTES];
     const purge: boolean = !!body?.purge;
 
     const admin = createClient(supabaseUrl, serviceKey);
