@@ -30,10 +30,12 @@ export default function AdminContent() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="knowledge"><BookOpen className="mr-2 h-4 w-4" />Chatbot Knowledge</TabsTrigger>
+          <TabsTrigger value="rag"><Database className="mr-2 h-4 w-4" />RAG / Website KB</TabsTrigger>
           <TabsTrigger value="faqs"><HelpCircle className="mr-2 h-4 w-4" />FAQs</TabsTrigger>
           <TabsTrigger value="banners"><Megaphone className="mr-2 h-4 w-4" />Notification Banners</TabsTrigger>
         </TabsList>
         <TabsContent value="knowledge" className="mt-6"><KnowledgePanel /></TabsContent>
+        <TabsContent value="rag" className="mt-6"><RagPanel /></TabsContent>
         <TabsContent value="faqs" className="mt-6"><FaqPanel /></TabsContent>
         <TabsContent value="banners" className="mt-6"><BannerPanel /></TabsContent>
       </Tabs>
