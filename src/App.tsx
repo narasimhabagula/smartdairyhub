@@ -30,6 +30,7 @@ import SellerDashboard from "./pages/SellerDashboard";
 import SelectRole from "./pages/SelectRole";
 import MilkRates from "./pages/MilkRates";
 import IndustryPanel from "./pages/IndustryPanel";
+import MilkRateManagement from "./pages/MilkRateManagement";
 import MediatorPanel from "./pages/MediatorPanel";
 import VetDashboard from "./pages/VetDashboard";
 import BookVet from "./pages/BookVet";
