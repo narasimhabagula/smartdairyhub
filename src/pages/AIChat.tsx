@@ -121,6 +121,32 @@ export default function AIChat() {
     setChatbotHidden(!enabled);
   };
 
+  // Voice control: Start / Pause-Resume / Stop
+  const lastAssistant = useMemo(
+    () => [...messages].reverse().find((m) => m.role === "assistant" && m.content)?.content || "",
+    [messages]
+  );
+  const handleVoiceStart = () => {
+    if (speaking && paused) { resumeSpeech(); setPaused(false); return; }
+    if (speaking) return;
+    if (!lastAssistant) return;
+    const lang = detectLang(lastAssistant) !== "en-IN" ? detectLang(lastAssistant) : voiceLang;
+    speak(lastAssistant, lang, {
+      onStart: () => { setSpeaking(true); setPaused(false); },
+      onEnd: () => { setSpeaking(false); setPaused(false); },
+      onError: () => { setSpeaking(false); setPaused(false); },
+    });
+  };
+  const handleVoicePause = () => {
+    if (speaking && !paused) { pauseSpeech(); setPaused(true); }
+    else if (speaking && paused) { resumeSpeech(); setPaused(false); }
+  };
+  const handleVoiceStop = () => {
+    cancelSpeech();
+    setSpeaking(false);
+    setPaused(false);
+  };
+
   const send = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
     if (!text || loading) return;
