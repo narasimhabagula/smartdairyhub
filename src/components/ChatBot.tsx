@@ -390,7 +390,7 @@ export default function ChatBot() {
       case "gu": return "નમસ્તે! હું ડેરી મિત્ર 🐄. દૂધનો ભાવ, પશુ સંભાળ, રોગો વિશે પૂછો.";
       case "or": return "ନମସ୍କାର! ମୁଁ ଡେଇରୀ ମିତ୍ର 🐄. କ୍ଷୀର ଦର, ପଶୁ ଯତ୍ନ, ରୋଗ ବିଷୟରେ ପଚାରନ୍ତୁ।";
       case "as": return "নমস্কাৰ! মই ডেইৰী মিত্ৰ 🐄. গাখীৰৰ দাম, পশু যত্ন, ৰোগৰ বিষয়ে সোধক।";
-      default: return "Hi 👋 I'm Jerry, your Smart Dairy AI Assistant. Ask me about animal diseases, milk production, feed, vet guidance, schemes, loans, weather, milk rates & the marketplace. Chat by text, voice, or upload a photo of your animal.";
+      default: return "Hi 👋 I'm Jerry, your Smart Dairy companion. Ask me about animal diseases, milk production, feed, vet guidance, schemes, loans, weather, milk rates & the marketplace. Chat by text, voice, or upload a photo of your animal.";
     }
   }, [greetingLang]);
 
@@ -458,7 +458,7 @@ export default function ChatBot() {
       {confirmHide && (
         <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-2xl">
-            <h3 className="text-base font-semibold">Hide Jerry, the floating chatbot?</h3>
+            <h3 className="text-base font-semibold">Hide Jerry from every page?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               You can restore Jerry anytime from the menu → <strong>Ask Jerry</strong>.
 
@@ -492,7 +492,7 @@ export default function ChatBot() {
         className={`fixed z-[9998] h-16 w-16 touch-none select-none rounded-full bg-white shadow-xl ring-2 ring-primary/30 transition-transform hover:scale-105 active:scale-95 sm:h-[72px] sm:w-[72px] ${open && !minimized ? "scale-0 pointer-events-none" : "scale-100"}`}
       >
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
-        <img src={chatbotIcon} alt="Jerry — Smart Dairy AI Assistant" className="h-full w-full rounded-full object-cover" draggable={false} />
+        <img src={chatbotIcon} alt="Jerry — Smart Dairy companion" className="h-full w-full rounded-full object-cover" draggable={false} />
         {hasNew && (
           <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
             <Sparkles className="h-3 w-3" />
@@ -515,7 +515,7 @@ export default function ChatBot() {
               <div className="truncate text-sm font-bold">Jerry</div>
               <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-300" />
-                Your Smart Dairy AI Assistant • 12 languages
+                Your Smart Dairy companion • 12 languages
               </div>
             </div>
             <select
