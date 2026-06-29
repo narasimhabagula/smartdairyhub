@@ -242,6 +242,42 @@ export type Database = {
           },
         ]
       }
+      chatbot_knowledge: {
+        Row: {
+          active: boolean
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          priority: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          priority?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          priority?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dairy_companies: {
         Row: {
           address: string | null
@@ -332,6 +368,42 @@ export type Database = {
           verified?: boolean
           village?: string | null
           working_hours?: string | null
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          active: boolean
+          answer: string
+          category: string
+          created_at: string
+          created_by: string | null
+          display_order: number
+          id: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          answer: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          id?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          id?: string
+          question?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -458,6 +530,48 @@ export type Database = {
           shift?: string
           snf?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      notification_banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          link: string | null
+          message: string
+          starts_at: string
+          title: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          starts_at?: string
+          title: string
+          updated_at?: string
+          variant?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          variant?: string
         }
         Relationships: []
       }

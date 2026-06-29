@@ -27,6 +27,8 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import AddProduct from "./pages/AddProduct";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminContent from "./pages/AdminContent";
+import NotificationBanners from "./components/NotificationBanners";
 import SellerDashboard from "./pages/SellerDashboard";
 import SelectRole from "./pages/SelectRole";
 import MilkRates from "./pages/MilkRates";
@@ -64,6 +66,7 @@ const App = () => (
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
               <Navbar />
+              <NotificationBanners />
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -98,6 +101,7 @@ const App = () => (
                   <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><AdminContent /></ProtectedRoute>} />
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/support" element={<Support />} />
                   <Route path="/terms" element={<Terms />} />
