@@ -40,21 +40,28 @@ export default function Landing() {
             <p className="mt-3 text-sm text-primary-foreground/85 sm:mt-4 sm:text-xl">
               {t("home.subtitle")}
             </p>
-            <div className="mt-5 flex flex-row flex-wrap gap-3 sm:mt-7 sm:gap-4">
+            <div className="mt-5 flex flex-row flex-wrap items-center gap-3 sm:mt-7 sm:gap-4">
               <Link
                 to="/dashboard"
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105 sm:px-6 sm:py-3.5 sm:text-base"
               >
                 {t("home.getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/select-role"
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-4 py-3 text-sm font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
-              >
-                {t("home.farmerLogin")}
-              </Link>
+              {user ? (
+                <div className="w-full sm:flex-1 sm:min-w-[18rem]">
+                  <SmartHeroSearch />
+                </div>
+              ) : (
+                <Link
+                  to="/select-role"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-4 py-3 text-sm font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
+                >
+                  {t("home.farmerLogin")}
+                </Link>
+              )}
             </div>
+
           </div>
         </div>
       </section>
