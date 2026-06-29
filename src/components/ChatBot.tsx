@@ -458,9 +458,10 @@ export default function ChatBot() {
       {confirmHide && (
         <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-2xl">
-            <h3 className="text-base font-semibold">Hide the floating chatbot?</h3>
+            <h3 className="text-base font-semibold">Hide Jerry, the floating chatbot?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              You can restore it anytime from the menu → <strong>AI Chat Assistant</strong>.
+              You can restore Jerry anytime from the menu → <strong>Ask Jerry</strong>.
+
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
