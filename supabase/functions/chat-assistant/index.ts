@@ -37,6 +37,47 @@ BEHAVIOR:
 
 Always sound warm, respectful, and supportive — like a trusted dairy expert.`;
 
+const EMBED_MODEL = "openai/text-embedding-3-small";
+
+async function retrieveContext(query: string, apiKey: string): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceKey || !query.trim()) return "";
+
+    const eRes = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+      body: JSON.stringify({ model: EMBED_MODEL, input: query.slice(0, 2000) }),
+    });
+    if (!eRes.ok) return "";
+    const eJson = await eRes.json();
+    const vec: number[] | undefined = eJson?.data?.[0]?.embedding;
+    if (!vec) return "";
+
+    const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/match_kb_documents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ query_embedding: vec, match_count: 6 }),
+    });
+    if (!rpc.ok) return "";
+    const rows = await rpc.json();
+    if (!Array.isArray(rows) || rows.length === 0) return "";
+    const good = rows.filter((r: { similarity: number }) => r.similarity > 0.25);
+    if (!good.length) return "";
+    return "\n\nRETRIEVED CONTEXT FROM smartdairyhub.online (cite the source URL when used; if context does not contain the answer, say so and suggest the relevant page):\n" +
+      good.map((r: { title: string; source_url: string | null; content: string }, i: number) =>
+        `[${i + 1}] ${r.title}${r.source_url ? ` (${r.source_url})` : ""}\n${r.content}`
+      ).join("\n\n---\n\n");
+  } catch (_) {
+    return "";
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -50,26 +91,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Pull admin-managed knowledge snippets to ground answers
-    let knowledgeBlock = "";
-    try {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-      if (supabaseUrl && anonKey) {
-        const kRes = await fetch(
-          `${supabaseUrl}/rest/v1/chatbot_knowledge?select=title,content,category&active=eq.true&order=priority.desc&limit=40`,
-          { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } },
-        );
-        if (kRes.ok) {
-          const rows = await kRes.json();
-          if (Array.isArray(rows) && rows.length) {
-            knowledgeBlock = "\n\nADMIN KNOWLEDGE BASE (use as authoritative facts when relevant):\n" +
-              rows.map((r: any, i: number) => `${i + 1}. [${r.category}] ${r.title}\n${r.content}`).join("\n\n");
-          }
-        }
-      }
-    } catch (_) { /* non-fatal */ }
-
+    // Find the latest user message for retrieval
+    const lastUser = [...(messages || [])].reverse().find((m: { role: string }) => m.role === "user");
+    const query = typeof lastUser?.content === "string" ? lastUser.content : "";
+    const ragBlock = await retrieveContext(query, LOVABLE_API_KEY);
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -80,7 +105,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         stream: true,
-        messages: [{ role: "system", content: SYSTEM_PROMPT + knowledgeBlock }, ...messages],
+        messages: [{ role: "system", content: SYSTEM_PROMPT + ragBlock }, ...messages],
       }),
     });
 

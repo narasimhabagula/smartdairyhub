@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, BookOpen, HelpCircle, Megaphone, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, BookOpen, HelpCircle, Megaphone, Loader2, Database } from "lucide-react";
 import { toast } from "sonner";
 
 type Knowledge = { id: string; title: string; content: string; category: string; priority: number; active: boolean; updated_at: string };
@@ -30,10 +30,12 @@ export default function AdminContent() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="knowledge"><BookOpen className="mr-2 h-4 w-4" />Chatbot Knowledge</TabsTrigger>
+          <TabsTrigger value="rag"><Database className="mr-2 h-4 w-4" />RAG / Website KB</TabsTrigger>
           <TabsTrigger value="faqs"><HelpCircle className="mr-2 h-4 w-4" />FAQs</TabsTrigger>
           <TabsTrigger value="banners"><Megaphone className="mr-2 h-4 w-4" />Notification Banners</TabsTrigger>
         </TabsList>
         <TabsContent value="knowledge" className="mt-6"><KnowledgePanel /></TabsContent>
+        <TabsContent value="rag" className="mt-6"><RagPanel /></TabsContent>
         <TabsContent value="faqs" className="mt-6"><FaqPanel /></TabsContent>
         <TabsContent value="banners" className="mt-6"><BannerPanel /></TabsContent>
       </Tabs>
@@ -314,5 +316,100 @@ function BannerPanel() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/* ---------------- RAG / Website KB ---------------- */
+function RagPanel() {
+  const [stats, setStats] = useState<{ total: number; website: number; admin: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [purge, setPurge] = useState(false);
+  const [base, setBase] = useState("https://smartdairyhub.online");
+  const [routes, setRoutes] = useState("/, /milk-calculator, /milk-rates, /marketplace, /cattle-market, /vet-contacts, /book-vet, /schemes, /help, /support, /legal/privacy, /legal/terms");
+  const [log, setLog] = useState<unknown[] | null>(null);
+
+  const refresh = async () => {
+    setLoading(true);
+    const { count: total } = await supabase.from("kb_documents").select("id", { count: "exact", head: true });
+    const { count: website } = await supabase.from("kb_documents").select("id", { count: "exact", head: true }).eq("category", "website");
+    const { count: admin } = await supabase.from("kb_documents").select("id", { count: "exact", head: true }).like("category", "admin:%");
+    setStats({ total: total ?? 0, website: website ?? 0, admin: admin ?? 0 });
+    setLoading(false);
+  };
+  useEffect(() => { refresh(); }, []);
+
+  const ingest = async () => {
+    setRunning(true);
+    setLog(null);
+    try {
+      const parsed = routes.split(",").map((r) => r.trim()).filter(Boolean);
+      const { data, error } = await supabase.functions.invoke("kb-ingest", {
+        body: { base_url: base, routes: parsed, purge },
+      });
+      if (error) throw error;
+      toast.success(`Ingested ${data?.inserted ?? 0} chunks from ${parsed.length} routes`);
+      setLog(data?.log ?? []);
+      refresh();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Retrieval-Augmented Generation</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Ingest website pages into the AI assistant's knowledge base. Dairy Mitra retrieves the most relevant chunks via vector search and uses them as authoritative context when answering.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-3 gap-3">
+          <Stat label="Total chunks" value={loading ? "…" : stats?.total ?? 0} />
+          <Stat label="Website chunks" value={loading ? "…" : stats?.website ?? 0} />
+          <Stat label="Admin snippets" value={loading ? "…" : stats?.admin ?? 0} />
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <Label>Base URL</Label>
+            <Input value={base} onChange={(e) => setBase(e.target.value)} placeholder="https://smartdairyhub.online" />
+          </div>
+          <div>
+            <Label>Routes (comma-separated)</Label>
+            <Textarea value={routes} onChange={(e) => setRoutes(e.target.value)} rows={3} />
+            <p className="text-xs text-muted-foreground mt-1">/llms.txt is also auto-discovered and merged.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={purge} onCheckedChange={setPurge} id="purge" />
+            <Label htmlFor="purge" className="cursor-pointer">Purge existing website chunks before re-ingest</Label>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={ingest} disabled={running}>
+              {running ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ingesting…</> : <><Database className="mr-2 h-4 w-4" />Run ingestion</>}
+            </Button>
+            <Button variant="outline" onClick={refresh} disabled={loading}>Refresh stats</Button>
+          </div>
+        </div>
+
+        {log && (
+          <div className="rounded-md border bg-muted/40 p-3 max-h-72 overflow-auto text-xs font-mono">
+            <pre>{JSON.stringify(log, null, 2)}</pre>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-2xl font-semibold">{value}</div>
+    </div>
   );
 }
