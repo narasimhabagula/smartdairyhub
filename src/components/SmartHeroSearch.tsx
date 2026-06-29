@@ -57,14 +57,15 @@ export default function SmartHeroSearch() {
         .filter((r) => r.s > 0)
         .sort((a, b) => b.s - a.s)[0]?.e;
       autoSubmitRef.current = false;
+      setOpen(false);
+      setQuery("");
+      reset();
       if (top) {
-        setOpen(false);
-        setQuery("");
-        reset();
         navigate(top.to);
       } else {
-        setOpen(true);
+        navigate(`/search?q=${encodeURIComponent(transcript)}`);
       }
+
     }, 600);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
