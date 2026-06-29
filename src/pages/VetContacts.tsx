@@ -268,7 +268,7 @@ export default function VetContacts() {
   const fetchVets = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("vet_doctors").select(VET_SAFE_COLUMNS)
+      .from("vet_doctors_public" as any).select(VET_SAFE_COLUMNS)
       .eq("status", "approved").eq("available", true)
       .order("rating", { ascending: false });
     if (error) toast.error(error.message);
