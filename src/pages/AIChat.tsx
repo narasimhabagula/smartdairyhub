@@ -93,7 +93,7 @@ export default function AIChat() {
     if (!transcript) return;
     setInput((p) => (p ? p + " " : "") + transcript);
     // Barge-in: cancel TTS the moment user speaks
-    if (speaking) { cancelSpeech(); setSpeaking(false); }
+    if (speaking) { cancelSpeech(); setSpeaking(false); setPaused(false); }
     if (continuousRef.current) {
       if (silenceTimerRef.current) window.clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = window.setTimeout(() => { void send(); }, 1100);
