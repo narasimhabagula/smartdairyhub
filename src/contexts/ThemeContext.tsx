@@ -12,7 +12,8 @@ function readStored(): ThemeMode {
     const v = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     if (v === "light" || v === "dark" || v === "system") return v;
   } catch {}
-  return "system";
+  // New users default to Light Mode (not system) per product policy.
+  return "light";
 }
 
 function systemPref(): "light" | "dark" {
