@@ -274,6 +274,10 @@ export default function Navbar() {
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
 
+                  <DropdownMenuItem onClick={() => navigate("/ai-chat")}>
+                    <Bot className="mr-2 h-4 w-4" /> AI Chat Assistant
+                  </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={() => navigate(SUPPORT_PATH)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Help & Support
                   </DropdownMenuItem>
