@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw, ImagePlus, Camera, Phone, MapPin, Share2, Download } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw, ImagePlus, Camera, Phone, MapPin, Share2, Download, Stethoscope, IndianRupee, Landmark, ArrowRight } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { speak as ttsSpeak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
@@ -11,15 +11,12 @@ import chatbotIcon from "@/assets/chatbot-icon.png";
 
 type Msg = { role: "user" | "assistant"; content: string; images?: string[]; hadImages?: boolean };
 
-const QUICK_ACTIONS = [
-  { emoji: "🥛", q: "What is today's milk rate and how is it calculated from FAT & SNF?" },
-  { emoji: "🐄", q: "Common cow diseases, symptoms and prevention" },
-  { emoji: "🐃", q: "How to care for a pregnant buffalo?" },
-  { emoji: "🌾", q: "Best balanced feed guide for dairy cows" },
-  { emoji: "💰", q: "Government dairy subsidies and loans I can apply for" },
-  { emoji: "🩺", q: "How do I find a nearby veterinary doctor?" },
-  { emoji: "🛒", q: "How do I buy or sell cattle on Smart Dairy Hub?" },
-  { emoji: "❓", q: "What is Smart Dairy Hub and what can I do here?" },
+const SUGGESTED_QUESTIONS = [
+  "My cow is not eating. What should I do?",
+  "My buffalo has a fever.",
+  "What feed is best for increasing milk production?",
+  "Show today's milk rates.",
+  "Find a veterinary doctor near me.",
 ];
 
 const STORAGE_POS = "sdh_chatbot_pos";
@@ -515,7 +512,7 @@ export default function ChatBot() {
               <div className="truncate text-sm font-bold">Jerry</div>
               <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-300" />
-                Your Smart Dairy companion • 12 languages
+                Your Smart Dairy AI Assistant • 12 languages
               </div>
             </div>
             <select
