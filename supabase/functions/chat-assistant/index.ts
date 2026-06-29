@@ -121,7 +121,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { messages } = await req.json();
+    const { messages: rawMessages } = await req.json();
+    // Hardening: only allow user/assistant roles from clients (block injected "system"/"tool" prompts),
+    // cap message count and per-message text length to prevent token-stuffing abuse.
+    const MAX_MESSAGES = 50;
+    const MAX_TEXT_CHARS = 8000;
+    const clip = (s: string) => (typeof s === "string" ? s.slice(0, MAX_TEXT_CHARS) : "");
+    const safeMessages = (Array.isArray(rawMessages) ? rawMessages : [])
+      .filter((m: any) => m && (m.role === "user" || m.role === "assistant"))
+      .slice(-MAX_MESSAGES)
+      .map((m: any) => {
+        if (typeof m.content === "string") return { role: m.role, content: clip(m.content) };
+        if (Array.isArray(m.content)) {
+          const parts = m.content
+            .filter((p: any) => p && (p.type === "text" || p.type === "image_url"))
+            .map((p: any) => p.type === "text" ? { type: "text", text: clip(p.text || "") } : p);
+          return { role: m.role, content: parts };
+        }
+        return { role: m.role, content: "" };
+      });
+    const messages = safeMessages;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
