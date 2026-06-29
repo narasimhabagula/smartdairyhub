@@ -258,7 +258,7 @@ export default function Settings() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><HelpCircle className="h-4 w-4" /> Help</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            <SettingRow to="/ai-chat" label="AI Help Center" hint="Ask anything in your language" icon={<Bot className="h-4 w-4" />} />
+            <SettingRow to="/ai-chat" label="Ask Jerry" hint="Your Smart Dairy AI Assistant" icon={<Bot className="h-4 w-4" />} />
             <SettingRow to="/support" label="Customer Care" icon={<Headset className="h-4 w-4" />} />
             <SettingRow to="/help" label="FAQ" icon={<HelpCircle className="h-4 w-4" />} />
             <SettingRow to="/feedback" label="Report Bug / Feedback" icon={<BugPlay className="h-4 w-4" />} />
