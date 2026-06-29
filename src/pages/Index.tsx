@@ -23,7 +23,7 @@ export default function Landing() {
   return (
     <div>
       <section
-        className="relative -mt-px block h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden bg-[hsl(150_30%_12%)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-20 after:content-[''] after:bg-gradient-to-t after:from-background after:to-transparent after:md:hidden md:h-[85vh] md:min-h-[500px]"
+        className="relative -mt-px block h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px]"
       >
         <img
           src={heroImg}
