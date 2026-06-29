@@ -146,9 +146,14 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 )}
                 {(hasRole("industry") || hasRole("admin")) && (
-                  <DropdownMenuItem onClick={() => navigate("/industry")}>
-                    <Factory className="mr-2 h-4 w-4" /> Industry panel
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/industry")}>
+                      <Factory className="mr-2 h-4 w-4" /> Industry panel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/milk-rate-management")}>
+                      <TrendingUp className="mr-2 h-4 w-4" /> Milk Rate Management
+                    </DropdownMenuItem>
+                  </>
                 )}
                 {(hasRole("vet") || hasRole("admin")) && (
                   <DropdownMenuItem onClick={() => navigate("/vet-dashboard")}>
