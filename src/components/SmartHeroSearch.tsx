@@ -118,7 +118,7 @@ export default function SmartHeroSearch() {
 
 
   return (
-    <div ref={wrapRef} className="relative mx-auto w-full max-w-xl">
+    <div ref={wrapRef} className="relative w-full max-w-xl">
       <form
         onSubmit={onSubmit}
         className="flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 shadow-lg shadow-black/20 ring-1 ring-black/5 backdrop-blur-md focus-within:ring-2 focus-within:ring-accent"

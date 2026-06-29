@@ -23,7 +23,7 @@ export default function Landing() {
   return (
     <div>
       <section
-        className="relative -mt-px block h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px]"
+        className="relative -mt-px block h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden bg-[hsl(150_30%_12%)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-20 after:content-[''] after:bg-gradient-to-t after:from-background after:to-transparent after:md:hidden md:h-[85vh] md:min-h-[500px]"
       >
         <img
           src={heroImg}
@@ -66,46 +66,6 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Natural bottom transition: subtle green grass silhouette + soft blending */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 md:hidden">
-          {/* Soft green-tinted blend that marries the hero to the next section */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[hsl(140_40%_16%)]/60 via-[hsl(140_30%_18%)]/25 to-transparent" />
-          {/* Organic grass / leaves divider */}
-          <svg
-            viewBox="0 0 1440 120"
-            preserveAspectRatio="none"
-            className="relative h-16 w-full opacity-85"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(140 40% 24%)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="hsl(140 45% 16%)" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            {/* Gentle curved hill */}
-            <path
-              d="M0,120 L0,60 C180,85 360,35 540,55 C720,75 900,25 1080,45 C1260,65 1380,55 1440,40 L1440,120 Z"
-              fill="url(#grassGrad)"
-            />
-            {/* Grass blade silhouettes */}
-            <g fill="hsl(140 35% 20%)" opacity="0.7">
-              <path d="M60,120 Q65,80 50,60 Q75,85 80,120 Z" />
-              <path d="M120,120 Q125,75 105,50 Q135,80 140,120 Z" />
-              <path d="M220,120 Q215,85 235,65 Q240,90 250,120 Z" />
-              <path d="M340,120 Q350,70 330,45 Q360,80 365,120 Z" />
-              <path d="M460,120 Q455,82 475,62 Q480,95 490,120 Z" />
-              <path d="M580,120 Q590,72 570,48 Q600,78 605,120 Z" />
-              <path d="M700,120 Q705,86 685,66 Q720,92 725,120 Z" />
-              <path d="M820,120 Q830,68 810,42 Q840,76 845,120 Z" />
-              <path d="M940,120 Q935,84 955,64 Q960,94 970,120 Z" />
-              <path d="M1060,120 Q1070,70 1050,46 Q1080,80 1085,120 Z" />
-              <path d="M1180,120 Q1185,88 1165,68 Q1200,92 1205,120 Z" />
-              <path d="M1300,120 Q1310,66 1290,40 Q1320,74 1325,120 Z" />
-              <path d="M1380,120 Q1385,86 1365,66 Q1395,90 1400,120 Z" />
-            </g>
-          </svg>
-        </div>
       </section>
 
 
