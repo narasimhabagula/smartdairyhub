@@ -77,6 +77,8 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<SearchResults />} />
                   <Route path="/ai-chat" element={<AIChat />} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
@@ -125,6 +127,7 @@ const App = () => (
             </div>
           </CartProvider>
         </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
