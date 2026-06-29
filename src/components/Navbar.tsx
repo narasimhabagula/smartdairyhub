@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ShoppingCart, Stethoscope, Landmark, LayoutDashboard, LogIn, Menu, X, Store, LogOut,
   Shield, User, Package, Languages, Check, TrendingUp, Factory, Handshake, Headset,
-  MoreVertical, Settings, HelpCircle, Wheat,
+  MoreVertical, Settings, HelpCircle, Wheat, Bot,
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -273,6 +273,10 @@ export default function Navbar() {
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
+
+                  <DropdownMenuItem onClick={() => navigate("/ai-chat")}>
+                    <Bot className="mr-2 h-4 w-4" /> AI Chat Assistant
+                  </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={() => navigate(SUPPORT_PATH)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Help & Support

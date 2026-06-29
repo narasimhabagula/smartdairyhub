@@ -50,6 +50,7 @@ import Careers from "./pages/Careers";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
+import AIChat from "./pages/AIChat";
 
 
 
@@ -71,6 +72,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<SearchResults />} />
+                  <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />

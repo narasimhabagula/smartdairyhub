@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import chatbotIcon from "@/assets/chatbot-icon.png";
@@ -22,6 +23,16 @@ const QUICK_ACTIONS = [
 const STORAGE_POS = "sdh_chatbot_pos";
 const STORAGE_HIST = "sdh_chatbot_history_v1";
 const STORAGE_SPEAK = "sdh_chatbot_speak";
+const STORAGE_HIDDEN = "sdh_chatbot_hidden";
+const VISIBILITY_EVENT = "sdh-chatbot-visibility";
+
+export function setChatbotHidden(hidden: boolean) {
+  try { localStorage.setItem(STORAGE_HIDDEN, hidden ? "1" : "0"); } catch {}
+  window.dispatchEvent(new CustomEvent(VISIBILITY_EVENT, { detail: { hidden } }));
+}
+export function isChatbotHidden(): boolean {
+  try { return localStorage.getItem(STORAGE_HIDDEN) === "1"; } catch { return false; }
+}
 
 // Detect language from text using Unicode script ranges + Latin fallback
 function detectLang(text: string): string {
@@ -79,6 +90,10 @@ function speak(text: string, lang: string) {
 
 export default function ChatBot() {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [hidden, setHidden] = useState<boolean>(() => isChatbotHidden());
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmHide, setConfirmHide] = useState(false);
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [input, setInput] = useState("");
@@ -162,29 +177,56 @@ export default function ChatBot() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Listen for visibility changes from other parts of the app (e.g., AI Chat page toggle)
+  useEffect(() => {
+    const onVis = (e: any) => setHidden(!!e?.detail?.hidden);
+    window.addEventListener(VISIBILITY_EVENT, onVis as EventListener);
+    return () => window.removeEventListener(VISIBILITY_EVENT, onVis as EventListener);
+  }, []);
+
+  const longPressTimer = useRef<number | null>(null);
+  const cancelLongPress = () => {
+    if (longPressTimer.current) { window.clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+  };
+
   const onPointerDown = (e: React.PointerEvent) => {
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragRef.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y, moved: false };
+    cancelLongPress();
+    longPressTimer.current = window.setTimeout(() => {
+      dragRef.current = null;
+      setShowMenu(true);
+    }, 550);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     const nx = e.clientX - dragRef.current.dx;
     const ny = e.clientY - dragRef.current.dy;
-    if (Math.abs(nx - pos.x) + Math.abs(ny - pos.y) > 4) dragRef.current.moved = true;
+    if (Math.abs(nx - pos.x) + Math.abs(ny - pos.y) > 4) {
+      dragRef.current.moved = true;
+      cancelLongPress();
+    }
     setPos({
       x: Math.min(Math.max(8, nx), window.innerWidth - 72),
       y: Math.min(Math.max(8, ny), window.innerHeight - 72),
     });
   };
   const onPointerUp = () => {
+    cancelLongPress();
     const moved = dragRef.current?.moved;
     dragRef.current = null;
     try { localStorage.setItem(STORAGE_POS, JSON.stringify(pos)); } catch {}
-    if (!moved) {
+    if (!moved && !showMenu) {
       setOpen(true);
       setMinimized(false);
       setHasNew(false);
     }
+  };
+
+  const resetPosition = () => {
+    const next = { x: window.innerWidth - 88, y: window.innerHeight - 110 };
+    setPos(next);
+    try { localStorage.setItem(STORAGE_POS, JSON.stringify(next)); } catch {}
   };
 
   const send = useCallback(async (textOverride?: string) => {
@@ -303,8 +345,75 @@ export default function ChatBot() {
     }
   }, [greetingLang]);
 
+  if (hidden) return null;
+
   const ui = (
     <>
+      {/* Long-press / context menu */}
+      {showMenu && (
+        <>
+          <div className="fixed inset-0 z-[10000]" onClick={() => setShowMenu(false)} />
+          <div
+            className="fixed z-[10001] min-w-[220px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+            style={{ left: Math.min(pos.x, window.innerWidth - 240), top: Math.max(8, pos.y - 200) }}
+          >
+            <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              Dairy Mitra
+            </div>
+            <button
+              onClick={() => { setShowMenu(false); setOpen(true); setMinimized(false); setHasNew(false); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <Sparkles className="h-4 w-4" /> Open Chat
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); navigate("/ai-chat"); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <Maximize2 className="h-4 w-4" /> Open Full AI Chat
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); resetPosition(); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <RotateCcw className="h-4 w-4" /> Reset Position
+            </button>
+            <button
+              onClick={() => { setShowMenu(false); setConfirmHide(true); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
+            >
+              <EyeOff className="h-4 w-4" /> Hide Chatbot
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Hide confirmation */}
+      {confirmHide && (
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-2xl">
+            <h3 className="text-base font-semibold">Hide the floating chatbot?</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You can restore it anytime from the menu → <strong>AI Chat Assistant</strong>.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmHide(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setConfirmHide(false); setOpen(false); setChatbotHidden(true); }}
+                className="rounded-lg bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground hover:opacity-90"
+              >
+                Yes, hide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating button */}
       <button
         aria-label="Open chat assistant"
