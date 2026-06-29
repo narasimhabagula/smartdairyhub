@@ -371,7 +371,7 @@ export default function ChatBot() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dairy-mitra-report.${ext === "pdf" ? "txt" : "txt"}`;
+    a.download = `jerry-report.${ext === "pdf" ? "txt" : "txt"}`;
     a.click();
     URL.revokeObjectURL(url);
   };
