@@ -126,21 +126,18 @@ export default function ChatBot() {
   }, [messages]);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_SPEAK, speakOn ? "1" : "0"); } catch {}
-    if (!speakOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    const cur = loadVoiceSettings();
+    saveVoiceSettings({ ...cur, enabled: speakOn });
+    if (!speakOn) cancelSpeech();
   }, [speakOn]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, loading, open, minimized]);
 
-  // Load TTS voices (some browsers populate async)
   useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const load = () => window.speechSynthesis.getVoices();
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => { try { window.speechSynthesis.cancel(); } catch {} };
+    primeVoices();
+    return () => cancelSpeech();
   }, []);
 
   // Keep within viewport on resize
