@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, MessageCircle } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import chatbotIcon from "@/assets/chatbot-icon.png";
@@ -9,23 +9,72 @@ import chatbotIcon from "@/assets/chatbot-icon.png";
 type Msg = { role: "user" | "assistant"; content: string };
 
 const QUICK_ACTIONS = [
-  { emoji: "🥛", key: "milk_rate", q: "What is today's milk rate and how is it calculated from FAT & SNF?" },
-  { emoji: "🐄", key: "cow_diseases", q: "Common cow diseases, symptoms and prevention" },
-  { emoji: "🐃", key: "buffalo_care", q: "How to care for a pregnant buffalo?" },
-  { emoji: "🌾", key: "feed", q: "Best balanced feed guide for dairy cows" },
-  { emoji: "💰", key: "schemes", q: "Government dairy subsidies and loans I can apply for" },
-  { emoji: "🩺", key: "vet", q: "How do I find a nearby veterinary doctor?" },
-  { emoji: "🛒", key: "buy_sell", q: "How do I buy or sell cattle on Smart Dairy Hub?" },
-  { emoji: "❓", key: "faq", q: "What is Smart Dairy Hub and what can I do here?" },
+  { emoji: "🥛", q: "What is today's milk rate and how is it calculated from FAT & SNF?" },
+  { emoji: "🐄", q: "Common cow diseases, symptoms and prevention" },
+  { emoji: "🐃", q: "How to care for a pregnant buffalo?" },
+  { emoji: "🌾", q: "Best balanced feed guide for dairy cows" },
+  { emoji: "💰", q: "Government dairy subsidies and loans I can apply for" },
+  { emoji: "🩺", q: "How do I find a nearby veterinary doctor?" },
+  { emoji: "🛒", q: "How do I buy or sell cattle on Smart Dairy Hub?" },
+  { emoji: "❓", q: "What is Smart Dairy Hub and what can I do here?" },
 ];
 
 const STORAGE_POS = "sdh_chatbot_pos";
 const STORAGE_HIST = "sdh_chatbot_history_v1";
+const STORAGE_SPEAK = "sdh_chatbot_speak";
 
-function detectLang(text: string): "en-IN" | "te-IN" | "hi-IN" {
-  if (/[\u0C00-\u0C7F]/.test(text)) return "te-IN";
-  if (/[\u0900-\u097F]/.test(text)) return "hi-IN";
+// Detect language from text using Unicode script ranges + Latin fallback
+function detectLang(text: string): string {
+  if (/[\u0C00-\u0C7F]/.test(text)) return "te-IN"; // Telugu
+  if (/[\u0B80-\u0BFF]/.test(text)) return "ta-IN"; // Tamil
+  if (/[\u0D00-\u0D7F]/.test(text)) return "ml-IN"; // Malayalam
+  if (/[\u0C80-\u0CFF]/.test(text)) return "kn-IN"; // Kannada
+  if (/[\u0980-\u09FF]/.test(text)) return "bn-IN"; // Bengali / Assamese
+  if (/[\u0A00-\u0A7F]/.test(text)) return "pa-IN"; // Punjabi (Gurmukhi)
+  if (/[\u0A80-\u0AFF]/.test(text)) return "gu-IN"; // Gujarati
+  if (/[\u0B00-\u0B7F]/.test(text)) return "or-IN"; // Odia
+  if (/[\u0900-\u097F]/.test(text)) return "hi-IN"; // Devanagari (Hindi/Marathi)
   return "en-IN";
+}
+
+const LANG_OPTIONS = [
+  { code: "en-IN", label: "English" },
+  { code: "te-IN", label: "తెలుగు" },
+  { code: "hi-IN", label: "हिन्दी" },
+  { code: "ta-IN", label: "தமிழ்" },
+  { code: "ml-IN", label: "മലയാളം" },
+  { code: "kn-IN", label: "ಕನ್ನಡ" },
+  { code: "mr-IN", label: "मराठी" },
+  { code: "bn-IN", label: "বাংলা" },
+  { code: "pa-IN", label: "ਪੰਜਾਬੀ" },
+  { code: "gu-IN", label: "ગુજરાતી" },
+  { code: "or-IN", label: "ଓଡ଼ିଆ" },
+  { code: "as-IN", label: "অসমীয়া" },
+];
+
+function speak(text: string, lang: string) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    // Strip markdown for cleaner speech
+    const clean = text
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/[*_`#>]/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) return;
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = lang;
+    u.rate = 0.95;
+    u.pitch = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const match =
+      voices.find((v) => v.lang === lang) ||
+      voices.find((v) => v.lang.startsWith(lang.split("-")[0]));
+    if (match) u.voice = match;
+    window.speechSynthesis.speak(u);
+  } catch {}
 }
 
 export default function ChatBot() {
@@ -42,6 +91,25 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasNew, setHasNew] = useState(messages.length === 0);
+  const [speakOn, setSpeakOn] = useState<boolean>(() => {
+    try { return localStorage.getItem(STORAGE_SPEAK) !== "0"; } catch { return true; }
+  });
+  const [voiceLang, setVoiceLang] = useState<string>(() => {
+    const l = i18n.language || "en";
+    if (l.startsWith("te")) return "te-IN";
+    if (l.startsWith("hi")) return "hi-IN";
+    if (l.startsWith("ta")) return "ta-IN";
+    if (l.startsWith("ml")) return "ml-IN";
+    if (l.startsWith("kn")) return "kn-IN";
+    if (l.startsWith("mr")) return "mr-IN";
+    if (l.startsWith("bn")) return "bn-IN";
+    if (l.startsWith("pa")) return "pa-IN";
+    if (l.startsWith("gu")) return "gu-IN";
+    if (l.startsWith("or")) return "or-IN";
+    if (l.startsWith("as")) return "as-IN";
+    return "en-IN";
+  });
+  const lastSpokenRef = useRef<number>(-1);
 
   // Draggable position
   const [pos, setPos] = useState<{ x: number; y: number }>(() => {
@@ -56,9 +124,6 @@ export default function ChatBot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const voiceLang =
-    i18n.language?.startsWith("te") ? "te-IN" :
-    i18n.language?.startsWith("hi") ? "hi-IN" : "en-IN";
   const { transcript, listening, supported, start, stop, reset } = useSpeechRecognition(voiceLang);
 
   useEffect(() => { if (transcript) setInput((p) => (p ? p + " " : "") + transcript); }, [transcript]);
@@ -68,8 +133,22 @@ export default function ChatBot() {
   }, [messages]);
 
   useEffect(() => {
+    try { localStorage.setItem(STORAGE_SPEAK, speakOn ? "1" : "0"); } catch {}
+    if (!speakOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  }, [speakOn]);
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, loading, open, minimized]);
+
+  // Load TTS voices (some browsers populate async)
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => window.speechSynthesis.getVoices();
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { try { window.speechSynthesis.cancel(); } catch {} };
+  }, []);
 
   // Keep within viewport on resize
   useEffect(() => {
@@ -97,7 +176,7 @@ export default function ChatBot() {
       y: Math.min(Math.max(8, ny), window.innerHeight - 72),
     });
   };
-  const onPointerUp = (e: React.PointerEvent) => {
+  const onPointerUp = () => {
     const moved = dragRef.current?.moved;
     dragRef.current = null;
     try { localStorage.setItem(STORAGE_POS, JSON.stringify(pos)); } catch {}
@@ -114,11 +193,14 @@ export default function ChatBot() {
     setError(null);
     setInput("");
     reset();
+    // Adapt voice language to what the user is speaking/typing
+    const detected = detectLang(text);
+    if (detected !== "en-IN") setVoiceLang(detected);
+
     const userMsg: Msg = { role: "user", content: text };
     const next = [...messages, userMsg];
     setMessages(next);
     setLoading(true);
-    // Add empty assistant placeholder
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
 
     try {
@@ -167,6 +249,12 @@ export default function ChatBot() {
           } catch {}
         }
       }
+
+      // Speak the final answer in the user's detected language
+      if (speakOn && acc) {
+        const replyLang = detectLang(acc) !== "en-IN" ? detectLang(acc) : detected;
+        speak(acc, replyLang);
+      }
       if (!open || minimized) setHasNew(true);
     } catch (e: any) {
       setError(e?.message || "Failed to reach assistant");
@@ -178,15 +266,42 @@ export default function ChatBot() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages, open, minimized, reset]);
+  }, [input, loading, messages, open, minimized, reset, speakOn]);
 
-  const greetingLang = i18n.language?.startsWith("te") ? "te" : i18n.language?.startsWith("hi") ? "hi" : "en";
-  const greeting =
-    greetingLang === "te"
-      ? "నమస్తే! నేను డెయిరీ మిత్ర 🐄. పాల ధరలు, పశు సంరక్షణ, వ్యాధులు, పథకాలు, మార్కెట్ గురించి అడగండి."
-      : greetingLang === "hi"
-      ? "नमस्ते! मैं डेयरी मित्र 🐄. दूध रेट, पशु देखभाल, बीमारियाँ, योजनाएँ, मार्केट के बारे में पूछें।"
-      : "Namaste! I'm Dairy Mitra 🐄 — your AI assistant. Ask me about milk rates, animal care, diseases, schemes & the marketplace.";
+  const greetingLang = voiceLang.split("-")[0];
+  const greeting = useMemo(() => {
+    switch (greetingLang) {
+      case "te": return "నమస్తే! నేను డెయిరీ మిత్ర 🐄. పాల ధరలు, పశు సంరక్షణ, వ్యాధులు, పథకాలు, మార్కెట్ గురించి అడగండి.";
+      case "hi": return "नमस्ते! मैं डेयरी मित्र 🐄. दूध रेट, पशु देखभाल, बीमारियाँ, योजनाएँ, मार्केट के बारे में पूछें।";
+      case "ta": return "வணக்கம்! நான் டெய்ரி மித்ரா 🐄. பால் விலை, கால்நடை பராமரிப்பு, நோய்கள், திட்டங்கள் பற்றி கேளுங்கள்.";
+      case "ml": return "നമസ്കാരം! ഞാൻ ഡെയറി മിത്ര 🐄. പാൽ വില, പശു പരിചരണം, രോഗങ്ങൾ, പദ്ധതികൾ ചോദിക്കൂ.";
+      case "kn": return "ನಮಸ್ಕಾರ! ನಾನು ಡೈರಿ ಮಿತ್ರ 🐄. ಹಾಲಿನ ದರ, ಪಶು ಆರೈಕೆ, ರೋಗಗಳ ಬಗ್ಗೆ ಕೇಳಿ.";
+      case "mr": return "नमस्कार! मी डेअरी मित्र 🐄. दूध दर, जनावरांची काळजी, रोग, योजना विचारा.";
+      case "bn": return "নমস্কার! আমি ডেইরি মিত্র 🐄. দুধের দাম, পশু যত্ন, রোগ, প্রকল্প সম্পর্কে জিজ্ঞাসা করুন।";
+      case "pa": return "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਡੇਅਰੀ ਮਿਤਰ 🐄. ਦੁੱਧ ਦਾ ਰੇਟ, ਪਸ਼ੂ ਦੀ ਦੇਖਭਾਲ, ਬਿਮਾਰੀਆਂ ਬਾਰੇ ਪੁੱਛੋ।";
+      case "gu": return "નમસ્તે! હું ડેરી મિત્ર 🐄. દૂધનો ભાવ, પશુ સંભાળ, રોગો વિશે પૂછો.";
+      case "or": return "ନମସ୍କାର! ମୁଁ ଡେଇରୀ ମିତ୍ର 🐄. କ୍ଷୀର ଦର, ପଶୁ ଯତ୍ନ, ରୋଗ ବିଷୟରେ ପଚାରନ୍ତୁ।";
+      case "as": return "নমস্কাৰ! মই ডেইৰী মিত্ৰ 🐄. গাখীৰৰ দাম, পশু যত্ন, ৰোগৰ বিষয়ে সোধক।";
+      default: return "Namaste! I'm Dairy Mitra 🐄 — your AI dairy assistant. Speak or type in any Indian language about milk rates, animal care, diseases, schemes & the marketplace.";
+    }
+  }, [greetingLang]);
+
+  const placeholder = useMemo(() => {
+    switch (greetingLang) {
+      case "te": return "ఇక్కడ టైప్ చేయండి…";
+      case "hi": return "यहाँ लिखें…";
+      case "ta": return "இங்கே தட்டச்சு செய்க…";
+      case "ml": return "ഇവിടെ ടൈപ്പ് ചെയ്യൂ…";
+      case "kn": return "ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ…";
+      case "mr": return "येथे लिहा…";
+      case "bn": return "এখানে লিখুন…";
+      case "pa": return "ਇੱਥੇ ਲਿਖੋ…";
+      case "gu": return "અહીં લખો…";
+      case "or": return "ଏଠାରେ ଲେଖନ୍ତୁ…";
+      case "as": return "ইয়াত লিখক…";
+      default: return "Ask anything about dairy…";
+    }
+  }, [greetingLang]);
 
   const ui = (
     <>
@@ -214,21 +329,37 @@ export default function ChatBot() {
           className={`fixed z-[9999] flex flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl transition-all duration-200
             ${minimized ? "h-14 w-72" : "h-[70vh] max-h-[640px] w-[92vw] max-w-[400px] sm:h-[600px]"}
           `}
-          style={{
-            right: 16,
-            bottom: 16,
-          }}
+          style={{ right: 16, bottom: 16 }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 px-4 py-3 text-primary-foreground">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 px-3 py-3 text-primary-foreground">
             <img src={chatbotIcon} alt="" className="h-9 w-9 rounded-full bg-white object-cover" />
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-bold">Dairy Mitra</div>
-              <div className="flex items-center gap-1.5 text-[11px] opacity-90">
+              <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-300" />
-                AI Assistant • EN · తె · हि
+                AI Assistant • 12 languages
               </div>
             </div>
+            <select
+              value={voiceLang}
+              onChange={(e) => setVoiceLang(e.target.value)}
+              className="max-w-[88px] truncate rounded bg-white/15 px-1.5 py-1 text-[11px] outline-none hover:bg-white/25"
+              aria-label="Voice language"
+              title="Voice language"
+            >
+              {LANG_OPTIONS.map((l) => (
+                <option key={l.code} value={l.code} className="text-foreground">{l.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setSpeakOn((v) => !v)}
+              className="rounded p-1.5 hover:bg-white/15"
+              aria-label={speakOn ? "Mute voice" : "Unmute voice"}
+              title={speakOn ? "Voice: on" : "Voice: off"}
+            >
+              {speakOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
             <button
               onClick={() => setMinimized((v) => !v)}
               className="rounded p-1.5 hover:bg-white/15"
@@ -237,7 +368,7 @@ export default function ChatBot() {
               <Minus className="h-4 w-4" />
             </button>
             <button
-              onClick={() => { setOpen(false); setMinimized(false); }}
+              onClick={() => { setOpen(false); setMinimized(false); try { window.speechSynthesis?.cancel(); } catch {} }}
               className="rounded p-1.5 hover:bg-white/15"
               aria-label="Close"
             >
@@ -255,9 +386,9 @@ export default function ChatBot() {
                       {greeting}
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-1">
-                      {QUICK_ACTIONS.map((a) => (
+                      {QUICK_ACTIONS.map((a, i) => (
                         <button
-                          key={a.key}
+                          key={i}
                           onClick={() => send(a.q)}
                           className="rounded-lg border border-border bg-card px-2 py-2 text-left text-xs font-medium transition hover:border-primary hover:bg-primary/5"
                         >
@@ -319,10 +450,7 @@ export default function ChatBot() {
                       }
                     }}
                     rows={1}
-                    placeholder={
-                      greetingLang === "te" ? "ఇక్కడ టైప్ చేయండి…" :
-                      greetingLang === "hi" ? "यहाँ लिखें…" : "Ask anything about dairy…"
-                    }
+                    placeholder={placeholder}
                     className="max-h-24 flex-1 resize-none bg-transparent text-sm outline-none"
                   />
                   {supported && (
@@ -331,6 +459,7 @@ export default function ChatBot() {
                       onClick={() => (listening ? stop() : start())}
                       className={`shrink-0 rounded-lg p-2 transition ${listening ? "bg-red-500 text-white animate-pulse" : "text-muted-foreground hover:bg-muted"}`}
                       aria-label={listening ? "Stop voice" : "Start voice"}
+                      title={listening ? "Stop listening" : `Speak in ${LANG_OPTIONS.find(l => l.code === voiceLang)?.label || "English"}`}
                     >
                       {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                     </button>
