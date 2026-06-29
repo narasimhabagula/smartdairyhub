@@ -488,7 +488,22 @@ export default function VetContacts() {
     setExpandedNotice(null);
     try {
       const loc = opts?.loc ?? userLoc ?? (await locateMe());
-      if (!loc) { setNearbyError("Location required. Allow GPS or search a place manually."); return; }
+      if (!loc) {
+        // GPS unavailable — silently fall back to the default anchor so the user
+        // still gets results instead of an empty state.
+        const fallback = { lat: DEFAULT_LOCATION.lat, lng: DEFAULT_LOCATION.lng };
+        setUserLoc(fallback);
+        setUserGeo({
+          village: DEFAULT_LOCATION.name, mandal: null, district: "East Godavari",
+          state: DEFAULT_LOCATION.state, pincode: null, country: "India",
+          formatted: `${DEFAULT_LOCATION.name}, East Godavari, ${DEFAULT_LOCATION.state}`,
+          lat: fallback.lat, lng: fallback.lng,
+        });
+        opts = { ...(opts || {}), loc: fallback };
+      } else {
+        opts = { ...(opts || {}), loc };
+      }
+      const effectiveLoc = opts.loc!;
       const { data, error } = await supabase.functions.invoke("nearby-vets", {
         body: {
           lat: loc.lat,
