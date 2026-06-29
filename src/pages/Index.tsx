@@ -55,7 +55,7 @@ export default function Landing() {
       </section>
 
 
-      <section className="relative z-20 border-t border-border/40 bg-background py-20">
+      <section className="container relative z-20 border-t border-border/40 bg-background py-20">
         <h2 className="text-center font-display text-3xl font-bold sm:text-4xl">
           {t("home.everythingTitle")}
         </h2>
