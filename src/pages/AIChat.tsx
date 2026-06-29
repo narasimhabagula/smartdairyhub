@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
 import { setChatbotHidden, isChatbotHidden } from "@/components/ChatBot";
 import { speak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
+import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
