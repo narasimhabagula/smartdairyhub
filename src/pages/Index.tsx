@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import heroImg from "@/assets/hero-dairy.jpg";
-import heroImgMobile from "@/assets/hero-dairy-mobile.jpg";
+
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -17,11 +17,13 @@ export default function Landing() {
 
   return (
     <div>
-      <section className="relative -mt-px block h-[70vh] min-h-[480px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px]">
+      <section
+        className="relative -mt-px block h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden bg-[hsl(150_30%_12%)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-20 after:content-[''] after:bg-gradient-to-t after:from-background after:to-transparent after:md:hidden md:h-[85vh] md:min-h-[500px]"
+      >
         <img
           src={heroImg}
           alt="Dairy farm with cows grazing on green hills"
-          className="absolute inset-0 block h-full w-full object-cover object-center"
+          className="absolute inset-0 block h-full w-full scale-110 object-cover object-center transition-transform duration-700 md:scale-100"
         />
         {/* Same left-to-right overlay on all viewports for desktop-parity */}
         <div className="hero-overlay absolute inset-0" />
@@ -53,7 +55,7 @@ export default function Landing() {
       </section>
 
 
-      <section className="container py-20">
+      <section className="container relative z-20 border-t border-border/40 bg-background py-20 md:border-t-0">
         <h2 className="text-center font-display text-3xl font-bold sm:text-4xl">
           {t("home.everythingTitle")}
         </h2>
