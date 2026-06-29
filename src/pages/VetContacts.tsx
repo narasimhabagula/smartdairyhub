@@ -61,6 +61,15 @@ const VOICE_LANGS: { code: string; label: string }[] = [
   { code: "hi-IN", label: "हिंदी" },
 ];
 
+// Default search anchors (East Godavari, AP). Used when GPS is denied/unavailable
+// so the page always shows results. Order: Rajanagaram → Anaparthi → Rajahmundry.
+const DEFAULT_ANCHORS: { name: string; lat: number; lng: number; state: string }[] = [
+  { name: "Rajanagaram", lat: 17.0739, lng: 81.9035, state: "Andhra Pradesh" },
+  { name: "Anaparthi",   lat: 16.9967, lng: 82.0096, state: "Andhra Pradesh" },
+  { name: "Rajahmundry", lat: 17.0005, lng: 81.8040, state: "Andhra Pradesh" },
+];
+const DEFAULT_LOCATION = DEFAULT_ANCHORS[0];
+
 const emptyForm = {
   name: "", qualification: "", specialization: "", phone: "", email: "",
   hospital_name: "", address: "", district: "", village: "", google_maps_url: "",
