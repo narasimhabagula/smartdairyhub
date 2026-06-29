@@ -512,10 +512,10 @@ export default function ChatBot() {
           <div className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 px-3 py-3 text-primary-foreground">
             <img src={chatbotIcon} alt="" className="h-9 w-9 rounded-full bg-white object-cover" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold">Dairy Mitra</div>
+              <div className="truncate text-sm font-bold">Jerry</div>
               <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-300" />
-                AI Assistant • 12 languages
+                Your Smart Dairy AI Assistant • 12 languages
               </div>
             </div>
             <select
