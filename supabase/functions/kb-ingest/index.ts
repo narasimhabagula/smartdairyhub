@@ -93,8 +93,21 @@ Deno.serve(async (req) => {
     if (!isAdmin) return new Response(JSON.stringify({ error: "Admins only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json().catch(() => ({}));
-    const base: string = (body?.base_url || DEFAULT_BASE).replace(/\/+$/, "");
-    const routes: string[] = Array.isArray(body?.routes) && body.routes.length ? body.routes : DEFAULT_ROUTES;
+    const requestedBase: string = (body?.base_url || DEFAULT_BASE).replace(/\/+$/, "");
+    // SSRF hardening: only allow ingestion from our own public website. Reject everything else
+    // (cloud metadata IPs, internal hosts, file://, ftp://, etc.) regardless of admin role.
+    const ALLOWED_BASES = new Set<string>([
+      "https://smartdairyhub.online",
+      "https://www.smartdairyhub.online",
+    ]);
+    if (!ALLOWED_BASES.has(requestedBase)) {
+      return new Response(
+        JSON.stringify({ error: "base_url not allowed", allowed: Array.from(ALLOWED_BASES) }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const base = requestedBase;
+    const routes: string[] = Array.isArray(body?.routes) && body.routes.length ? body.routes : [...DEFAULT_ROUTES];
     const purge: boolean = !!body?.purge;
 
     const admin = createClient(supabaseUrl, serviceKey);
