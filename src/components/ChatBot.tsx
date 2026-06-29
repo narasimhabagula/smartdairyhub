@@ -553,26 +553,76 @@ export default function ChatBot() {
           {!minimized && (
             <>
               {/* Messages */}
-              <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-muted/30 px-3 py-4">
+              <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-gradient-to-b from-background to-muted/40 px-3 py-4">
                 {messages.length === 0 && (
-                  <>
-                    <div className="rounded-2xl rounded-tl-sm bg-card px-3 py-2 text-sm shadow-sm">
-                      {greeting}
+                  <div className="animate-fade-in space-y-4">
+                    {/* Hero welcome card */}
+                    <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" aria-hidden />
+                      <div className="relative flex items-start gap-3">
+                        <div className="relative shrink-0">
+                          <img src={chatbotIcon} alt="" className="h-12 w-12 rounded-full bg-white object-cover ring-2 ring-primary/30" />
+                          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-card" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-base font-bold leading-tight">👋 Hi, I'm Jerry</h3>
+                          <p className="text-xs text-muted-foreground">Your Smart Dairy AI Assistant</p>
+                        </div>
+                      </div>
+                      <p className="relative mt-3 text-[13px] leading-relaxed text-foreground/80">
+                        I'm here to help with all your dairy farming needs — ask me anything about your cows, buffaloes, milk production, diseases, feed, veterinary care, government schemes, weather, and marketplace services.
+                      </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      {QUICK_ACTIONS.map((a, i) => (
-                        <button
-                          key={i}
-                          onClick={() => send(a.q)}
-                          className="rounded-lg border border-border bg-card px-2 py-2 text-left text-xs font-medium transition hover:border-primary hover:bg-primary/5"
-                        >
-                          <span className="mr-1">{a.emoji}</span>
-                          {a.q.split("?")[0].split(" ").slice(0, 5).join(" ")}…
-                        </button>
-                      ))}
+
+                    {/* Quick action cards */}
+                    <div>
+                      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Quick actions</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { icon: <Stethoscope className="h-4 w-4" />, label: "Check Animal Disease", emoji: "🩺", onClick: () => send("My animal seems sick. Help me check the symptoms and possible disease.") },
+                          { icon: <Camera className="h-4 w-4" />, label: "Upload Animal Photo", emoji: "📷", onClick: () => galleryRef.current?.click() },
+                          { icon: <Mic className="h-4 w-4" />, label: "Talk to Jerry", emoji: "🎤", onClick: () => { setOpen(false); navigate("/ai-chat"); } },
+                          { icon: <IndianRupee className="h-4 w-4" />, label: "Today's Milk Rates", emoji: "💰", onClick: () => { setOpen(false); navigate("/milk-rates"); } },
+                          { icon: <MapPin className="h-4 w-4" />, label: "Nearby Veterinary Doctor", emoji: "👨‍⚕️", onClick: () => { setOpen(false); navigate("/vet-contacts"); } },
+                          { icon: <Landmark className="h-4 w-4" />, label: "Government Schemes", emoji: "🌾", onClick: () => { setOpen(false); navigate("/schemes"); } },
+                        ].map((a, i) => (
+                          <button
+                            key={i}
+                            onClick={a.onClick}
+                            style={{ animationDelay: `${i * 40}ms` }}
+                            className="group animate-fade-in rounded-xl border border-border/60 bg-card p-2.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md active:scale-[0.98]"
+                          >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+                              {a.icon}
+                            </div>
+                            <div className="mt-2 text-[12px] font-semibold leading-tight">
+                              <span className="mr-1">{a.emoji}</span>{a.label}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </>
+
+                    {/* Suggested questions */}
+                    <div>
+                      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Try asking</p>
+                      <div className="space-y-1.5">
+                        {SUGGESTED_QUESTIONS.map((q, i) => (
+                          <button
+                            key={i}
+                            onClick={() => send(q)}
+                            style={{ animationDelay: `${i * 50}ms` }}
+                            className="group flex w-full animate-fade-in items-center justify-between gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 text-left text-[13px] shadow-sm transition-all hover:border-primary/60 hover:bg-primary/5 active:scale-[0.99]"
+                          >
+                            <span className="truncate">{q}</span>
+                            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
+
 
                 {messages.map((m, i) => (
                   <div
