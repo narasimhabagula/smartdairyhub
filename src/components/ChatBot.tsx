@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import chatbotIcon from "@/assets/chatbot-icon.png";
