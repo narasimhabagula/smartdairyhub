@@ -424,7 +424,7 @@ export default function ChatBot() {
             style={{ left: Math.min(pos.x, window.innerWidth - 240), top: Math.max(8, pos.y - 200) }}
           >
             <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
-              Dairy Mitra
+              Jerry
             </div>
             <button
               onClick={() => { setShowMenu(false); setOpen(true); setMinimized(false); setHasNew(false); }}
