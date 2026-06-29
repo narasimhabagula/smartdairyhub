@@ -287,7 +287,7 @@ export default function AIChat() {
         <div className="mx-auto mt-2 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-primary" />
-            <span>Enable Floating Chatbot</span>
+            <span>Show Jerry on every page</span>
           </div>
           <Switch checked={floatingEnabled} onCheckedChange={toggleFloating} />
           {supported && (
