@@ -8,7 +8,7 @@ import SmartHeroSearch from "@/components/SmartHeroSearch";
 
 
 export default function Landing() {
-  const { t } = useTranslation();
+  const { user } = useAuth();
 
   const features = [
     { icon: Store, key: "marketplace", to: "/marketplace" },
