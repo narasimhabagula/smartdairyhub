@@ -88,6 +88,14 @@ const en = {
     searching: "Searching nearby vet clinics...",
     nearbyHelp: "Live results from Google around your current location.",
     noNearby: "No vet clinics found nearby. Try increasing the radius.",
+    addressNotAvailable: "Address not available",
+    loadingContact: "Loading contact…",
+    phoneNotAvailable: "Phone not available from Google",
+    hoursAvailable: "Opening hours available",
+    hoursNotAvailable: "Opening hours not available from Google",
+    phoneNotAvailableTooltip: "Google has no phone number for this place.",
+    whatsappNotValidTooltip: "Phone number is not valid for WhatsApp.",
+    whatsappNoPhoneTooltip: "No phone number available from Google.",
     emergency: {
       title: "Emergency Veterinary Support",
       subtitle: "24x7 helplines and district animal husbandry offices.",
@@ -96,6 +104,7 @@ const en = {
       ah: "AP Animal Husbandry Dept",
       ahDesc: "Department of Animal Husbandry, Dairy Development & Fisheries — AP",
     },
+
   },
   login: {
     title: "Welcome back",
