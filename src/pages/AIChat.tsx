@@ -165,7 +165,7 @@ export default function AIChat() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error("Please sign in to use the AI assistant.");
+        throw new Error("Please sign in to chat with Jerry.");
       }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
       const res = await fetch(url, {
@@ -228,24 +228,24 @@ export default function AIChat() {
   };
 
   const exportChat = () => {
-    const text = messages.map((m) => `${m.role === "user" ? "You" : "Dairy Mitra"}: ${m.content}`).join("\n\n");
+    const text = messages.map((m) => `${m.role === "user" ? "You" : "Jerry"}: ${m.content}`).join("\n\n");
     const blob = new Blob([text], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `dairy-mitra-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.download = `jerry-chat-${new Date().toISOString().slice(0, 10)}.txt`;
     a.click();
   };
 
   const greeting = useMemo(() => {
     const lang = voiceLang.split("-")[0];
     const map: Record<string, string> = {
-      te: "నమస్తే! నేను డెయిరీ మిత్ర. మీకు ఎలా సహాయం చేయాలి?",
-      hi: "नमस्ते! मैं डेयरी मित्र हूँ। मैं आपकी कैसे मदद कर सकता हूँ?",
-      ta: "வணக்கம்! நான் டெய்ரி மித்ரா. நான் எப்படி உதவ முடியும்?",
-      ml: "നമസ്കാരം! ഞാൻ ഡെയറി മിത്ര.",
-      kn: "ನಮಸ್ಕಾರ! ನಾನು ಡೈರಿ ಮಿತ್ರ.",
+      te: "నమస్తే 👋 నేను జెర్రీ — మీ స్మార్ట్ డెయిరీ AI అసిస్టెంట్. మీకు ఎలా సహాయం చేయాలి?",
+      hi: "नमस्ते 👋 मैं Jerry हूँ — आपका Smart Dairy AI Assistant। मैं आपकी कैसे मदद कर सकता हूँ?",
+      ta: "வணக்கம் 👋 நான் Jerry — உங்கள் Smart Dairy AI Assistant.",
+      ml: "നമസ്കാരം 👋 ഞാൻ Jerry — നിങ്ങളുടെ Smart Dairy AI Assistant.",
+      kn: "ನಮಸ್ಕಾರ 👋 ನಾನು Jerry — ನಿಮ್ಮ Smart Dairy AI Assistant.",
     };
-    return map[lang] || "Hello! I'm Dairy Mitra — your AI dairy farming assistant. Ask me anything in your language.";
+    return map[lang] || "Hi 👋 I'm Jerry, your Smart Dairy AI Assistant. Ask me anything about dairy farming — type, speak, or upload a photo of your animal.";
   }, [voiceLang]);
 
   return (
@@ -258,10 +258,10 @@ export default function AIChat() {
             {speaking && <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-3 w-3 rounded-full bg-primary" /></span>}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold">Smart Dairy Hub AI Assistant</h1>
+            <h1 className="text-base font-bold">Jerry</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
-              {speaking ? <span className="text-primary font-medium">Speaking…</span> : loading ? "Thinking…" : "Online"}
+              {speaking ? <span className="text-primary font-medium">Jerry is speaking…</span> : loading ? "Jerry is thinking…" : "Your Smart Dairy AI Assistant"}
               <span>•</span>
               <span>{LANG_OPTIONS.find((l) => l.code === voiceLang)?.label}</span>
             </div>
@@ -287,7 +287,7 @@ export default function AIChat() {
         <div className="mx-auto mt-2 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-primary" />
-            <span>Enable Floating Chatbot</span>
+            <span>Show Jerry on every page</span>
           </div>
           <Switch checked={floatingEnabled} onCheckedChange={toggleFloating} />
           {supported && (
@@ -414,7 +414,7 @@ export default function AIChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               rows={1}
-              placeholder="Ask in any Indian language… (Telugu, Hindi, English, Tamil…)"
+              placeholder="Ask Jerry anything... (Telugu, Hindi, English, Tamil & more)"
               className="max-h-32 flex-1 resize-none bg-transparent text-sm outline-none"
             />
             {supported && (

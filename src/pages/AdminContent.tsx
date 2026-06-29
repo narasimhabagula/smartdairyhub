@@ -86,7 +86,7 @@ function KnowledgePanel() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Chatbot Knowledge Base</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Custom snippets injected into Dairy Mitra's context.</p>
+          <p className="text-sm text-muted-foreground mt-1">Custom snippets injected into Jerry's context.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />Add</Button></DialogTrigger>
@@ -363,7 +363,7 @@ function RagPanel() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Retrieval-Augmented Generation</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingest website pages into the AI assistant's knowledge base. Dairy Mitra retrieves the most relevant chunks via vector search and uses them as authoritative context when answering.
+          Ingest website pages into Jerry's knowledge base. Jerry retrieves the most relevant chunks via vector search and uses them as authoritative context when answering.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

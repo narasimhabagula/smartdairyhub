@@ -270,7 +270,7 @@ export default function ChatBot() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error("Please sign in to use the AI assistant.");
+        throw new Error("Please sign in to chat with Jerry.");
       }
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
 
@@ -356,7 +356,7 @@ export default function ChatBot() {
   const shareReport = async (text: string) => {
     try {
       if ((navigator as any).share) {
-        await (navigator as any).share({ title: "Dairy Mitra — AI Report", text });
+        await (navigator as any).share({ title: "Jerry — Smart Dairy AI Report", text });
       } else {
         await navigator.clipboard.writeText(text);
         alert("Report copied to clipboard.");
@@ -371,7 +371,7 @@ export default function ChatBot() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dairy-mitra-report.${ext === "pdf" ? "txt" : "txt"}`;
+    a.download = `jerry-report.${ext === "pdf" ? "txt" : "txt"}`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -390,7 +390,7 @@ export default function ChatBot() {
       case "gu": return "નમસ્તે! હું ડેરી મિત્ર 🐄. દૂધનો ભાવ, પશુ સંભાળ, રોગો વિશે પૂછો.";
       case "or": return "ନମସ୍କାର! ମୁଁ ଡେଇରୀ ମିତ୍ର 🐄. କ୍ଷୀର ଦର, ପଶୁ ଯତ୍ନ, ରୋଗ ବିଷୟରେ ପଚାରନ୍ତୁ।";
       case "as": return "নমস্কাৰ! মই ডেইৰী মিত্ৰ 🐄. গাখীৰৰ দাম, পশু যত্ন, ৰোগৰ বিষয়ে সোধক।";
-      default: return "Namaste! I'm Dairy Mitra 🐄 — your AI dairy assistant. Speak or type in any Indian language about milk rates, animal care, diseases, schemes & the marketplace.";
+      default: return "Hi 👋 I'm Jerry, your Smart Dairy AI Assistant. Ask me about animal diseases, milk production, feed, vet guidance, schemes, loans, weather, milk rates & the marketplace. Chat by text, voice, or upload a photo of your animal.";
     }
   }, [greetingLang]);
 
@@ -407,7 +407,7 @@ export default function ChatBot() {
       case "gu": return "અહીં લખો…";
       case "or": return "ଏଠାରେ ଲେଖନ୍ତୁ…";
       case "as": return "ইয়াত লিখক…";
-      default: return "Ask anything about dairy…";
+      default: return "Ask Jerry anything...";
     }
   }, [greetingLang]);
 
@@ -424,7 +424,7 @@ export default function ChatBot() {
             style={{ left: Math.min(pos.x, window.innerWidth - 240), top: Math.max(8, pos.y - 200) }}
           >
             <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
-              Dairy Mitra
+              Jerry
             </div>
             <button
               onClick={() => { setShowMenu(false); setOpen(true); setMinimized(false); setHasNew(false); }}
@@ -448,7 +448,7 @@ export default function ChatBot() {
               onClick={() => { setShowMenu(false); setConfirmHide(true); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
             >
-              <EyeOff className="h-4 w-4" /> Hide Chatbot
+              <EyeOff className="h-4 w-4" /> Hide Jerry
             </button>
           </div>
         </>
@@ -458,9 +458,10 @@ export default function ChatBot() {
       {confirmHide && (
         <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-background p-5 shadow-2xl">
-            <h3 className="text-base font-semibold">Hide the floating chatbot?</h3>
+            <h3 className="text-base font-semibold">Hide Jerry, the floating chatbot?</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              You can restore it anytime from the menu → <strong>AI Chat Assistant</strong>.
+              You can restore Jerry anytime from the menu → <strong>Ask Jerry</strong>.
+
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -482,7 +483,8 @@ export default function ChatBot() {
 
       {/* Floating button */}
       <button
-        aria-label="Open chat assistant"
+        aria-label="Ask Jerry"
+        title="Need help? Chat with Jerry"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -490,7 +492,7 @@ export default function ChatBot() {
         className={`fixed z-[9998] h-16 w-16 touch-none select-none rounded-full bg-white shadow-xl ring-2 ring-primary/30 transition-transform hover:scale-105 active:scale-95 sm:h-[72px] sm:w-[72px] ${open && !minimized ? "scale-0 pointer-events-none" : "scale-100"}`}
       >
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
-        <img src={chatbotIcon} alt="Dairy Mitra" className="h-full w-full rounded-full object-cover" draggable={false} />
+        <img src={chatbotIcon} alt="Jerry — Smart Dairy AI Assistant" className="h-full w-full rounded-full object-cover" draggable={false} />
         {hasNew && (
           <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
             <Sparkles className="h-3 w-3" />
@@ -510,10 +512,10 @@ export default function ChatBot() {
           <div className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 px-3 py-3 text-primary-foreground">
             <img src={chatbotIcon} alt="" className="h-9 w-9 rounded-full bg-white object-cover" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold">Dairy Mitra</div>
+              <div className="truncate text-sm font-bold">Jerry</div>
               <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-300" />
-                AI Assistant • 12 languages
+                Your Smart Dairy AI Assistant • 12 languages
               </div>
             </div>
             <select
