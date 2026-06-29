@@ -50,6 +50,7 @@ import Careers from "./pages/Careers";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
+import AIChat from "./pages/AIChat";
 
 
 
