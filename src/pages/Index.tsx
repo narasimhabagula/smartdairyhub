@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { Milk, ShoppingCart, Stethoscope, Landmark, ArrowRight, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import heroImg from "@/assets/hero-dairy.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import SmartHeroSearch from "@/components/SmartHeroSearch";
+
 
 
 export default function Landing() {
