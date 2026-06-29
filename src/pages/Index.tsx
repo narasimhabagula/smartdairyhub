@@ -32,6 +32,11 @@ export default function Landing() {
         />
         {/* Same left-to-right overlay on all viewports for desktop-parity */}
         <div className="hero-overlay absolute inset-0" />
+        {user && (
+          <div className="absolute left-1/2 top-4 z-20 w-[92%] -translate-x-1/2 sm:top-6 md:top-8 md:w-[70%] lg:w-[65%]">
+            <SmartHeroSearch />
+          </div>
+        )}
         <div className="relative z-10 container flex h-full flex-col justify-center px-5 sm:px-6 md:px-8">
           <div className="max-w-[34rem] animate-fade-in">
             <h1 className="font-display text-[2rem] font-extrabold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
@@ -48,11 +53,7 @@ export default function Landing() {
                 {t("home.getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              {user ? (
-                <div className="w-full sm:flex-1 sm:min-w-[18rem]">
-                  <SmartHeroSearch />
-                </div>
-              ) : (
+              {!user && (
                 <Link
                   to="/select-role"
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-4 py-3 text-sm font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
@@ -64,6 +65,7 @@ export default function Landing() {
 
           </div>
         </div>
+
       </section>
 
 
