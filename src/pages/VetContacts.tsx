@@ -506,8 +506,8 @@ export default function VetContacts() {
       const effectiveLoc = opts.loc!;
       const { data, error } = await supabase.functions.invoke("nearby-vets", {
         body: {
-          lat: loc.lat,
-          lng: loc.lng,
+          lat: effectiveLoc.lat,
+          lng: effectiveLoc.lng,
           radius: opts?.radius ?? radius,
           animal: opts?.animal ?? animal,
           state: sameStateOnly ? (userGeo?.state ?? "") : "",
