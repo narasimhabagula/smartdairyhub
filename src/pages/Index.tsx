@@ -17,38 +17,33 @@ export default function Landing() {
 
   return (
     <div>
-      <section className="relative -mt-px block h-[100svh] min-h-[560px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px] [@supports(height:100dvh)]:h-[100dvh]">
-        <picture>
-          <source media="(max-width: 767px)" srcSet={heroImgMobile} />
-          <img
-            src={heroImg}
-            alt="Dairy farm with cows grazing on green hills"
-            className="absolute inset-0 block h-full w-full object-cover object-center"
-          />
-        </picture>
-        {/* Mobile: subtle dark gradient only where needed for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 md:hidden" />
-        {/* Desktop: original left-to-right overlay preserved */}
-        <div className="hero-overlay absolute inset-0 hidden md:block" />
+      <section className="relative -mt-px block h-[70vh] min-h-[480px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px]">
+        <img
+          src={heroImg}
+          alt="Dairy farm with cows grazing on green hills"
+          className="absolute inset-0 block h-full w-full object-cover object-center"
+        />
+        {/* Same left-to-right overlay on all viewports for desktop-parity */}
+        <div className="hero-overlay absolute inset-0" />
         <div className="relative z-10 container flex h-full flex-col justify-center px-5 sm:px-6 md:px-8">
-          <div className="max-w-xl animate-fade-in">
+          <div className="max-w-[34rem] animate-fade-in">
             <h1 className="font-display text-[2rem] font-extrabold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
               {t("home.title")}
             </h1>
-            <p className="mt-4 text-base text-primary-foreground/85 sm:text-xl">
+            <p className="mt-3 text-sm text-primary-foreground/85 sm:mt-4 sm:text-xl">
               {t("home.subtitle")}
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+            <div className="mt-5 flex flex-row flex-wrap gap-3 sm:mt-7 sm:gap-4">
               <Link
                 to="/dashboard"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 font-semibold text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
               >
                 {t("home.getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/select-role"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-6 py-3.5 font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 bg-white/5 px-4 py-3 text-sm font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/10 sm:flex-none sm:px-6 sm:py-3.5 sm:text-base"
               >
                 {t("home.farmerLogin")}
               </Link>
