@@ -54,6 +54,7 @@ import SearchResults from "./pages/SearchResults";
 import AIChat from "./pages/AIChat";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import LanguageSelect from "./pages/LanguageSelect";
 
 
 
@@ -76,6 +77,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<SearchResults />} />
+                  <Route path="/welcome/language" element={<LanguageSelect />} />
                   <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

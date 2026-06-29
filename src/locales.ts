@@ -3,14 +3,16 @@
 
 export const LANGUAGES = [
   { code: "en", label: "English", native: "English", dir: "ltr" },
-  { code: "te", label: "Telugu", native: "తెలుగు", dir: "ltr" },
   { code: "hi", label: "Hindi", native: "हिन्दी", dir: "ltr" },
+  { code: "te", label: "Telugu", native: "తెలుగు", dir: "ltr" },
   { code: "ta", label: "Tamil", native: "தமிழ்", dir: "ltr" },
   { code: "kn", label: "Kannada", native: "ಕನ್ನಡ", dir: "ltr" },
   { code: "ml", label: "Malayalam", native: "മലയാളം", dir: "ltr" },
   { code: "mr", label: "Marathi", native: "मराठी", dir: "ltr" },
-  { code: "bn", label: "Bengali", native: "বাংলা", dir: "ltr" },
+  { code: "gu", label: "Gujarati", native: "ગુજરાતી", dir: "ltr" },
   { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ", dir: "ltr" },
+  { code: "bn", label: "Bengali", native: "বাংলা", dir: "ltr" },
+  { code: "or", label: "Odia", native: "ଓଡ଼ିଆ", dir: "ltr" },
 ] as const;
 
 export type LanguageCode = (typeof LANGUAGES)[number]["code"];
@@ -971,6 +973,10 @@ const pa: typeof en = {
   },
 };
 
+// Gujarati & Odia: native UI labels render via LANGUAGES; deep translations fall back to English.
+const gu: typeof en = en;
+const or: typeof en = en;
+
 export const RESOURCES = {
   en: { translation: en },
   te: { translation: te },
@@ -981,4 +987,6 @@ export const RESOURCES = {
   mr: { translation: mr },
   bn: { translation: bn },
   pa: { translation: pa },
+  gu: { translation: gu },
+  or: { translation: or },
 } as const;
