@@ -407,7 +407,7 @@ export default function ChatBot() {
       case "gu": return "અહીં લખો…";
       case "or": return "ଏଠାରେ ଲେଖନ୍ତୁ…";
       case "as": return "ইয়াত লিখক…";
-      default: return "Ask anything about dairy…";
+      default: return "Ask Jerry anything...";
     }
   }, [greetingLang]);
 
