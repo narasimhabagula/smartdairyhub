@@ -45,6 +45,7 @@ import Refund from "./pages/Refund";
 import Careers from "./pages/Careers";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
+import SearchResults from "./pages/SearchResults";
 
 
 
@@ -64,6 +65,7 @@ const App = () => (
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/search" element={<SearchResults />} />
                   <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
