@@ -356,7 +356,7 @@ export default function ChatBot() {
   const shareReport = async (text: string) => {
     try {
       if ((navigator as any).share) {
-        await (navigator as any).share({ title: "Dairy Mitra — AI Report", text });
+        await (navigator as any).share({ title: "Jerry — Smart Dairy AI Report", text });
       } else {
         await navigator.clipboard.writeText(text);
         alert("Report copied to clipboard.");
