@@ -52,7 +52,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 font-display text-lg font-bold text-primary sm:text-xl">
+        <Link to="/" className="flex min-w-0 items-center gap-2 font-display text-base font-bold text-primary sm:gap-2.5 sm:text-lg md:text-xl">
           <img
             src="/logo.png"
             alt="Smart Dairy Hub logo"
@@ -60,9 +60,9 @@ export default function Navbar() {
             height={48}
             decoding="async"
             loading="eager"
-            className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9 md:h-11 md:w-11"
+            className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9 md:h-11 md:w-11"
           />
-          <span className="hidden sm:inline">{t("brand")}</span>
+          <span className="truncate">{t("brand")}</span>
         </Link>
 
         {/* Desktop */}
