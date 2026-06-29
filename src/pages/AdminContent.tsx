@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, BookOpen, HelpCircle, Megaphone, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, BookOpen, HelpCircle, Megaphone, Loader2, Database } from "lucide-react";
 import { toast } from "sonner";
 
 type Knowledge = { id: string; title: string; content: string; category: string; priority: number; active: boolean; updated_at: string };
