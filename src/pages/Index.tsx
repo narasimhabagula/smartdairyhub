@@ -16,11 +16,11 @@ export default function Landing() {
 
   return (
     <div>
-      <section className="relative h-[100svh] min-h-[560px] w-full overflow-hidden md:h-[85vh] md:min-h-[500px]">
+      <section className="relative -mt-px block h-[100svh] min-h-[560px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px] [@supports(height:100dvh)]:h-[100dvh]">
         <img
           src={heroImg}
           alt="Dairy farm with cows grazing on green hills"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 block h-full w-full object-cover object-center"
         />
         {/* Mobile: stronger vertical gradient for premium readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 md:hidden" />
