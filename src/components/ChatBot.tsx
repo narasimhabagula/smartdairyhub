@@ -6,6 +6,7 @@ import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, Eye
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { speak as ttsSpeak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
+import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
