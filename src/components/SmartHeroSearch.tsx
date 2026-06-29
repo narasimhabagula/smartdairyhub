@@ -3,46 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Search, Mic, MicOff, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { SEARCH_ENTRIES, scoreEntry, type SearchEntry } from "@/lib/searchRegistry";
 
-type Entry = {
-  label: string;
-  to: string;
-  keywords: string[];
-};
+type Entry = SearchEntry;
+const ENTRIES = SEARCH_ENTRIES;
+const score = scoreEntry;
 
-const ENTRIES: Entry[] = [
-  { label: "Milk Rates", to: "/milk-rates", keywords: ["milk", "rate", "price", "today", "fat", "snf", "పాలు", "దర", "दूध", "रेट", "कीमत"] },
-  { label: "Milk Calculator", to: "/milk-calculator", keywords: ["calculator", "calc", "fat snf", "milk price calculator"] },
-  { label: "Veterinary Doctors", to: "/vet-contacts", keywords: ["vet", "veterinary", "doctor", "near me", "hospital", "clinic", "డాక్టర్", "पशु", "डॉक्टर"] },
-  { label: "Book a Vet", to: "/book-vet", keywords: ["book vet", "appointment", "consult", "vet appointment"] },
-  { label: "Cattle Market", to: "/cattle-market", keywords: ["cattle", "cow", "buffalo", "buy", "sell", "jersey", "hen", "cock", "ఆవు", "గేదె", "गाय", "भैंस"] },
-  { label: "Sell Cattle", to: "/cattle/new", keywords: ["sell cow", "sell buffalo", "list cattle", "post cattle"] },
-  { label: "Marketplace", to: "/marketplace", keywords: ["marketplace", "feed", "cattle feed", "shop", "products", "price"] },
-  { label: "Government Schemes", to: "/schemes", keywords: ["scheme", "subsidy", "loan", "government", "pm kisan", "nabard", "సబ్సిడీ", "योजना", "सब्सिडी"] },
-  { label: "Customer Care", to: "/support", keywords: ["support", "customer care", "help", "contact", "ticket"] },
-  { label: "Help Center", to: "/help", keywords: ["help", "faq", "questions"] },
-  { label: "Orders", to: "/orders", keywords: ["orders", "my orders", "purchases"] },
-  { label: "My Profile", to: "/profile", keywords: ["profile", "my account", "account"] },
-  { label: "Notifications", to: "/notifications", keywords: ["notifications", "alerts"] },
-  { label: "Dashboard", to: "/dashboard", keywords: ["dashboard", "home", "overview"] },
-  { label: "My Listings", to: "/my-listings", keywords: ["my listings", "listings"] },
-  { label: "My Appointments", to: "/my-appointments", keywords: ["appointments", "my appointments"] },
-  { label: "Seller Dashboard", to: "/seller", keywords: ["seller", "sell", "inventory"] },
-  { label: "Feedback", to: "/feedback", keywords: ["feedback", "review", "rate us"] },
-];
-
-function score(entry: Entry, q: string): number {
-  const text = (entry.label + " " + entry.keywords.join(" ")).toLowerCase();
-  const query = q.toLowerCase().trim();
-  if (!query) return 0;
-  if (text.includes(query)) return 100;
-  const tokens = query.split(/\s+/).filter(Boolean);
-  let s = 0;
-  for (const t of tokens) {
-    if (text.includes(t)) s += 10;
-  }
-  return s;
-}
 
 const VOICE_LANGS = [
   { code: "en-IN", label: "EN" },
@@ -91,14 +57,15 @@ export default function SmartHeroSearch() {
         .filter((r) => r.s > 0)
         .sort((a, b) => b.s - a.s)[0]?.e;
       autoSubmitRef.current = false;
+      setOpen(false);
+      setQuery("");
+      reset();
       if (top) {
-        setOpen(false);
-        setQuery("");
-        reset();
         navigate(top.to);
       } else {
-        setOpen(true);
+        navigate(`/search?q=${encodeURIComponent(transcript)}`);
       }
+
     }, 600);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,10 +87,21 @@ export default function SmartHeroSearch() {
     navigate(to);
   };
 
+  const goSearchPage = () => {
+    const q = query.trim();
+    if (!q) return;
+    setOpen(false);
+    stop();
+    reset();
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setQuery("");
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (results[0]) go(results[0].to);
+    goSearchPage();
   };
+
 
   const toggleMic = () => {
     if (listening) {
@@ -204,22 +182,35 @@ export default function SmartHeroSearch() {
 
       </form>
 
-      {open && (results.length > 0 || error) && (
+      {open && (results.length > 0 || error || query.trim()) && (
         <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl">
           {error && <div className="px-4 py-2 text-xs text-destructive">{error}</div>}
           {results.map((r) => (
             <button
-              key={r.to}
+              key={`${r.category}-${r.to}-${r.label}`}
               type="button"
               onClick={() => go(r.to)}
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
             >
-              <span className="font-medium">{r.label}</span>
-              <span className="text-xs text-muted-foreground">{r.to}</span>
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{r.label}</span>
+                <span className="block truncate text-xs text-muted-foreground">{r.category}</span>
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground">{r.to}</span>
             </button>
           ))}
+          {query.trim() && (
+            <button
+              type="button"
+              onClick={goSearchPage}
+              className="block w-full border-t bg-muted/40 px-4 py-3 text-left text-sm font-semibold text-primary hover:bg-muted"
+            >
+              See all results for "{query.trim()}"
+            </button>
+          )}
         </div>
       )}
+
     </div>
   );
 }
