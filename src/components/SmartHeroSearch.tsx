@@ -86,10 +86,21 @@ export default function SmartHeroSearch() {
     navigate(to);
   };
 
+  const goSearchPage = () => {
+    const q = query.trim();
+    if (!q) return;
+    setOpen(false);
+    stop();
+    reset();
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setQuery("");
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (results[0]) go(results[0].to);
+    goSearchPage();
   };
+
 
   const toggleMic = () => {
     if (listening) {
@@ -170,22 +181,35 @@ export default function SmartHeroSearch() {
 
       </form>
 
-      {open && (results.length > 0 || error) && (
+      {open && (results.length > 0 || error || query.trim()) && (
         <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl">
           {error && <div className="px-4 py-2 text-xs text-destructive">{error}</div>}
           {results.map((r) => (
             <button
-              key={r.to}
+              key={`${r.category}-${r.to}-${r.label}`}
               type="button"
               onClick={() => go(r.to)}
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
             >
-              <span className="font-medium">{r.label}</span>
-              <span className="text-xs text-muted-foreground">{r.to}</span>
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{r.label}</span>
+                <span className="block truncate text-xs text-muted-foreground">{r.category}</span>
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground">{r.to}</span>
             </button>
           ))}
+          {query.trim() && (
+            <button
+              type="button"
+              onClick={goSearchPage}
+              className="block w-full border-t bg-muted/40 px-4 py-3 text-left text-sm font-semibold text-primary hover:bg-muted"
+            >
+              See all results for "{query.trim()}"
+            </button>
+          )}
         </div>
       )}
+
     </div>
   );
 }
