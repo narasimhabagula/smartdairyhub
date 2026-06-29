@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot, Radio } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot, Radio, Play, Pause, Square } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
 import { setChatbotHidden, isChatbotHidden } from "@/components/ChatBot";
-import { speak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
+import { speak, cancelSpeech, pauseSpeech, resumeSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import { supabase } from "@/integrations/supabase/client";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
