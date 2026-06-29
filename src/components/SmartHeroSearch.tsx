@@ -3,46 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Search, Mic, MicOff, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { SEARCH_ENTRIES, scoreEntry, type SearchEntry } from "@/lib/searchRegistry";
 
-type Entry = {
-  label: string;
-  to: string;
-  keywords: string[];
-};
+type Entry = SearchEntry;
+const ENTRIES = SEARCH_ENTRIES;
+const score = scoreEntry;
 
-const ENTRIES: Entry[] = [
-  { label: "Milk Rates", to: "/milk-rates", keywords: ["milk", "rate", "price", "today", "fat", "snf", "పాలు", "దర", "दूध", "रेट", "कीमत"] },
-  { label: "Milk Calculator", to: "/milk-calculator", keywords: ["calculator", "calc", "fat snf", "milk price calculator"] },
-  { label: "Veterinary Doctors", to: "/vet-contacts", keywords: ["vet", "veterinary", "doctor", "near me", "hospital", "clinic", "డాక్టర్", "पशु", "डॉक्टर"] },
-  { label: "Book a Vet", to: "/book-vet", keywords: ["book vet", "appointment", "consult", "vet appointment"] },
-  { label: "Cattle Market", to: "/cattle-market", keywords: ["cattle", "cow", "buffalo", "buy", "sell", "jersey", "hen", "cock", "ఆవు", "గేదె", "गाय", "भैंस"] },
-  { label: "Sell Cattle", to: "/cattle/new", keywords: ["sell cow", "sell buffalo", "list cattle", "post cattle"] },
-  { label: "Marketplace", to: "/marketplace", keywords: ["marketplace", "feed", "cattle feed", "shop", "products", "price"] },
-  { label: "Government Schemes", to: "/schemes", keywords: ["scheme", "subsidy", "loan", "government", "pm kisan", "nabard", "సబ్సిడీ", "योजना", "सब्सिडी"] },
-  { label: "Customer Care", to: "/support", keywords: ["support", "customer care", "help", "contact", "ticket"] },
-  { label: "Help Center", to: "/help", keywords: ["help", "faq", "questions"] },
-  { label: "Orders", to: "/orders", keywords: ["orders", "my orders", "purchases"] },
-  { label: "My Profile", to: "/profile", keywords: ["profile", "my account", "account"] },
-  { label: "Notifications", to: "/notifications", keywords: ["notifications", "alerts"] },
-  { label: "Dashboard", to: "/dashboard", keywords: ["dashboard", "home", "overview"] },
-  { label: "My Listings", to: "/my-listings", keywords: ["my listings", "listings"] },
-  { label: "My Appointments", to: "/my-appointments", keywords: ["appointments", "my appointments"] },
-  { label: "Seller Dashboard", to: "/seller", keywords: ["seller", "sell", "inventory"] },
-  { label: "Feedback", to: "/feedback", keywords: ["feedback", "review", "rate us"] },
-];
-
-function score(entry: Entry, q: string): number {
-  const text = (entry.label + " " + entry.keywords.join(" ")).toLowerCase();
-  const query = q.toLowerCase().trim();
-  if (!query) return 0;
-  if (text.includes(query)) return 100;
-  const tokens = query.split(/\s+/).filter(Boolean);
-  let s = 0;
-  for (const t of tokens) {
-    if (text.includes(t)) s += 10;
-  }
-  return s;
-}
 
 const VOICE_LANGS = [
   { code: "en-IN", label: "EN" },
