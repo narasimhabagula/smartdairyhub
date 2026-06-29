@@ -414,7 +414,7 @@ export default function AIChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               rows={1}
-              placeholder="Ask in any Indian language… (Telugu, Hindi, English, Tamil…)"
+              placeholder="Ask Jerry anything... (Telugu, Hindi, English, Tamil & more)"
               className="max-h-32 flex-1 resize-none bg-transparent text-sm outline-none"
             />
             {supported && (
