@@ -2,8 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar, Info } from "lucide-react";
 import { telHref, waHref } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
+
 
 export type VetCardData = {
   id: string;
@@ -49,10 +52,16 @@ function isWhatsAppPhone(phone?: string | null) {
 }
 
 export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetCardProps) {
+  const { t } = useTranslation();
   const initials = vet.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
   const waOk = isWhatsAppPhone(vet.phone);
   const todayHours = vet.hours?.find((h) => h.toLowerCase().startsWith(new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()));
   const showLoading = isLoading && !vet.phone; // only show contact-loading skeleton until we have a phone number
+
+  // Availability flags
+  const hasPhone = !!vet.phone;
+  const hasHours = !!todayHours || (vet.hours && vet.hours.length > 0);
+  const hasAddress = !!vet.address;
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
@@ -85,6 +94,9 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
             {vet.open_now === false && (
               <Badge variant="secondary" className="bg-rose-100 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300">Closed</Badge>
             )}
+            {vet.open_now == null && hasHours && (
+              <Badge variant="outline" className="font-normal gap-1 text-muted-foreground"><Info className="h-3 w-3" /> Hours unknown</Badge>
+            )}
             {vet.distance_km != null && Number.isFinite(vet.distance_km) && (
               <Badge variant="outline" className="font-normal">{vet.distance_km.toFixed(1)} km</Badge>
             )}
@@ -97,24 +109,36 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
 
       {/* Body */}
       <div className="flex-1 space-y-1.5 px-5 pb-4 text-sm">
-        {vet.address && (
+        {hasAddress ? (
           <div className="flex items-start gap-2 text-muted-foreground">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="line-clamp-2">{vet.address}</span>
           </div>
+        ) : (
+          <div className="flex items-start gap-2 text-muted-foreground/70">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="line-clamp-2 italic">{t("vet.addressNotAvailable", "Address not available")}</span>
+          </div>
         )}
+
         {showLoading ? (
           <div className="flex items-center gap-2 py-0.5">
             <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
             <Skeleton className="h-3.5 w-28 rounded" />
-            <span className="ml-auto text-xs text-muted-foreground">Loading contact…</span>
+            <span className="ml-auto text-xs text-muted-foreground">{t("vet.loadingContact", "Loading contact…")}</span>
           </div>
-        ) : vet.phone ? (
+        ) : hasPhone ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Phone className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{vet.phone}</span>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex items-center gap-2 text-muted-foreground/70">
+            <Phone className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate italic">{t("vet.phoneNotAvailable", "Phone not available from Google")}</span>
+          </div>
+        )}
+
         {contactError && (
           <div className="flex items-start gap-2 rounded-md bg-amber-50/60 p-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -134,12 +158,19 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
             </div>
           </div>
         )}
-        {todayHours && (
+
+        {hasHours ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{todayHours}</span>
+            <span className="truncate">{todayHours || t("vet.hoursAvailable", "Opening hours available")}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-muted-foreground/70">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate italic">{t("vet.hoursNotAvailable", "Opening hours not available from Google")}</span>
           </div>
         )}
+
         {vet.description && (
           <p className="pt-1 text-xs text-muted-foreground line-clamp-2">{vet.description}</p>
         )}
@@ -154,47 +185,74 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
             <Skeleton className="h-9 w-full rounded" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 w-full gap-1.5 font-medium"
-              disabled={!vet.phone}
-              asChild={!!vet.phone}
-            >
-              {vet.phone ? (
-                <a href={telHref(vet.phone)} aria-label={`Call ${vet.name}`}>
-                  <Phone className="h-3.5 w-3.5" /> Call
+          <TooltipProvider delayDuration={200}>
+            <div className="grid grid-cols-3 gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 w-full gap-1.5 font-medium"
+                    disabled={!hasPhone}
+                    asChild={hasPhone}
+                  >
+                    {hasPhone ? (
+                      <a href={telHref(vet.phone!)} aria-label={`Call ${vet.name}`}>
+                        <Phone className="h-3.5 w-3.5" /> Call
+                      </a>
+                    ) : (
+                      <span><Phone className="h-3.5 w-3.5" /> Call</span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                {!hasPhone && (
+                  <TooltipContent side="bottom">
+                    <p className="max-w-[200px] text-xs">{t("vet.phoneNotAvailableTooltip", "Google has no phone number for this place.")}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="h-9 w-full gap-1.5 bg-[#25D366] font-medium text-white shadow-none hover:bg-[#1ebe5b] disabled:bg-muted disabled:text-muted-foreground"
+                    disabled={!waOk}
+                    asChild={waOk}
+                  >
+                    {waOk ? (
+                      <a href={waHref(vet.phone!)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${vet.name}`}>
+                        <MessageCircle className="h-3.5 w-3.5" /> Chat
+                      </a>
+                    ) : (
+                      <span><MessageCircle className="h-3.5 w-3.5" /> Chat</span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                {!waOk && (
+                  <TooltipContent side="bottom">
+                    <p className="max-w-[200px] text-xs">
+                      {hasPhone
+                        ? t("vet.whatsappNotValidTooltip", "Phone number is not valid for WhatsApp.")
+                        : t("vet.whatsappNoPhoneTooltip", "No phone number available from Google.")}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+
+              <Button size="sm" variant="outline" className="h-9 w-full gap-1.5 font-medium" asChild>
+                <a href={directionsHref(vet)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${vet.name}`}>
+                  <Navigation className="h-3.5 w-3.5" /> Route
                 </a>
-              ) : (
-                <span><Phone className="h-3.5 w-3.5" /> Call</span>
-              )}
-            </Button>
-            <Button
-              size="sm"
-              className="h-9 w-full gap-1.5 bg-[#25D366] font-medium text-white shadow-none hover:bg-[#1ebe5b] disabled:bg-muted disabled:text-muted-foreground"
-              disabled={!waOk}
-              asChild={waOk}
-            >
-              {waOk ? (
-                <a href={waHref(vet.phone!)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${vet.name}`}>
-                  <MessageCircle className="h-3.5 w-3.5" /> Chat
-                </a>
-              ) : (
-                <span><MessageCircle className="h-3.5 w-3.5" /> Chat</span>
-              )}
-            </Button>
-            <Button size="sm" variant="outline" className="h-9 w-full gap-1.5 font-medium" asChild>
-              <a href={directionsHref(vet)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${vet.name}`}>
-                <Navigation className="h-3.5 w-3.5" /> Route
-              </a>
-            </Button>
-          </div>
+              </Button>
+            </div>
+          </TooltipProvider>
         )}
       </div>
     </Card>
   );
 }
+
 
 export function VetCardSkeleton() {
   return (
