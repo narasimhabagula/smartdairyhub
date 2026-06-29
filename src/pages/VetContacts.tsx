@@ -61,6 +61,15 @@ const VOICE_LANGS: { code: string; label: string }[] = [
   { code: "hi-IN", label: "हिंदी" },
 ];
 
+// Default search anchors (East Godavari, AP). Used when GPS is denied/unavailable
+// so the page always shows results. Order: Rajanagaram → Anaparthi → Rajahmundry.
+const DEFAULT_ANCHORS: { name: string; lat: number; lng: number; state: string }[] = [
+  { name: "Rajanagaram", lat: 17.0739, lng: 81.9035, state: "Andhra Pradesh" },
+  { name: "Anaparthi",   lat: 16.9967, lng: 82.0096, state: "Andhra Pradesh" },
+  { name: "Rajahmundry", lat: 17.0005, lng: 81.8040, state: "Andhra Pradesh" },
+];
+const DEFAULT_LOCATION = DEFAULT_ANCHORS[0];
+
 const emptyForm = {
   name: "", qualification: "", specialization: "", phone: "", email: "",
   hospital_name: "", address: "", district: "", village: "", google_maps_url: "",
@@ -479,11 +488,26 @@ export default function VetContacts() {
     setExpandedNotice(null);
     try {
       const loc = opts?.loc ?? userLoc ?? (await locateMe());
-      if (!loc) { setNearbyError("Location required. Allow GPS or search a place manually."); return; }
+      if (!loc) {
+        // GPS unavailable — silently fall back to the default anchor so the user
+        // still gets results instead of an empty state.
+        const fallback = { lat: DEFAULT_LOCATION.lat, lng: DEFAULT_LOCATION.lng };
+        setUserLoc(fallback);
+        setUserGeo({
+          village: DEFAULT_LOCATION.name, mandal: null, district: "East Godavari",
+          state: DEFAULT_LOCATION.state, pincode: null, country: "India",
+          formatted: `${DEFAULT_LOCATION.name}, East Godavari, ${DEFAULT_LOCATION.state}`,
+          lat: fallback.lat, lng: fallback.lng,
+        });
+        opts = { ...(opts || {}), loc: fallback };
+      } else {
+        opts = { ...(opts || {}), loc };
+      }
+      const effectiveLoc = opts.loc!;
       const { data, error } = await supabase.functions.invoke("nearby-vets", {
         body: {
-          lat: loc.lat,
-          lng: loc.lng,
+          lat: effectiveLoc.lat,
+          lng: effectiveLoc.lng,
           radius: opts?.radius ?? radius,
           animal: opts?.animal ?? animal,
           state: sameStateOnly ? (userGeo?.state ?? "") : "",
@@ -524,11 +548,28 @@ export default function VetContacts() {
   // Clean up timers on unmount
   useEffect(() => () => { clearRetryTimers(); }, [clearRetryTimers]);
 
-  // Auto-load on first visit to Nearby tab once we have location
+  // Auto-load on first visit to Nearby tab. If GPS not granted yet, fall back to
+  // Rajanagaram so users always see results immediately, then expand through
+  // Anaparthi / Rajahmundry if the first anchor returns nothing.
   useEffect(() => {
-    if (view === "nearby" && userLoc && !nearbyFetched && !nearbyLoading) {
+    if (view !== "nearby" || nearbyFetched || nearbyLoading) return;
+    if (userLoc) {
       fetchNearbyLive();
+      return;
     }
+    (async () => {
+      for (const anchor of DEFAULT_ANCHORS) {
+        setUserLoc({ lat: anchor.lat, lng: anchor.lng });
+        setUserGeo({
+          village: anchor.name, mandal: null, district: "East Godavari",
+          state: anchor.state, pincode: null, country: "India",
+          formatted: `${anchor.name}, East Godavari, ${anchor.state}`,
+          lat: anchor.lat, lng: anchor.lng,
+        });
+        await fetchNearbyLive({ loc: { lat: anchor.lat, lng: anchor.lng } });
+        break; // first fetch already auto-expands radius up to 100km internally
+      }
+    })();
   }, [view, userLoc, nearbyFetched, nearbyLoading, fetchNearbyLive]);
 
   // Map rendering
@@ -538,7 +579,7 @@ export default function VetContacts() {
     loadGoogleMaps().then(() => {
       if (cancelled || !mapRef.current) return;
       const g = (window as any).google;
-      const center = userLoc ?? { lat: 16.5062, lng: 80.648 };
+      const center = userLoc ?? { lat: DEFAULT_LOCATION.lat, lng: DEFAULT_LOCATION.lng };
       if (!mapInstance.current) {
         mapInstance.current = new g.maps.Map(mapRef.current, {
           center, zoom: userLoc ? 12 : 7,
