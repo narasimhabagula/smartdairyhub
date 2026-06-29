@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Send, X, Mic, MicOff, Minus, Sparkles, Volume2, VolumeX, Maximize2, EyeOff, RotateCcw } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
+import { speak as ttsSpeak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -64,28 +65,7 @@ const LANG_OPTIONS = [
 ];
 
 function speak(text: string, lang: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    // Strip markdown for cleaner speech
-    const clean = text
-      .replace(/```[\s\S]*?```/g, "")
-      .replace(/[*_`#>]/g, "")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!clean) return;
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang = lang;
-    u.rate = 0.95;
-    u.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const match =
-      voices.find((v) => v.lang === lang) ||
-      voices.find((v) => v.lang.startsWith(lang.split("-")[0]));
-    if (match) u.voice = match;
-    window.speechSynthesis.speak(u);
-  } catch {}
+  ttsSpeak(text, lang);
 }
 
 export default function ChatBot() {
@@ -106,9 +86,7 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasNew, setHasNew] = useState(messages.length === 0);
-  const [speakOn, setSpeakOn] = useState<boolean>(() => {
-    try { return localStorage.getItem(STORAGE_SPEAK) !== "0"; } catch { return true; }
-  });
+  const [speakOn, setSpeakOn] = useState<boolean>(() => loadVoiceSettings().enabled);
   const [voiceLang, setVoiceLang] = useState<string>(() => {
     const l = i18n.language || "en";
     if (l.startsWith("te")) return "te-IN";
@@ -148,21 +126,18 @@ export default function ChatBot() {
   }, [messages]);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_SPEAK, speakOn ? "1" : "0"); } catch {}
-    if (!speakOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    const cur = loadVoiceSettings();
+    saveVoiceSettings({ ...cur, enabled: speakOn });
+    if (!speakOn) cancelSpeech();
   }, [speakOn]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, loading, open, minimized]);
 
-  // Load TTS voices (some browsers populate async)
   useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const load = () => window.speechSynthesis.getVoices();
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => { try { window.speechSynthesis.cancel(); } catch {} };
+    primeVoices();
+    return () => cancelSpeech();
   }, []);
 
   // Keep within viewport on resize

@@ -1,24 +1,24 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, VolumeX, Trash2, Download, Bot, Radio } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
 import { setChatbotHidden, isChatbotHidden } from "@/components/ChatBot";
+import { speak, cancelSpeech, primeVoices, loadVoiceSettings, saveVoiceSettings } from "@/lib/tts";
 import chatbotIcon from "@/assets/chatbot-icon.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const STORAGE_HIST = "sdh_chatbot_history_v1";
-const STORAGE_SPEAK = "sdh_chatbot_speak";
 
 const SUGGESTIONS = [
   "Today's milk rate for cow milk with FAT 4.0 and SNF 8.5",
   "How to treat mastitis in cows?",
   "Find nearby veterinary doctors in my district",
   "Government dairy loan schemes (NABARD, PM Kisan)",
-  "How to feed a pregnant buffalo for best milk yield?",
   "How do I list my cow for sale on Smart Dairy Hub?",
+  "Where can I change my password?",
 ];
 
 const LANG_OPTIONS = [
@@ -49,22 +49,6 @@ function detectLang(text: string): string {
   return "en-IN";
 }
 
-function speak(text: string, lang: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const clean = text.replace(/```[\s\S]*?```/g, "").replace(/[*_`#>]/g, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").trim();
-    if (!clean) return;
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang = lang;
-    u.rate = 0.95;
-    const voices = window.speechSynthesis.getVoices();
-    const match = voices.find((v) => v.lang === lang) || voices.find((v) => v.lang.startsWith(lang.split("-")[0]));
-    if (match) u.voice = match;
-    window.speechSynthesis.speak(u);
-  } catch {}
-}
-
 export default function AIChat() {
   const { i18n } = useTranslation();
   const [messages, setMessages] = useState<Msg[]>(() => {
@@ -72,23 +56,63 @@ export default function AIChat() {
   });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [continuous, setContinuous] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [speakOn, setSpeakOn] = useState<boolean>(() => {
-    try { return localStorage.getItem(STORAGE_SPEAK) !== "0"; } catch { return true; }
-  });
+
+  const initialVoice = loadVoiceSettings();
+  const [speakOn, setSpeakOn] = useState<boolean>(initialVoice.enabled);
   const [floatingEnabled, setFloatingEnabled] = useState(() => !isChatbotHidden());
   const [voiceLang, setVoiceLang] = useState<string>(() => {
+    if (initialVoice.preferredLang) return initialVoice.preferredLang;
     const l = i18n.language || "en";
     const map: Record<string, string> = { te: "te-IN", hi: "hi-IN", ta: "ta-IN", ml: "ml-IN", kn: "kn-IN", mr: "mr-IN", bn: "bn-IN", pa: "pa-IN", gu: "gu-IN", or: "or-IN", as: "as-IN" };
     return map[l.slice(0, 2)] || "en-IN";
   });
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { transcript, listening, supported, start, stop, reset } = useSpeechRecognition(voiceLang);
 
-  useEffect(() => { if (transcript) setInput((p) => (p ? p + " " : "") + transcript); }, [transcript]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const silenceTimerRef = useRef<number | null>(null);
+  const continuousRef = useRef(false);
+  continuousRef.current = continuous;
+
+  const { transcript, interimTranscript, listening, supported, start, stop, reset } = useSpeechRecognition(voiceLang);
+
+  useEffect(() => { primeVoices(); }, []);
+
+  // Persist voice settings whenever they change in this page
+  useEffect(() => {
+    const cur = loadVoiceSettings();
+    saveVoiceSettings({ ...cur, enabled: speakOn, preferredLang: voiceLang });
+    if (!speakOn) { cancelSpeech(); setSpeaking(false); }
+  }, [speakOn, voiceLang]);
+
+  // Append final transcripts to input. In continuous mode, auto-send after a brief silence.
+  useEffect(() => {
+    if (!transcript) return;
+    setInput((p) => (p ? p + " " : "") + transcript);
+    // Barge-in: cancel TTS the moment user speaks
+    if (speaking) { cancelSpeech(); setSpeaking(false); }
+    if (continuousRef.current) {
+      if (silenceTimerRef.current) window.clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = window.setTimeout(() => { void send(); }, 1100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcript]);
+
+  // Barge-in: cancel TTS on first interim sound too
+  useEffect(() => {
+    if (interimTranscript && speaking) { cancelSpeech(); setSpeaking(false); }
+  }, [interimTranscript, speaking]);
+
   useEffect(() => { sessionStorage.setItem(STORAGE_HIST, JSON.stringify(messages.slice(-50))); }, [messages]);
-  useEffect(() => { try { localStorage.setItem(STORAGE_SPEAK, speakOn ? "1" : "0"); } catch {}; if (!speakOn) window.speechSynthesis?.cancel(); }, [speakOn]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, loading]);
+
+  // Continuous mode: keep mic open across turns
+  useEffect(() => {
+    if (continuous && supported && !listening) start();
+    if (!continuous && listening) stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [continuous, supported]);
 
   const toggleFloating = (enabled: boolean) => {
     setFloatingEnabled(enabled);
@@ -98,6 +122,7 @@ export default function AIChat() {
   const send = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
     if (!text || loading) return;
+    if (silenceTimerRef.current) { window.clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
     setError(null);
     setInput("");
     reset();
@@ -144,7 +169,11 @@ export default function AIChat() {
       }
       if (speakOn && acc) {
         const replyLang = detectLang(acc) !== "en-IN" ? detectLang(acc) : detected;
-        speak(acc, replyLang);
+        speak(acc, replyLang, {
+          onStart: () => setSpeaking(true),
+          onEnd: () => setSpeaking(false),
+          onError: () => setSpeaking(false),
+        });
       }
     } catch (e: any) {
       setError(e?.message || "Failed to reach assistant");
@@ -158,7 +187,8 @@ export default function AIChat() {
     if (!confirm("Clear all conversation history?")) return;
     setMessages([]);
     sessionStorage.removeItem(STORAGE_HIST);
-    window.speechSynthesis?.cancel();
+    cancelSpeech();
+    setSpeaking(false);
   };
 
   const exportChat = () => {
@@ -187,11 +217,15 @@ export default function AIChat() {
       {/* Header */}
       <div className="border-b border-border bg-background px-4 py-3">
         <div className="mx-auto flex max-w-5xl items-center gap-3">
-          <img src={chatbotIcon} alt="" className="h-10 w-10 rounded-full bg-white object-cover ring-2 ring-primary/30" />
+          <div className="relative">
+            <img src={chatbotIcon} alt="" className="h-10 w-10 rounded-full bg-white object-cover ring-2 ring-primary/30" />
+            {speaking && <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-3 w-3 rounded-full bg-primary" /></span>}
+          </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-bold">Smart Dairy Hub AI Assistant</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" /> Online
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+              {speaking ? <span className="text-primary font-medium">Speaking…</span> : loading ? "Thinking…" : "Online"}
               <span>•</span>
               <span>{LANG_OPTIONS.find((l) => l.code === voiceLang)?.label}</span>
             </div>
@@ -214,12 +248,21 @@ export default function AIChat() {
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
-        <div className="mx-auto mt-2 flex max-w-5xl items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
+        <div className="mx-auto mt-2 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-primary" />
             <span>Enable Floating Chatbot</span>
           </div>
           <Switch checked={floatingEnabled} onCheckedChange={toggleFloating} />
+          {supported && (
+            <>
+              <div className="flex items-center gap-2 border-l pl-3">
+                <Radio className={`h-4 w-4 ${continuous ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
+                <span>Continuous voice</span>
+              </div>
+              <Switch checked={continuous} onCheckedChange={(v) => { setContinuous(v); if (!v) cancelSpeech(); }} />
+            </>
+          )}
         </div>
       </div>
 
@@ -259,6 +302,13 @@ export default function AIChat() {
               </div>
             </div>
           ))}
+          {interimTranscript && (
+            <div className="flex justify-end">
+              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary/60 px-4 py-2 text-sm italic text-primary-foreground shadow-sm">
+                {interimTranscript}…
+              </div>
+            </div>
+          )}
           {error && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
         </div>
       </div>
@@ -278,7 +328,7 @@ export default function AIChat() {
             {supported && (
               <button
                 type="button"
-                onClick={() => (listening ? stop() : start())}
+                onClick={() => { if (listening) stop(); else { cancelSpeech(); setSpeaking(false); start(); } }}
                 className={`shrink-0 rounded-lg p-2 transition ${listening ? "bg-red-500 text-white animate-pulse" : "text-muted-foreground hover:bg-muted"}`}
                 title={listening ? "Stop" : `Speak in ${LANG_OPTIONS.find((l) => l.code === voiceLang)?.label}`}
               >

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -51,6 +52,8 @@ import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
 import AIChat from "./pages/AIChat";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 
 
@@ -62,6 +65,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ThemeProvider>
         <AuthProvider>
           <CartProvider>
             <LanguagePicker />
@@ -73,6 +77,8 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<SearchResults />} />
                   <Route path="/ai-chat" element={<AIChat />} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
@@ -121,6 +127,7 @@ const App = () => (
             </div>
           </CartProvider>
         </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
