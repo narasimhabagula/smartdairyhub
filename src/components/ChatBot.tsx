@@ -69,6 +69,32 @@ function speak(text: string, lang: string) {
   ttsSpeak(text, lang);
 }
 
+// Compress a File into a JPEG data URL bounded by maxDim, target ~0.8 quality.
+async function compressImage(file: File, maxDim = 1280): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  return new Promise<string>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(dataUrl);
+      ctx.drawImage(img, 0, 0, w, h);
+      try { resolve(canvas.toDataURL("image/jpeg", 0.82)); } catch { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export default function ChatBot() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
