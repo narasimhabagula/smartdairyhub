@@ -177,29 +177,56 @@ export default function ChatBot() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Listen for visibility changes from other parts of the app (e.g., AI Chat page toggle)
+  useEffect(() => {
+    const onVis = (e: any) => setHidden(!!e?.detail?.hidden);
+    window.addEventListener(VISIBILITY_EVENT, onVis as EventListener);
+    return () => window.removeEventListener(VISIBILITY_EVENT, onVis as EventListener);
+  }, []);
+
+  const longPressTimer = useRef<number | null>(null);
+  const cancelLongPress = () => {
+    if (longPressTimer.current) { window.clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+  };
+
   const onPointerDown = (e: React.PointerEvent) => {
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragRef.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y, moved: false };
+    cancelLongPress();
+    longPressTimer.current = window.setTimeout(() => {
+      dragRef.current = null;
+      setShowMenu(true);
+    }, 550);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     const nx = e.clientX - dragRef.current.dx;
     const ny = e.clientY - dragRef.current.dy;
-    if (Math.abs(nx - pos.x) + Math.abs(ny - pos.y) > 4) dragRef.current.moved = true;
+    if (Math.abs(nx - pos.x) + Math.abs(ny - pos.y) > 4) {
+      dragRef.current.moved = true;
+      cancelLongPress();
+    }
     setPos({
       x: Math.min(Math.max(8, nx), window.innerWidth - 72),
       y: Math.min(Math.max(8, ny), window.innerHeight - 72),
     });
   };
   const onPointerUp = () => {
+    cancelLongPress();
     const moved = dragRef.current?.moved;
     dragRef.current = null;
     try { localStorage.setItem(STORAGE_POS, JSON.stringify(pos)); } catch {}
-    if (!moved) {
+    if (!moved && !showMenu) {
       setOpen(true);
       setMinimized(false);
       setHasNew(false);
     }
+  };
+
+  const resetPosition = () => {
+    const next = { x: window.innerWidth - 88, y: window.innerHeight - 110 };
+    setPos(next);
+    try { localStorage.setItem(STORAGE_POS, JSON.stringify(next)); } catch {}
   };
 
   const send = useCallback(async (textOverride?: string) => {
