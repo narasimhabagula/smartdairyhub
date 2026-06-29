@@ -431,6 +431,48 @@ export type Database = {
         }
         Relationships: []
       }
+      kb_documents: {
+        Row: {
+          active: boolean
+          category: string
+          content: string
+          content_hash: string
+          created_at: string
+          embedding: string | null
+          id: string
+          source_url: string | null
+          title: string | null
+          token_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          content: string
+          content_hash: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          source_url?: string | null
+          title?: string | null
+          token_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          content?: string
+          content_hash?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          source_url?: string | null
+          title?: string | null
+          token_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       milk_rates: {
         Row: {
           bonus: number | null
@@ -1378,6 +1420,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_kb_documents: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          category: string
+          content: string
+          id: string
+          similarity: number
+          source_url: string
+          title: string
+        }[]
       }
     }
     Enums: {
