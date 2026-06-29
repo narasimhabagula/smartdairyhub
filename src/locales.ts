@@ -973,6 +973,10 @@ const pa: typeof en = {
   },
 };
 
+// Gujarati & Odia: native UI labels render via LANGUAGES; deep translations fall back to English.
+const gu: typeof en = en;
+const or: typeof en = en;
+
 export const RESOURCES = {
   en: { translation: en },
   te: { translation: te },
@@ -983,4 +987,6 @@ export const RESOURCES = {
   mr: { translation: mr },
   bn: { translation: bn },
   pa: { translation: pa },
+  gu: { translation: gu },
+  or: { translation: or },
 } as const;
