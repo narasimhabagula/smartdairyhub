@@ -18,13 +18,16 @@ export default function Landing() {
   return (
     <div>
       <section className="relative -mt-px block h-[100svh] min-h-[560px] w-full overflow-hidden bg-[hsl(150_30%_12%)] md:h-[85vh] md:min-h-[500px] [@supports(height:100dvh)]:h-[100dvh]">
-        <img
-          src={heroImg}
-          alt="Dairy farm with cows grazing on green hills"
-          className="absolute inset-0 block h-full w-full object-cover object-center"
-        />
-        {/* Mobile: stronger vertical gradient for premium readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 md:hidden" />
+        <picture>
+          <source media="(max-width: 767px)" srcSet={heroImgMobile} />
+          <img
+            src={heroImg}
+            alt="Dairy farm with cows grazing on green hills"
+            className="absolute inset-0 block h-full w-full object-cover object-center"
+          />
+        </picture>
+        {/* Mobile: subtle dark gradient only where needed for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 md:hidden" />
         {/* Desktop: original left-to-right overlay preserved */}
         <div className="hero-overlay absolute inset-0 hidden md:block" />
         <div className="relative z-10 container flex h-full flex-col justify-center px-5 sm:px-6 md:px-8">
