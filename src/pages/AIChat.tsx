@@ -349,6 +349,62 @@ export default function AIChat() {
         </div>
       </div>
 
+      {/* Voice Control Bar — Start / Pause / Stop */}
+      <div className="border-t border-border bg-background px-3 py-2">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-xl bg-muted/40 px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Volume2 className={`h-4 w-4 ${speaking && !paused ? "text-primary animate-pulse" : ""}`} />
+            <span className="font-medium">
+              {!speakOn ? "Voice muted" : speaking ? (paused ? "Paused" : "Speaking…") : "Voice ready"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleVoiceStart}
+              disabled={!speakOn || !lastAssistant || (speaking && !paused)}
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+              title={speaking && paused ? "Resume" : "Play last reply"}
+              aria-label="Start speaking"
+            >
+              <Play className="h-3.5 w-3.5" /> {speaking && paused ? "Resume" : "Start"}
+            </button>
+            <button
+              type="button"
+              onClick={handleVoicePause}
+              disabled={!speaking}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              title={paused ? "Resume" : "Pause"}
+              aria-label="Pause speaking"
+            >
+              <Pause className="h-3.5 w-3.5" /> Pause
+            </button>
+            <button
+              type="button"
+              onClick={handleVoiceStop}
+              disabled={!speaking}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              title="Stop"
+              aria-label="Stop speaking"
+            >
+              <Square className="h-3.5 w-3.5" /> Stop
+            </button>
+            {supported && (
+              <button
+                type="button"
+                onClick={() => { if (listening) stop(); else { cancelSpeech(); setSpeaking(false); setPaused(false); start(); } }}
+                className={`ml-1 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${listening ? "bg-red-500 text-white animate-pulse" : "border border-border bg-background hover:bg-muted"}`}
+                title={listening ? "Stop listening" : "Start microphone"}
+                aria-label={listening ? "Stop microphone" : "Start microphone"}
+              >
+                {listening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                {listening ? "Listening" : "Mic"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Composer */}
       <div className="border-t border-border bg-background p-3">
         <div className="mx-auto max-w-5xl">
