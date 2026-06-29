@@ -2,8 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar, Info } from "lucide-react";
 import { telHref, waHref } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
+
 
 export type VetCardData = {
   id: string;
