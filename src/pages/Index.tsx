@@ -72,7 +72,7 @@ export default function Landing() {
 
   const features = [
     {
-      to: "/disease-detection",
+      to: "/ai-chat",
       icon: ScanLine,
       badge: "AI",
       title: "AI Disease Detection",
@@ -149,7 +149,7 @@ export default function Landing() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
-                to="/disease-detection"
+                to="/ai-chat"
                 className="group inline-flex items-center gap-2 rounded-full bg-white/10 px-7 py-4 text-base font-semibold text-white backdrop-blur-md ring-1 ring-inset ring-white/30 transition-all hover:bg-white/20"
               >
                 <Camera className="h-4 w-4" />
