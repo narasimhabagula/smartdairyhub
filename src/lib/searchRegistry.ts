@@ -70,7 +70,7 @@ export const SEARCH_ENTRIES: SearchEntry[] = [
     keywords: ["notifications", "alerts"] },
 
   // Profile
-  { label: "My Profile", description: "View your account information", to: "/dashboard", category: "Profile",
+  { label: "My Profile", description: "View your account information", to: "/profile", category: "Profile",
     keywords: ["profile", "my account", "account"] },
 
   // Orders
@@ -78,7 +78,7 @@ export const SEARCH_ENTRIES: SearchEntry[] = [
     keywords: ["orders", "my orders", "purchases", "track"] },
 
   // Settings
-  { label: "Settings", description: "Language & preferences", to: "/dashboard", category: "Settings",
+  { label: "Settings", description: "Language & preferences", to: "/settings", category: "Settings",
     keywords: ["settings", "preferences", "language", "theme"] },
 ];
 
