@@ -371,6 +371,57 @@ export type Database = {
         }
         Relationships: []
       }
+      disease_reports: {
+        Row: {
+          animal: string | null
+          breed: string | null
+          confidence: number | null
+          created_at: string
+          disease: string | null
+          id: string
+          image_url: string | null
+          raw_response: Json | null
+          recovery_chance: number | null
+          severity: string | null
+          symptoms: Json | null
+          treatment: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animal?: string | null
+          breed?: string | null
+          confidence?: number | null
+          created_at?: string
+          disease?: string | null
+          id?: string
+          image_url?: string | null
+          raw_response?: Json | null
+          recovery_chance?: number | null
+          severity?: string | null
+          symptoms?: Json | null
+          treatment?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animal?: string | null
+          breed?: string | null
+          confidence?: number | null
+          created_at?: string
+          disease?: string | null
+          id?: string
+          image_url?: string | null
+          raw_response?: Json | null
+          recovery_chance?: number | null
+          severity?: string | null
+          symptoms?: Json | null
+          treatment?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       faqs: {
         Row: {
           active: boolean
