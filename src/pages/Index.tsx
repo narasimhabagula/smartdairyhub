@@ -72,7 +72,7 @@ export default function Landing() {
 
   const features = [
     {
-      to: "/ai-chat",
+      to: "/disease-detection",
       icon: ScanLine,
       badge: "AI",
       title: "AI Disease Detection",
