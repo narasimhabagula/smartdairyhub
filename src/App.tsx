@@ -55,6 +55,7 @@ import AIChat from "./pages/AIChat";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import LanguageSelect from "./pages/LanguageSelect";
+import DiseaseDetection from "./pages/DiseaseDetection";
 
 
 
@@ -79,6 +80,7 @@ const App = () => (
                   <Route path="/search" element={<SearchResults />} />
                   <Route path="/welcome/language" element={<LanguageSelect />} />
                   <Route path="/ai-chat" element={<AIChat />} />
+                  <Route path="/disease-detection" element={<DiseaseDetection />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/select-role" element={<SelectRole />} />
