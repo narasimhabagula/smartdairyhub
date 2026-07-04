@@ -78,6 +78,10 @@ export default function MilkRates() {
   const recogRef = useRef<any>(null);
 
   const isIndustry = hasRole?.("industry");
+  const isAdmin = hasRole?.("admin");
+  // Only owners/admins can read dairy_companies under RLS — subscribing as
+  // anon/authenticated non-owners triggers "permission denied" errors from Realtime.
+  const canSubscribeCompanies = Boolean(isIndustry || isAdmin);
 
   const load = async () => {
     setLoading(true);
@@ -92,12 +96,15 @@ export default function MilkRates() {
 
   useEffect(() => {
     load();
-    const ch = supabase.channel("milk-rates-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "milk_rates" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "dairy_companies" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
+    let ch = supabase.channel("milk-rates-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "milk_rates" }, load);
+    if (canSubscribeCompanies) {
+      ch = ch.on("postgres_changes", { event: "*", schema: "public", table: "dairy_companies" }, load);
+    }
+    const sub = ch.subscribe();
+    return () => { supabase.removeChannel(sub); };
+  }, [canSubscribeCompanies]);
+
 
   const districts = useMemo(() => Array.from(new Set(companies.map((c) => c.district).filter(Boolean))).sort() as string[], [companies]);
   const states = useMemo(() => Array.from(new Set(companies.map((c) => c.state).filter(Boolean))).sort() as string[], [companies]);
