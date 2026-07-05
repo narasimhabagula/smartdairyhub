@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Milk, TrendingUp, Calculator, ArrowRight, Plus, Trash2, IndianRupee } from "lucide-react";
+import { Milk, TrendingUp, Calculator, ArrowRight, Plus, Trash2, IndianRupee, Stethoscope, ImageIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +16,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function Dashboard() {
   const { user, profile } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
+  const [scans, setScans] = useState<any[]>([]);
+  const [scansLoading, setScansLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
 
@@ -39,8 +42,21 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  const fetchScans = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("disease_reports")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setScans(data || []);
+    setScansLoading(false);
+  };
+
   useEffect(() => {
     fetchRecords();
+    fetchScans();
   }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -251,6 +267,72 @@ export default function Dashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Disease Detection History */}
+      <Card className="mt-8">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Stethoscope className="h-5 w-5 text-primary" />
+            <CardTitle className="font-display">Disease Detection History</CardTitle>
+          </div>
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to="/disease-detection">New Scan <ArrowRight className="h-3.5 w-3.5" /></Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {scansLoading ? (
+            <p className="text-muted-foreground">Loading...</p>
+          ) : scans.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-8 text-center">
+              <Stethoscope className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="mt-3 text-sm text-muted-foreground">No scans yet. Analyze your first animal with AI.</p>
+              <Button asChild className="mt-4" size="sm">
+                <Link to="/disease-detection">Start Disease Scan</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {scans.map((s) => {
+                const sev = (s.severity as string) || "Mild";
+                const sevColor =
+                  sev === "Severe" ? "bg-red-500/10 text-red-600 border-red-500/20" :
+                  sev === "Moderate" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                  "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+                return (
+                  <div key={s.id} className="flex gap-3 rounded-lg border p-3 transition-shadow hover:shadow-md">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
+                      {s.image_url ? (
+                        <img src={s.image_url} alt={s.disease || "Scan"} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="truncate font-semibold">{s.disease || "Unknown"}</p>
+                        <Badge variant="outline" className={sevColor}>{sev}</Badge>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {[s.animal, s.breed].filter(Boolean).join(" · ") || "—"}
+                      </p>
+                      <div className="mt-2 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {new Date(s.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                        </span>
+                        {s.confidence != null && (
+                          <span className="font-medium text-primary">{Number(s.confidence).toFixed(0)}% conf.</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>

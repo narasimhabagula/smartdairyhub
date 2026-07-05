@@ -51,6 +51,31 @@ export default function DiseaseDetection() {
 
   const clearImg = () => { setFile(null); setPreview(null); setResult(null); };
 
+  const saveReport = async (r: Result, imageUrl: string | null) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("disease_reports").insert({
+        user_id: user.id,
+        animal: r.animal, breed: r.breed, disease: r.disease,
+        confidence: r.confidence, severity: r.severity,
+        recovery_chance: r.recoveryChance,
+        symptoms: r.symptoms as any,
+        treatment: {
+          medicines: r.medicines, isolation: r.isolation,
+          nutrition: r.nutrition, vaccination: r.vaccination,
+          nextCheckup: r.nextCheckup,
+        } as any,
+        image_url: imageUrl,
+      });
+    } catch {}
+  };
+
+  const finalizeResult = (r: Result, imageUrl: string | null) => {
+    setResult(r);
+    saveReport(r, imageUrl);
+  };
+
   const analyze = async () => {
     if (!file || !preview) return;
     setAnalyzing(true); setProgress(5); setResult(null);
@@ -66,22 +91,21 @@ export default function DiseaseDetection() {
       clearInterval(tick); setProgress(100);
 
       if (error || data?.error) {
-        // Fall back to a demo sample so the UX stays intact
         if (USE_DEMO_DATA) {
           toast.info("Using demo analysis (AI unavailable)");
-          setResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result);
+          finalizeResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result, preview);
         } else {
           toast.error(error?.message || data?.error || "Analysis failed");
         }
       } else {
-        setResult(data as Result);
+        finalizeResult(data as Result, preview);
         toast.success("Analysis complete");
       }
     } catch (e) {
       clearInterval(tick);
       if (USE_DEMO_DATA) {
         toast.info("Using demo analysis");
-        setResult(demoDiseaseResults[0] as Result);
+        finalizeResult(demoDiseaseResults[0] as Result, preview);
       } else {
         toast.error((e as Error).message);
       }
@@ -91,8 +115,9 @@ export default function DiseaseDetection() {
   };
 
   const runDemo = () => {
-    setResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result);
-    setPreview("https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=1200&q=80");
+    const img = "https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=1200&q=80";
+    setPreview(img);
+    finalizeResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result, img);
     toast.success("Demo analysis loaded");
   };
 
