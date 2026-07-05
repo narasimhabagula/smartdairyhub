@@ -16,6 +16,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function Dashboard() {
   const { user, profile } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
+  const [scans, setScans] = useState<any[]>([]);
+  const [scansLoading, setScansLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
 
