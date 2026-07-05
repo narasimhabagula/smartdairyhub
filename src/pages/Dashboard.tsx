@@ -42,8 +42,21 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  const fetchScans = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("disease_reports")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setScans(data || []);
+    setScansLoading(false);
+  };
+
   useEffect(() => {
     fetchRecords();
+    fetchScans();
   }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
