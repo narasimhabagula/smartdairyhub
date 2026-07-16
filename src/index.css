@@ -132,8 +132,9 @@
     font-feature-settings: "ss01", "cv11";
   }
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', Georgia, serif;
-    letter-spacing: -0.015em;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    font-weight: 700;
   }
 }
 
