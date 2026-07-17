@@ -101,20 +101,10 @@ export default function Landing() {
         ref={heroRef}
         className="relative isolate flex min-h-[92vh] w-full items-center overflow-hidden bg-[hsl(158_34%_8%)]"
       >
-        {/* Parallax background */}
-        <div
-          className="absolute inset-0 -z-10 will-change-transform"
-          style={{ transform: `translate3d(0, ${scrollY * 0.25}px, 0) scale(1.08)` }}
-        >
-          <img
-            src={heroImg}
-            alt="Indian farmer with healthy dairy cows grazing at golden hour"
-            className="h-full w-full object-cover"
-            fetchPriority="high"
-            width={1920}
-            height={1280}
-          />
-          <div className="hero-overlay absolute inset-0" />
+        {/* Live 3D dairy farm scene */}
+        <div className="absolute inset-0 -z-10">
+          <HeroFarmCanvas className="!absolute inset-0 h-full w-full" />
+          <div className="hero-overlay pointer-events-none absolute inset-0" />
         </div>
 
         {/* Floating orbs */}
