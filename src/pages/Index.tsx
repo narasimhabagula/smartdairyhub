@@ -5,12 +5,12 @@ import {
   ShieldCheck, Zap, MessageCircle, Star, Camera, Cloud, Bot, ChevronRight,
   Users, HeartPulse, Wheat, PhoneCall,
 } from "lucide-react";
-import heroImg from "@/assets/hero-dairy-farm.jpg";
 import cowPortrait from "@/assets/cow-portrait.jpg";
 import milkPour from "@/assets/milk-pour.jpg";
 import vetCare from "@/assets/vet-care.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import HeroFarmCanvas from "@/components/three/HeroFarmCanvas";
 
 // ---------- Animated counter ----------
 function useCountUp(target: number, duration = 1600, start = false) {
