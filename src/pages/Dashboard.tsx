@@ -44,13 +44,19 @@ export default function Dashboard() {
 
   const fetchScans = async () => {
     if (!user) return;
+    // Explicit column list — avoid pulling multi-MB base64 image_url payloads
+    // that would otherwise be selected by `select("*")`.
     const { data } = await supabase
       .from("disease_reports")
-      .select("*")
+      .select("id, created_at, animal, breed, disease, severity, confidence, image_url")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20);
-    setScans(data || []);
+    // Belt-and-braces: hide any legacy data-URL entries from the thumbnail grid.
+    const rows = (data || []).map((s: any) =>
+      s.image_url && !/^https?:\/\//i.test(s.image_url) ? { ...s, image_url: null } : s
+    );
+    setScans(rows);
     setScansLoading(false);
   };
 
