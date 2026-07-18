@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Sparkles, ScanLine, Stethoscope, Store, Landmark, TrendingUp,
   ShieldCheck, Zap, MessageCircle, Star, Camera, Cloud, Bot, ChevronRight,
@@ -10,7 +10,9 @@ import milkPour from "@/assets/milk-pour.jpg";
 import vetCare from "@/assets/vet-care.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
-import HeroFarmCanvas from "@/components/three/HeroFarmCanvas";
+
+// Lazy-load the heavy three.js hero so it's not in the main bundle for every route.
+const HeroFarmCanvas = lazy(() => import("@/components/three/HeroFarmCanvas"));
 
 // ---------- Animated counter ----------
 function useCountUp(target: number, duration = 1600, start = false) {
@@ -101,9 +103,11 @@ export default function Landing() {
         ref={heroRef}
         className="relative isolate flex min-h-[92vh] w-full items-center overflow-hidden bg-[hsl(158_34%_8%)]"
       >
-        {/* Live 3D dairy farm scene */}
+        {/* Live 3D dairy farm scene (lazy — chunk only loads on the homepage) */}
         <div className="absolute inset-0 -z-10">
-          <HeroFarmCanvas className="!absolute inset-0 h-full w-full" />
+          <Suspense fallback={<div className="absolute inset-0 bg-gradient-to-b from-[#f9d59a] via-[#e28c6a] to-[#7a8f5a]" />}>
+            <HeroFarmCanvas className="absolute inset-0 h-full w-full" />
+          </Suspense>
           <div className="hero-overlay pointer-events-none absolute inset-0" />
         </div>
 
@@ -139,7 +143,7 @@ export default function Landing() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
-                to="/ai-chat"
+                to="/disease-detection"
                 className="group inline-flex items-center gap-2 rounded-full bg-white/10 px-7 py-4 text-base font-semibold text-white backdrop-blur-md ring-1 ring-inset ring-white/30 transition-all hover:bg-white/20"
               >
                 <Camera className="h-4 w-4" />
