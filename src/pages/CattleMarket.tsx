@@ -30,11 +30,14 @@ const ANIMALS = [
 ];
 const ALLOWED = ["cow", "buffalo", "hen", "rooster"];
 
+// Short breed/keyword chips — must match values that actually appear in
+// listing `name` or `breed` columns, since the query does an ILIKE substring
+// match on the raw string.
 const AI_SUGGESTIONS = [
-  "High-yield Gir cow near me",
-  "Murrah buffalo under ₹1 lakh",
-  "Vaccinated HF cross with milk records",
-  "Pregnant Sahiwal in Gujarat",
+  "Gir",
+  "Murrah",
+  "HF",
+  "Sahiwal",
 ];
 
 const animalEmoji = (t: string) => ANIMALS.find((a) => a.id === t)?.emoji ?? "🐾";

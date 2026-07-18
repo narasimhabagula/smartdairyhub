@@ -55,7 +55,12 @@ export default function DiseaseDetection() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      await supabase.from("disease_reports").insert({
+      // Never persist raw base64/data-URL images — they can be up to ~13 MB and
+      // will bloat the DB and break the Dashboard listing. Only store real https
+      // URLs (e.g. demo images or uploaded storage URLs).
+      const safeImageUrl =
+        imageUrl && /^https?:\/\//i.test(imageUrl) ? imageUrl : null;
+      const { error } = await supabase.from("disease_reports").insert({
         user_id: user.id,
         animal: r.animal, breed: r.breed, disease: r.disease,
         confidence: r.confidence, severity: r.severity,
@@ -66,9 +71,15 @@ export default function DiseaseDetection() {
           nutrition: r.nutrition, vaccination: r.vaccination,
           nextCheckup: r.nextCheckup,
         } as any,
-        image_url: imageUrl,
+        image_url: safeImageUrl,
       });
-    } catch {}
+      if (error) {
+        console.warn("Failed to save disease report:", error.message);
+        toast.error("Could not save report to history");
+      }
+    } catch (e) {
+      console.warn("saveReport error", e);
+    }
   };
 
   const finalizeResult = (r: Result, imageUrl: string | null) => {
