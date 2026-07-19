@@ -1,0 +1,284 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Bell, User, ChevronRight, TrendingUp, ScanLine, Stethoscope, Store,
+  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles,
+} from "lucide-react";
+import SmartHeroSearch from "@/components/SmartHeroSearch";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES, type LanguageCode } from "@/locales";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// Dairy photography from Unsplash (free, real, on-brand).
+const IMG = {
+  banner1: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200&q=70&auto=format&fit=crop",  // cows in field
+  banner2: "https://images.unsplash.com/photo-1528505172038-cae4be9fea18?w=1200&q=70&auto=format&fit=crop", // milk pouring
+  banner3: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&q=70&auto=format&fit=crop", // dairy farmer
+  milk: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&q=70&auto=format&fit=crop",
+  cow: "https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&q=70&auto=format&fit=crop",
+  vet: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&q=70&auto=format&fit=crop",
+  market: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&q=70&auto=format&fit=crop",
+  feed: "https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=800&q=70&auto=format&fit=crop",
+  schemes: "https://images.unsplash.com/photo-1595351298020-038700609878?w=800&q=70&auto=format&fit=crop",
+};
+
+const QUICK_ACTIONS = [
+  { to: "/milk-rates", label: "Live Milk Prices", icon: TrendingUp, tint: "from-emerald-400 to-emerald-600" },
+  { to: "/disease-detection", label: "AI Disease Scan", icon: ScanLine, tint: "from-sky-400 to-blue-600" },
+  { to: "/vet-contacts", label: "Veterinary", icon: Stethoscope, tint: "from-rose-400 to-rose-600" },
+  { to: "/cattle-market", label: "Buy & Sell Cattle", icon: Store, tint: "from-amber-400 to-orange-600" },
+  { to: "/marketplace?category=feed", label: "Feed & Supplies", icon: Wheat, tint: "from-lime-400 to-green-600" },
+  { to: "/schemes", label: "Govt Schemes", icon: Landmark, tint: "from-violet-400 to-purple-600" },
+  { to: "/ai-chat", label: "Jerry AI", icon: Bot, tint: "from-teal-400 to-emerald-600" },
+];
+
+const BANNERS = [
+  {
+    to: "/milk-rates",
+    title: "Today's Milk Rates",
+    subtitle: "FAT & SNF prices from top dairies",
+    cta: "See rates",
+    img: IMG.banner2,
+    accent: "bg-emerald-600",
+  },
+  {
+    to: "/disease-detection",
+    title: "Snap. Scan. Save your cow.",
+    subtitle: "AI diagnosis in seconds — free",
+    cta: "Scan now",
+    img: IMG.banner1,
+    accent: "bg-blue-600",
+  },
+  {
+    to: "/schemes",
+    title: "Govt Subsidies for Farmers",
+    subtitle: "PM Kisan · NABARD · Insurance",
+    cta: "Check eligibility",
+    img: IMG.banner3,
+    accent: "bg-amber-600",
+  },
+];
+
+const FEATURE_CARDS = [
+  { to: "/milk-rates", title: "Milk Rates", desc: "Live prices from collection centres", img: IMG.milk },
+  { to: "/disease-detection", title: "Disease Detection", desc: "Instant AI diagnosis for your cattle", img: IMG.cow, badge: "AI" },
+  { to: "/vet-contacts", title: "Veterinary", desc: "Verified doctors near you", img: IMG.vet },
+  { to: "/cattle-market", title: "Cattle Marketplace", desc: "Buy & sell cows and buffaloes", img: IMG.market },
+  { to: "/marketplace?category=feed", title: "Feed Store", desc: "Feed, minerals & fodder", img: IMG.feed },
+  { to: "/schemes", title: "Government Schemes", desc: "Loans, subsidies & insurance", img: IMG.schemes },
+];
+
+export default function MobileHome() {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const [bannerIdx, setBannerIdx] = useState(0);
+  const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
+
+  // Auto-slide banners
+  useEffect(() => {
+    const id = setInterval(() => setBannerIdx((i) => (i + 1) % BANNERS.length), 4200);
+    return () => clearInterval(id);
+  }, []);
+
+  const switchLang = async (lng: LanguageCode) => {
+    await i18n.changeLanguage(lng);
+    localStorage.setItem("sdh_language_picked", "1");
+    if (user) await supabase.from("profiles").update({ language: lng } as any).eq("user_id", user.id);
+  };
+
+  const firstName = (profile?.full_name || user?.email || "Farmer").split(/[\s@]/)[0];
+
+  return (
+    <div className="mx-auto max-w-md bg-gradient-to-b from-emerald-50/60 via-background to-background pb-6">
+      {/* ============ TOP HEADER ============ */}
+      <header className="sticky top-0 z-30 -mx-0 bg-white/95 px-4 pb-3 pt-3 shadow-sm backdrop-blur-xl dark:bg-card/90">
+        <div className="flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Smart Dairy Hub" className="h-9 w-9 rounded-full object-contain" />
+            <div className="leading-tight">
+              <div className="font-display text-[15px] font-bold text-primary">Smart Dairy Hub</div>
+              <div className="text-[10px] font-medium text-muted-foreground">
+                {user ? `Hi, ${firstName} 👋` : "India's dairy app"}
+              </div>
+            </div>
+          </Link>
+          <div className="flex items-center gap-1">
+            {/* Language */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex h-9 items-center gap-1 rounded-full bg-muted px-2.5 text-xs font-semibold text-foreground">
+                🌐 {LANGUAGES.find((l) => l.code === currentLang)?.native.slice(0, 3) ?? "EN"}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-h-80 overflow-auto">
+                <DropdownMenuLabel>Choose language</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {LANGUAGES.map((l) => (
+                  <DropdownMenuItem key={l.code} onClick={() => switchLang(l.code)}>
+                    <span className="font-medium">{l.native}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{l.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {/* Notifications */}
+            <button
+              onClick={() => navigate(user ? "/notifications" : "/login")}
+              aria-label="Notifications"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-white dark:ring-card" />
+            </button>
+            {/* Profile */}
+            <button
+              onClick={() => navigate(user ? "/profile" : "/login")}
+              aria-label="Profile"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            >
+              <User className="h-[18px] w-[18px]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="mt-3">
+          <SmartHeroSearch />
+        </div>
+      </header>
+
+      {/* ============ QUICK ACTIONS (horizontal scroll) ============ */}
+      <section className="mt-4 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base font-bold">Quick actions</h2>
+          <button onClick={() => navigate("/dashboard")} className="text-xs font-semibold text-primary">
+            See all <ChevronRight className="ml-0.5 inline h-3 w-3" />
+          </button>
+        </div>
+        <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
+          {QUICK_ACTIONS.map((a) => {
+            const Icon = a.icon;
+            return (
+              <Link
+                key={a.to}
+                to={a.to}
+                className="group flex w-[92px] shrink-0 flex-col items-center gap-2 text-center"
+              >
+                <span
+                  className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${a.tint} text-white shadow-lg shadow-black/10 transition-transform group-active:scale-95`}
+                >
+                  <Icon className="h-7 w-7" strokeWidth={2.2} />
+                </span>
+                <span className="text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ============ AUTO-SLIDING BANNERS ============ */}
+      <section className="mt-5 px-4">
+        <div className="relative overflow-hidden rounded-3xl shadow-lift">
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{ transform: `translateX(-${bannerIdx * 100}%)` }}
+          >
+            {BANNERS.map((b) => (
+              <Link
+                key={b.title}
+                to={b.to}
+                className="relative flex h-44 w-full shrink-0 flex-col justify-end overflow-hidden p-5 text-white"
+              >
+                <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="relative">
+                  <div className="font-display text-lg font-bold leading-tight">{b.title}</div>
+                  <div className="mt-0.5 text-xs text-white/85">{b.subtitle}</div>
+                  <span className={`mt-2.5 inline-flex items-center gap-1 rounded-full ${b.accent} px-3 py-1 text-[11px] font-bold`}>
+                    {b.cta} <ChevronRight className="h-3 w-3" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {/* dots */}
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {BANNERS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setBannerIdx(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${i === bannerIdx ? "w-5 bg-white" : "w-1.5 bg-white/60"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ TRUST STRIP ============ */}
+      <section className="mt-5 px-4">
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5 text-[11px] font-medium text-emerald-900 dark:border-primary/20 dark:bg-primary/10 dark:text-primary-foreground">
+          <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> Verified vets</span>
+          <span className="flex items-center gap-1.5"><Sparkles className="h-4 w-4" /> AI powered</span>
+          <span className="flex items-center gap-1.5"><Newspaper className="h-4 w-4" /> 12 languages</span>
+        </div>
+      </section>
+
+      {/* ============ FEATURE IMAGE CARDS ============ */}
+      <section className="mt-6 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base font-bold">Explore Smart Dairy Hub</h2>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          {FEATURE_CARDS.map((f, i) => (
+            <Link
+              key={f.to}
+              to={f.to}
+              className={`group relative overflow-hidden rounded-2xl bg-card shadow-soft transition-transform active:scale-[0.98] ${
+                i === 0 || i === 3 ? "col-span-2 h-40" : "h-44"
+              }`}
+            >
+              <img
+                src={f.img}
+                alt={f.title}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              {f.badge && (
+                <span className="absolute right-2.5 top-2.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                  {f.badge}
+                </span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                <div className="font-display text-[15px] font-bold leading-tight">{f.title}</div>
+                <div className="mt-0.5 text-[11px] text-white/85">{f.desc}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ JERRY CTA ============ */}
+      <section className="mt-6 px-4">
+        <Link
+          to="/ai-chat"
+          className="flex items-center gap-3 rounded-3xl bg-gradient-to-br from-primary to-emerald-700 p-4 text-primary-foreground shadow-glow"
+        >
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+            <Bot className="h-7 w-7" />
+          </div>
+          <div className="flex-1">
+            <div className="font-display text-base font-bold">Ask Jerry, your dairy AI</div>
+            <div className="text-xs text-white/85">In your language · voice or text</div>
+          </div>
+          <ChevronRight className="h-5 w-5" />
+        </Link>
+      </section>
+    </div>
+  );
+}

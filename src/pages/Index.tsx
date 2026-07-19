@@ -10,6 +10,7 @@ import milkPour from "@/assets/milk-pour.jpg";
 import vetCare from "@/assets/vet-care.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import MobileHome from "@/components/MobileHome";
 
 // Lazy-load the heavy three.js hero so it's not in the main bundle for every route.
 const HeroFarmCanvas = lazy(() => import("@/components/three/HeroFarmCanvas"));
@@ -98,6 +99,13 @@ export default function Landing() {
 
   return (
     <div className="overflow-x-hidden">
+      {/* ================= MOBILE APP HOME ================= */}
+      <div className="md:hidden">
+        <MobileHome />
+      </div>
+
+      {/* ================= DESKTOP HERO (existing) ================= */}
+      <div className="hidden md:block">
       {/* ================= HERO ================= */}
       <section
         ref={heroRef}
@@ -460,6 +468,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }

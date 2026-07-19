@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
+import MobileBottomNav from "./components/MobileBottomNav";
 import Footer from "./components/Footer";
 import ChatBot from "./components/ChatBot";
 import LanguagePicker from "./components/LanguagePicker";
@@ -72,7 +73,9 @@ const App = () => (
           <CartProvider>
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
-              <Navbar />
+              <div className="hidden md:block">
+                <Navbar />
+              </div>
               <NotificationBanners />
               <main className="flex-1">
                 <Routes>
@@ -128,6 +131,7 @@ const App = () => (
               </main>
               <Footer />
               <ChatBot />
+              <MobileBottomNav />
             </div>
           </CartProvider>
         </AuthProvider>
