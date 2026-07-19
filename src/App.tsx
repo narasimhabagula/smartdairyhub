@@ -131,6 +131,7 @@ const App = () => (
               </main>
               <Footer />
               <ChatBot />
+              <MobileBottomNav />
             </div>
           </CartProvider>
         </AuthProvider>
