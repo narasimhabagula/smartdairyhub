@@ -516,6 +516,21 @@ export default function CattleMarket() {
                         </div>
                       </div>
 
+                      {/* Seller row with verified badge */}
+                      <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                            {(c.seller_name || "S").charAt(0).toUpperCase()}
+                          </div>
+                          <span className="truncate text-xs font-medium text-foreground">
+                            {c.seller_name || "Verified Seller"}
+                          </span>
+                        </div>
+                        <Badge className="gap-1 border-0 bg-primary/10 text-primary hover:bg-primary/20">
+                          <ShieldCheck className="h-3 w-3" /> Verified
+                        </Badge>
+                      </div>
+
                       {c.contact_phone && (
                         <div className="grid grid-cols-2 gap-2 pt-2">
                           <Button size="sm" variant="outline" className="gap-1.5 rounded-full" asChild>
