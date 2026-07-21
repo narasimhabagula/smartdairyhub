@@ -328,6 +328,7 @@ export default function MilkRates() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
