@@ -14,17 +14,26 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Dairy photography from Unsplash (free, real, on-brand).
+import heroCows from "@/assets/hero-cows.jpg";
+import bannerMilk from "@/assets/banner-milk.jpg";
+import bannerAiScan from "@/assets/banner-ai-scan.jpg";
+import bannerSchemes from "@/assets/banner-schemes.jpg";
+import cardMilk from "@/assets/card-milk.jpg";
+import cardCow from "@/assets/card-cow.jpg";
+import cardVet from "@/assets/card-vet.jpg";
+import cardMarket from "@/assets/card-market.jpg";
+import cardFeed from "@/assets/card-feed.jpg";
+
 const IMG = {
-  banner1: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200&q=70&auto=format&fit=crop",  // cows in field
-  banner2: "https://images.unsplash.com/photo-1528505172038-cae4be9fea18?w=1200&q=70&auto=format&fit=crop", // milk pouring
-  banner3: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&q=70&auto=format&fit=crop", // dairy farmer
-  milk: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&q=70&auto=format&fit=crop",
-  cow: "https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&q=70&auto=format&fit=crop",
-  vet: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&q=70&auto=format&fit=crop",
-  market: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&q=70&auto=format&fit=crop",
-  feed: "https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=800&q=70&auto=format&fit=crop",
-  schemes: "https://images.unsplash.com/photo-1595351298020-038700609878?w=800&q=70&auto=format&fit=crop",
+  banner1: heroCows,
+  banner2: bannerMilk,
+  banner3: bannerAiScan,
+  milk: cardMilk,
+  cow: cardCow,
+  vet: cardVet,
+  market: cardMarket,
+  feed: cardFeed,
+  schemes: bannerSchemes,
 };
 
 const QUICK_ACTIONS = [

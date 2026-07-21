@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import MobilePageHero from "@/components/MobilePageHero";
+import heroMarket from "@/assets/card-market.jpg";
 import { toast } from "sonner";
 import { telHref, waHref } from "@/lib/phone";
 
@@ -263,8 +265,9 @@ export default function CattleMarket() {
 
   return (
     <div className="min-h-screen bg-gradient-mint">
+      <MobilePageHero image={heroMarket} eyebrow="AI-Powered" title="Cattle Marketplace" subtitle="Verified sellers, healthy livestock" />
       {/* ============= HERO / AI SEARCH ============= */}
-      <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <section className="relative hidden overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5 md:block">
         <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent/15 blur-3xl" />
 
