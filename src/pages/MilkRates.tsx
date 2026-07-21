@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { telHref, waHref } from "@/lib/phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import MobilePageHero from "@/components/MobilePageHero";
+import heroMilk from "@/assets/card-milk.jpg";
 
 type Company = {
   id: string;
@@ -217,8 +219,10 @@ export default function MilkRates() {
   };
 
   return (
-    <div className="container py-8">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <>
+      <MobilePageHero image={heroMilk} eyebrow="Live" title="Today's Milk Rates" subtitle="Real-time FAT & SNF prices from verified dairies" />
+    <div className="container py-8 md:py-8">
+      <div className="mb-6 hidden md:flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">Today's Milk Rates</h1>
           <p className="mt-1 text-sm text-muted-foreground">Live procurement rates from verified dairy companies. Updated in real time.</p>
