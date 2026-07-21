@@ -20,6 +20,8 @@ import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
 import { escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
+import MobilePageHero from "@/components/MobilePageHero";
+import heroVet from "@/assets/card-vet.jpg";
 
 type NearbyPlace = {
   id: string; name: string; address: string | null; lat: number | null; lng: number | null;
@@ -660,9 +662,11 @@ export default function VetContacts() {
     : null;
 
   return (
-    <div className="container py-8 md:py-12">
+    <>
+      <MobilePageHero image={heroVet} eyebrow="Verified" title="Veterinary Doctors" subtitle="Book trusted vets near you" />
+    <div className="container py-4 md:py-12">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="hidden md:flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
           <h1 className="font-display text-3xl font-bold md:text-4xl">{t("vet.title")}</h1>
           <p className="mt-2 text-muted-foreground">{t("vet.subtitle")}</p>
