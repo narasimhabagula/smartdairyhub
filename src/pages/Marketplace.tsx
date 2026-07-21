@@ -20,6 +20,8 @@ import {
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
   Phone, MessageCircle, Eye, Loader2,
 } from "lucide-react";
+import MobilePageHero from "@/components/MobilePageHero";
+import heroFeed from "@/assets/card-feed.jpg";
 
 type Product = {
   id: string;
@@ -241,7 +243,8 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <section className="border-b bg-card">
+      <MobilePageHero image={heroFeed} eyebrow="Verified Sellers" title="Feed & Supplies" subtitle="Premium cattle feed and vet medicines" />
+      <section className="hidden border-b bg-card md:block">
         <div className="container py-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
