@@ -96,7 +96,11 @@ const daysAgo = (iso: string) => {
 };
 
 // Deterministic mock rating until reviews table exists for products
-const ratingFor = (id: string) => {
+const ratingFor = (p: Product | string) => {
+  if (typeof p !== "string") {
+    if (p._demo_rating != null) return { stars: p._demo_rating, count: p._demo_reviews ?? 0 };
+  }
+  const id = typeof p === "string" ? p : p.id;
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return { stars: 3.5 + (h % 15) / 10, count: 12 + (h % 280) };
