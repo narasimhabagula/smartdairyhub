@@ -18,10 +18,12 @@ import { telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
 import {
   Search, ShoppingCart, Heart, Share2, MapPin, ShieldCheck, Star,
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
-  Phone, MessageCircle, Eye, Loader2,
+  Phone, MessageCircle, Eye, Loader2, Milk, Cookie, Beef, Droplet, FlaskConical,
 } from "lucide-react";
 import MobilePageHero from "@/components/MobilePageHero";
 import heroFeed from "@/assets/card-feed.jpg";
+import { demoProducts } from "@/data/demo/products";
+import { USE_DEMO_DATA } from "@/data/demo";
 
 type Product = {
   id: string;
@@ -35,16 +37,39 @@ type Product = {
   image_url: string | null;
   created_at: string;
   seller_name?: string;
+  _demo_location?: string;
+  _demo_rating?: number;
+  _demo_reviews?: number;
+  _demo_mrp?: number;
+  _demo_delivery_days?: number;
 };
 
 const CATEGORIES = [
-  { id: "feed", label: "Cattle Feed", icon: Wheat },
+  { id: "all", label: "All", icon: Sparkles },
+  { id: "milk", label: "Milk", icon: Milk },
+  { id: "ghee", label: "Ghee", icon: Droplet },
+  { id: "paneer", label: "Paneer", icon: Beef },
+  { id: "curd", label: "Curd", icon: Milk },
+  { id: "butter", label: "Butter", icon: Cookie },
+  { id: "feed", label: "Feed", icon: Wheat },
+  { id: "minerals", label: "Minerals", icon: FlaskConical },
+  { id: "supplements", label: "Supplements", icon: Pill },
+  { id: "equipment", label: "Equipment", icon: Truck },
 ];
 
 const CATEGORY_MAP: Record<string, string[]> = {
+  milk: ["milk", "dairy_milk"],
+  ghee: ["ghee"],
+  paneer: ["paneer"],
+  curd: ["curd", "dahi", "yogurt"],
+  butter: ["butter"],
   feed: ["feed", "cattle_feed", "fodder"],
+  minerals: ["minerals", "mineral_mix"],
+  supplements: ["supplements", "medicine", "medicines"],
+  equipment: ["equipment"],
+  sweets: ["sweets"],
 };
-const ALLOWED_CATEGORIES = [...CATEGORY_MAP.feed];
+const ALLOWED_CATEGORIES = Object.values(CATEGORY_MAP).flat();
 
 const SORTS = [
   { id: "newest", label: "Newest first" },
