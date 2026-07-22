@@ -1045,6 +1045,35 @@ export default function VetContacts() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => <VetCardSkeleton key={i} />)
+            ) : filteredVets.length === 0 && USE_DEMO_DATA ? (
+              demoVets
+                .filter((d) =>
+                  !search ||
+                  [d.name, d.clinic, d.city, d.specialization].join(" ").toLowerCase().includes(search.toLowerCase())
+                )
+                .filter((d) => district === "all" || d.city === district)
+                .slice(0, 24)
+                .map((d) => (
+                  <VetCard
+                    key={d.id}
+                    vet={{
+                      id: d.id,
+                      name: d.name,
+                      hospital: d.clinic,
+                      subtitle: `${d.qualification} · ${d.experienceYears}y exp · ${d.specialization}`,
+                      phone: d.phone,
+                      address: `${d.clinic}, ${d.city}`,
+                      rating: d.rating,
+                      total_ratings: d.reviews,
+                      open_now: d.openNow,
+                      distance_km: d.distanceKm,
+                      photo: d.photo,
+                      experience_years: d.experienceYears,
+                      fee: d.fee,
+                      description: `Consultation ₹${d.fee} · ${d.availableToday ? "Available today" : "Book slot"}${d.emergency ? " · 24×7 emergency" : ""}`,
+                    }}
+                  />
+                ))
             ) : filteredVets.length === 0 ? (
               <Card className="col-span-full p-10 text-center">
                 <Stethoscope className="mx-auto h-10 w-10 text-muted-foreground" />
