@@ -477,10 +477,14 @@ function ProductCard({
 }: {
   p: Product; isFav: boolean; onFav: () => void; onShare: () => void; onAdd: () => void; onBuy: () => void; onDetails: () => void;
 }) {
-  const { stars, count } = ratingFor(p.id);
+  const { stars, count } = ratingFor(p);
   const hasDelivery = (p.description || "").toLowerCase().includes("delivery");
+  const mrp = p._demo_mrp;
+  const discount = mrp && mrp > p.price ? Math.round((1 - p.price / mrp) * 100) : 0;
+  const locationLabel = p._demo_location || "Across India";
+  const inStock = p.stock > 0;
   return (
-    <Card className="group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl">
+    <Card className="group flex flex-col overflow-hidden rounded-2xl border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-xl">
       <button type="button" onClick={onDetails} aria-label="View details"
         className="relative block aspect-[4/3] overflow-hidden bg-muted text-left">
         {p.image_url ? (
@@ -491,8 +495,10 @@ function ProductCard({
             <Sparkles className="h-10 w-10 opacity-40" />
           </div>
         )}
-        <div className="absolute left-2 top-2 flex gap-1.5">
-          <Badge variant="secondary" className="bg-background/90 capitalize">{p.category.replace(/_/g, " ")}</Badge>
+        <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
+          {discount > 0 && (
+            <Badge className="bg-rose-500 text-white hover:bg-rose-500">{discount}% OFF</Badge>
+          )}
           {p.seller_name && (
             <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
               <ShieldCheck className="h-3 w-3" /> Verified
@@ -504,39 +510,48 @@ function ProductCard({
           className="absolute right-2 top-2 cursor-pointer rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-background">
           <Heart className={`h-4 w-4 ${isFav ? "fill-red-500 text-red-500" : "text-foreground"}`} />
         </span>
+        {!inStock && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold">Out of stock</div>
+        )}
       </button>
 
-      <CardContent className="flex flex-1 flex-col gap-2 p-4">
+      <CardContent className="flex flex-1 flex-col gap-1.5 p-3.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="line-clamp-1 font-medium">{p.name}</p>
+          <p className="line-clamp-1 font-semibold">{p.name}</p>
           <button type="button" onClick={onShare} aria-label="Share"
             className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
             <Share2 className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">Brand · {brandFor(p)}</p>
 
-        <div className="flex items-baseline gap-1 text-primary">
-          <IndianRupee className="h-4 w-4" />
-          <span className="text-xl font-bold">{Number(p.price).toLocaleString("en-IN")}</span>
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="flex items-center gap-0.5 rounded bg-emerald-600 px-1.5 py-0.5 font-bold text-white">
+            <Star className="h-3 w-3 fill-current" /> {stars.toFixed(1)}
+          </span>
+          <span className="text-muted-foreground">({count.toLocaleString("en-IN")})</span>
+          <span className="ml-auto capitalize text-muted-foreground">{p.category.replace(/_/g, " ")}</span>
+        </div>
+
+        <div className="flex items-baseline gap-2 text-primary">
+          <div className="flex items-baseline">
+            <IndianRupee className="h-4 w-4" />
+            <span className="text-xl font-bold">{Number(p.price).toLocaleString("en-IN")}</span>
+          </div>
+          {mrp && mrp > p.price && (
+            <span className="text-xs text-muted-foreground line-through">₹{mrp.toLocaleString("en-IN")}</span>
+          )}
           {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
         </div>
 
-        <div className="flex items-center gap-1 text-amber-500 text-xs">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(stars) ? "fill-amber-500" : ""}`} />
-          ))}
-          <span className="ml-1 text-muted-foreground">{stars.toFixed(1)} ({count})</span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Across India</span>
-          {hasDelivery && (
-            <span className="flex items-center gap-1 text-emerald-700">
-              <Truck className="h-3 w-3" /> Delivery
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {locationLabel}</span>
+          {(hasDelivery || p._demo_delivery_days) && (
+            <span className="flex items-center gap-1 text-emerald-700 font-medium">
+              <Truck className="h-3 w-3" /> Delivery in {p._demo_delivery_days ?? 2}d
             </span>
           )}
         </div>
+
 
         <div className="mt-auto grid grid-cols-3 gap-2 pt-2">
           <Button size="sm" variant="ghost" className="gap-1.5" onClick={onDetails}>
