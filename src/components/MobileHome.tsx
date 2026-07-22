@@ -2,12 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Bell, User, ChevronRight, TrendingUp, ScanLine, Stethoscope, Store,
-  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles,
+  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
+import { demoProducts } from "@/data/demo/products";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
