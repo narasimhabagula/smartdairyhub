@@ -25,6 +25,9 @@ export type VetCardData = {
   hours?: string[] | null;
   is_government?: boolean;
   description?: string | null;
+  photo?: string | null;
+  experience_years?: number | null;
+  fee?: number | null;
 };
 
 export type VetCardProps = {
