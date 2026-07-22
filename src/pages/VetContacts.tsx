@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
 import MobilePageHero from "@/components/MobilePageHero";
 import heroVet from "@/assets/card-vet.jpg";
+import { demoVets } from "@/data/demo/vets";
+import { USE_DEMO_DATA } from "@/data/demo";
 
 type NearbyPlace = {
   id: string; name: string; address: string | null; lat: number | null; lng: number | null;
