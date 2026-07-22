@@ -162,7 +162,29 @@ export default function Marketplace() {
         const map = new Map((profs || []).map((p: any) => [p.user_id, p.full_name]));
         rows.forEach((r) => (r.seller_name = map.get(r.seller_id) || ""));
       }
-      setProducts(rows);
+      // Merge realistic demo products so the marketplace never looks empty.
+      // Demo rows carry a stable synthetic seller_id so cart/wishlist work.
+      const demoRows: Product[] = USE_DEMO_DATA
+        ? demoProducts.map((d, i) => ({
+            id: d.id,
+            seller_id: `demo-seller-${i % 8}`,
+            name: d.name,
+            description: `${d.description} · Free delivery in ${d.deliveryDays} days`,
+            category: d.category,
+            price: d.price,
+            unit: d.unit,
+            stock: d.stock,
+            image_url: d.image,
+            created_at: new Date(Date.now() - (i + 1) * 3600_000).toISOString(),
+            seller_name: d.seller,
+            _demo_location: `${d.location}, ${d.state}`,
+            _demo_rating: d.rating,
+            _demo_reviews: d.reviews,
+            _demo_mrp: d.mrp,
+            _demo_delivery_days: d.deliveryDays,
+          }))
+        : [];
+      setProducts([...rows, ...demoRows]);
       setLoading(false);
     })();
     return () => {
