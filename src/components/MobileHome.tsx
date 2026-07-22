@@ -2,12 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Bell, User, ChevronRight, TrendingUp, ScanLine, Stethoscope, Store,
-  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles,
+  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
+import { demoProducts } from "@/data/demo/products";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
@@ -273,6 +274,84 @@ export default function MobileHome() {
       </section>
 
       {/* ============ JERRY CTA ============ */}
+      {/* ============ TRUSTED FARMERS ============ */}
+      <section className="mt-6 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base font-bold">Trusted Farmers</h2>
+          <Link to="/cattle-market" className="text-xs font-semibold text-primary">See all <ChevronRight className="ml-0.5 inline h-3 w-3" /></Link>
+        </div>
+        <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
+          {[
+            { name: "Ramesh Patel", village: "Anand, GJ", cattle: 18, rating: 4.9, img: "https://images.unsplash.com/photo-1613323593608-abc90fec84ff?w=400&q=80" },
+            { name: "Lakshmi Reddy", village: "Guntur, AP", cattle: 12, rating: 4.8, img: "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=400&q=80" },
+            { name: "Suresh Kumar", village: "Karnal, HR", cattle: 24, rating: 4.9, img: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80" },
+            { name: "Kavya Iyer", village: "Coimbatore, TN", cattle: 9, rating: 4.7, img: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80" },
+            { name: "Mahesh Yadav", village: "Nashik, MH", cattle: 15, rating: 4.8, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80" },
+          ].map((f) => (
+            <div key={f.name} className="w-[160px] shrink-0 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
+              <div className="relative h-24 overflow-hidden">
+                <img src={f.img} alt={f.name} loading="lazy" className="h-full w-full object-cover" />
+                <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
+                  <ShieldCheck className="h-2.5 w-2.5" /> Verified
+                </span>
+              </div>
+              <div className="p-2.5">
+                <div className="truncate text-[12px] font-semibold">{f.name}</div>
+                <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <MapPin className="h-2.5 w-2.5" /> {f.village}
+                </div>
+                <div className="mt-1 flex items-center justify-between text-[10px]">
+                  <span className="flex items-center gap-0.5 text-amber-600 font-semibold">
+                    <Star className="h-2.5 w-2.5 fill-current" /> {f.rating}
+                  </span>
+                  <span className="text-muted-foreground">{f.cattle} cattle</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ POPULAR PRODUCTS ============ */}
+      <section className="mt-6 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-base font-bold">Popular in Marketplace</h2>
+          <Link to="/marketplace" className="text-xs font-semibold text-primary">See all <ChevronRight className="ml-0.5 inline h-3 w-3" /></Link>
+        </div>
+        <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
+          {demoProducts.slice(0, 8).map((p) => (
+            <Link key={p.id} to="/marketplace" className="w-[150px] shrink-0 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-transform active:scale-[0.97]">
+              <div className="relative h-28 overflow-hidden bg-muted">
+                <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                {p.mrp > p.price && (
+                  <span className="absolute left-1.5 top-1.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                    {Math.round((1 - p.price / p.mrp) * 100)}% OFF
+                  </span>
+                )}
+              </div>
+              <div className="p-2">
+                <div className="line-clamp-1 text-[12px] font-semibold">{p.name}</div>
+                <div className="mt-0.5 flex items-baseline gap-1 text-primary">
+                  <IndianRupee className="h-3 w-3" />
+                  <span className="text-[13px] font-bold">{p.price.toLocaleString("en-IN")}</span>
+                  <span className="text-[9px] text-muted-foreground">/{p.unit}</span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1 text-[9px]">
+                  <span className="flex items-center gap-0.5 rounded bg-emerald-600 px-1 py-px font-bold text-white">
+                    <Star className="h-2 w-2 fill-current" /> {p.rating}
+                  </span>
+                  <span className="text-muted-foreground">({p.reviews})</span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1 text-[9px] text-emerald-700">
+                  <Truck className="h-2.5 w-2.5" /> {p.deliveryDays}d · {p.location}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ JERRY CTA ============ */}
       <section className="mt-6 px-4">
         <Link
           to="/ai-chat"
@@ -288,6 +367,16 @@ export default function MobileHome() {
           <ChevronRight className="h-5 w-5" />
         </Link>
       </section>
+
+      {/* ============ AI SCAN FLOATING ACTION BUTTON ============ */}
+      <Link
+        to="/disease-detection"
+        aria-label="AI Disease Scan"
+        className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-2xl shadow-emerald-500/40 ring-4 ring-white/60 transition-transform active:scale-95 md:hidden"
+      >
+        <ScanLine className="h-6 w-6" strokeWidth={2.5} />
+        <span className="absolute -top-1 -right-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900">AI</span>
+      </Link>
     </div>
   );
 }

@@ -25,6 +25,9 @@ export type VetCardData = {
   hours?: string[] | null;
   is_government?: boolean;
   description?: string | null;
+  photo?: string | null;
+  experience_years?: number | null;
+  fee?: number | null;
 };
 
 export type VetCardProps = {
@@ -67,9 +70,18 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
     <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
       {/* Header */}
       <div className="flex items-start gap-3 p-5 pb-3">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 font-display text-lg font-bold text-primary ring-1 ring-primary/10">
-          {initials || <Stethoscope className="h-6 w-6" />}
-        </div>
+        {vet.photo ? (
+          <img
+            src={vet.photo}
+            alt={vet.name}
+            loading="lazy"
+            className="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-primary/10"
+          />
+        ) : (
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 font-display text-lg font-bold text-primary ring-1 ring-primary/10">
+            {initials || <Stethoscope className="h-6 w-6" />}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="truncate font-display text-base font-semibold leading-tight">{vet.name}</h3>
