@@ -131,7 +131,7 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
-              <ChatBot />
+              {/* Jerry FAB is now mounted from MobileHome as a unified assistant menu */}
               <MobileBottomNav />
             </div>
           </CartProvider>
