@@ -9,7 +9,7 @@ import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import Footer from "./components/Footer";
-import ChatBot from "./components/ChatBot";
+import JerryFab from "./components/JerryFab";
 import LanguagePicker from "./components/LanguagePicker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
