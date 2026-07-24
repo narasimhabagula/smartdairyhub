@@ -99,13 +99,12 @@ export default function Landing() {
 
   return (
     <div className="overflow-x-hidden">
-      {/* ================= MOBILE APP HOME ================= */}
-      <div className="md:hidden">
-        <MobileHome />
-      </div>
+      {/* Unified mobile-app experience across every breakpoint */}
+      <MobileHome />
 
-      {/* ================= DESKTOP HERO (existing) ================= */}
-      <div className="hidden md:block">
+      {/* Legacy desktop layout kept for reference — hidden */}
+      <div className="hidden">
+
       {/* ================= HERO ================= */}
       <section
         ref={heroRef}
