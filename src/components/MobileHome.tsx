@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  Bell, User, ChevronRight, TrendingUp, ScanLine, Stethoscope, Store,
-  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck,
+  Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +24,28 @@ import cardVet from "@/assets/card-vet.jpg";
 import cardMarket from "@/assets/card-market.jpg";
 import cardFeed from "@/assets/card-feed.jpg";
 
+// Premium 3D icons
+import ic_cattle from "@/assets/icons3d/cattle.jpg";
+import ic_feed from "@/assets/icons3d/feed.jpg";
+import ic_schemes from "@/assets/icons3d/schemes.jpg";
+import ic_jerry from "@/assets/icons3d/jerry.jpg";
+import ic_milkPrices from "@/assets/icons3d/milk-prices.jpg";
+import ic_diseaseScan from "@/assets/icons3d/disease-scan.jpg";
+import ic_vet from "@/assets/icons3d/vet.jpg";
+import ic_milkCollection from "@/assets/icons3d/milk-collection.jpg";
+import ic_milkTransport from "@/assets/icons3d/milk-transport.jpg";
+import ic_medicalStores from "@/assets/icons3d/medical-stores.jpg";
+import ic_customerCare from "@/assets/icons3d/customer-care.jpg";
+import ic_buffalo from "@/assets/icons3d/buffalo.jpg";
+import ic_cow from "@/assets/icons3d/cow.jpg";
+import ic_analytics from "@/assets/icons3d/analytics.jpg";
+import ic_alerts from "@/assets/icons3d/alerts.jpg";
+import ic_profile from "@/assets/icons3d/profile.jpg";
+import ic_language from "@/assets/icons3d/language.jpg";
+import ic_aiChat from "@/assets/icons3d/ai-chat.jpg";
+import ic_settings from "@/assets/icons3d/settings.jpg";
+import ic_health from "@/assets/icons3d/health.jpg";
+
 const IMG = {
   banner1: heroCows,
   banner2: bannerMilk,
@@ -38,13 +59,26 @@ const IMG = {
 };
 
 const QUICK_ACTIONS = [
-  { to: "/milk-rates", label: "Live Milk Prices", icon: TrendingUp, tint: "from-emerald-400 to-emerald-600" },
-  { to: "/disease-detection", label: "AI Disease Scan", icon: ScanLine, tint: "from-sky-400 to-blue-600" },
-  { to: "/vet-contacts", label: "Veterinary", icon: Stethoscope, tint: "from-rose-400 to-rose-600" },
-  { to: "/cattle-market", label: "Buy & Sell Cattle", icon: Store, tint: "from-amber-400 to-orange-600" },
-  { to: "/marketplace?category=feed", label: "Feed & Supplies", icon: Wheat, tint: "from-lime-400 to-green-600" },
-  { to: "/schemes", label: "Govt Schemes", icon: Landmark, tint: "from-violet-400 to-purple-600" },
-  { to: "/ai-chat", label: "Jerry AI", icon: Bot, tint: "from-teal-400 to-emerald-600" },
+  { to: "/milk-rates", label: "Live Milk Prices", img: ic_milkPrices },
+  { to: "/disease-detection", label: "AI Disease Scan", img: ic_diseaseScan },
+  { to: "/vet-contacts", label: "Veterinary", img: ic_vet },
+  { to: "/cattle-market", label: "Buy & Sell Cattle", img: ic_cattle },
+  { to: "/marketplace?category=feed", label: "Feed & Supplies", img: ic_feed },
+  { to: "/schemes", label: "Govt Schemes", img: ic_schemes },
+  { to: "/ai-chat", label: "Jerry AI", img: ic_jerry },
+  { to: "/cattle-market?type=cow", label: "Cow Marketplace", img: ic_cow },
+  { to: "/cattle-market?type=buffalo", label: "Buffalo Marketplace", img: ic_buffalo },
+  { to: "/dashboard", label: "Dairy Analytics", img: ic_analytics },
+  { to: "/notifications", label: "Smart Alerts", img: ic_alerts },
+  { to: "/vet-contacts", label: "Medical Stores", img: ic_medicalStores },
+  { to: "/dashboard", label: "Milk Collection", img: ic_milkCollection },
+  { to: "/dashboard", label: "Milk Transport", img: ic_milkTransport },
+  { to: "/dashboard", label: "Health Monitoring", img: ic_health },
+  { to: "/ai-chat", label: "AI Chat", img: ic_aiChat },
+  { to: "/support", label: "Customer Care", img: ic_customerCare },
+  { to: "/welcome/language", label: "Language", img: ic_language },
+  { to: "/profile", label: "Farmer Profile", img: ic_profile },
+  { to: "/settings", label: "Settings", img: ic_settings },
 ];
 
 const BANNERS = [
