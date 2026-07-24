@@ -122,8 +122,6 @@ export default function MobileHome() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [bannerIdx, setBannerIdx] = useState(0);
-  const [fabOpen, setFabOpen] = useState(false);
-  const fabRef = useRef<HTMLDivElement>(null);
   const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
 
   // Auto-slide banners
@@ -131,21 +129,6 @@ export default function MobileHome() {
     const id = setInterval(() => setBannerIdx((i) => (i + 1) % BANNERS.length), 4200);
     return () => clearInterval(id);
   }, []);
-
-  // Close FAB menu on outside click / escape
-  useEffect(() => {
-    if (!fabOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (fabRef.current && !fabRef.current.contains(e.target as Node)) setFabOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFabOpen(false);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [fabOpen]);
 
   const switchLang = async (lng: LanguageCode) => {
     await i18n.changeLanguage(lng);
