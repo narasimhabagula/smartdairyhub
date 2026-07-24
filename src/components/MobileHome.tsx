@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
+  MessageCircle, ScanLine, Mic, HelpCircle, X,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
