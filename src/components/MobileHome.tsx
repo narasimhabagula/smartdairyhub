@@ -204,23 +204,23 @@ export default function MobileHome() {
           </button>
         </div>
         <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
-          {QUICK_ACTIONS.map((a) => {
-            const Icon = a.icon;
-            return (
-              <Link
-                key={a.to}
-                to={a.to}
-                className="group flex w-[92px] shrink-0 flex-col items-center gap-2 text-center"
-              >
-                <span
-                  className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${a.tint} text-white shadow-lg shadow-black/10 transition-transform group-active:scale-95`}
-                >
-                  <Icon className="h-7 w-7" strokeWidth={2.2} />
-                </span>
-                <span className="text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
-              </Link>
-            );
-          })}
+          {QUICK_ACTIONS.map((a) => (
+            <Link
+              key={a.label}
+              to={a.to}
+              className="group flex w-[80px] shrink-0 flex-col items-center gap-2 text-center"
+            >
+              <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/10 ring-1 ring-black/5 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-xl group-active:scale-95">
+                <img
+                  src={a.img}
+                  alt={a.label}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </span>
+              <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
