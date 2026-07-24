@@ -221,22 +221,23 @@ export default function MobileHome() {
             See all <ChevronRight className="ml-0.5 inline h-3 w-3" />
           </button>
         </div>
-        <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
+        <div className="scrollbar-hide -mx-4 mt-3 flex gap-4 overflow-x-auto px-4 pb-3">
           {QUICK_ACTIONS.map((a) => (
             <Link
               key={a.label}
               to={a.to}
-              className="group flex w-[80px] shrink-0 flex-col items-center gap-2 text-center"
+              className="group flex w-[76px] shrink-0 flex-col items-center gap-2 text-center"
             >
-              <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/10 ring-1 ring-black/5 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-xl group-active:scale-95">
+              <span className="relative flex h-[64px] w-[64px] items-center justify-center overflow-hidden rounded-[20px] bg-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.18),0_2px_4px_-2px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.04] transition-all duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.22)] group-active:scale-[0.94] group-active:shadow-md">
                 <img
                   src={a.img}
                   alt={a.label}
                   loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
               </span>
-              <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
+              <span className="line-clamp-2 text-[11px] font-semibold leading-tight tracking-tight text-foreground/90">{a.label}</span>
             </Link>
           ))}
         </div>
