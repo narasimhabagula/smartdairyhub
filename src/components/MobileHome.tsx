@@ -408,7 +408,7 @@ export default function MobileHome() {
         aria-label="AI Disease Scan"
         className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-2xl shadow-emerald-500/40 ring-4 ring-white/60 transition-transform active:scale-95 md:hidden"
       >
-        <ScanLine className="h-6 w-6" strokeWidth={2.5} />
+        <img src={ic_diseaseScan} alt="" className="h-8 w-8 rounded-lg object-cover" />
         <span className="absolute -top-1 -right-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900">AI</span>
       </Link>
     </div>
