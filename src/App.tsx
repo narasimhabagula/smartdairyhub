@@ -73,9 +73,10 @@ const App = () => (
           <CartProvider>
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
-              <div className="hidden md:block">
+              <div className="hidden">
                 <Navbar />
               </div>
+
               <NotificationBanners />
               <main className="flex-1">
                 <Routes>

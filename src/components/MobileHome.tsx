@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  Bell, User, ChevronRight, TrendingUp, ScanLine, Stethoscope, Store,
-  Wheat, Landmark, Newspaper, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck,
+  Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +24,28 @@ import cardVet from "@/assets/card-vet.jpg";
 import cardMarket from "@/assets/card-market.jpg";
 import cardFeed from "@/assets/card-feed.jpg";
 
+// Premium 3D icons
+import ic_cattle from "@/assets/icons3d/cattle.jpg";
+import ic_feed from "@/assets/icons3d/feed.jpg";
+import ic_schemes from "@/assets/icons3d/schemes.jpg";
+import ic_jerry from "@/assets/icons3d/jerry.jpg";
+import ic_milkPrices from "@/assets/icons3d/milk-prices.jpg";
+import ic_diseaseScan from "@/assets/icons3d/disease-scan.jpg";
+import ic_vet from "@/assets/icons3d/vet.jpg";
+import ic_milkCollection from "@/assets/icons3d/milk-collection.jpg";
+import ic_milkTransport from "@/assets/icons3d/milk-transport.jpg";
+import ic_medicalStores from "@/assets/icons3d/medical-stores.jpg";
+import ic_customerCare from "@/assets/icons3d/customer-care.jpg";
+import ic_buffalo from "@/assets/icons3d/buffalo.jpg";
+import ic_cow from "@/assets/icons3d/cow.jpg";
+import ic_analytics from "@/assets/icons3d/analytics.jpg";
+import ic_alerts from "@/assets/icons3d/alerts.jpg";
+import ic_profile from "@/assets/icons3d/profile.jpg";
+import ic_language from "@/assets/icons3d/language.jpg";
+import ic_aiChat from "@/assets/icons3d/ai-chat.jpg";
+import ic_settings from "@/assets/icons3d/settings.jpg";
+import ic_health from "@/assets/icons3d/health.jpg";
+
 const IMG = {
   banner1: heroCows,
   banner2: bannerMilk,
@@ -38,13 +59,26 @@ const IMG = {
 };
 
 const QUICK_ACTIONS = [
-  { to: "/milk-rates", label: "Live Milk Prices", icon: TrendingUp, tint: "from-emerald-400 to-emerald-600" },
-  { to: "/disease-detection", label: "AI Disease Scan", icon: ScanLine, tint: "from-sky-400 to-blue-600" },
-  { to: "/vet-contacts", label: "Veterinary", icon: Stethoscope, tint: "from-rose-400 to-rose-600" },
-  { to: "/cattle-market", label: "Buy & Sell Cattle", icon: Store, tint: "from-amber-400 to-orange-600" },
-  { to: "/marketplace?category=feed", label: "Feed & Supplies", icon: Wheat, tint: "from-lime-400 to-green-600" },
-  { to: "/schemes", label: "Govt Schemes", icon: Landmark, tint: "from-violet-400 to-purple-600" },
-  { to: "/ai-chat", label: "Jerry AI", icon: Bot, tint: "from-teal-400 to-emerald-600" },
+  { to: "/milk-rates", label: "Live Milk Prices", img: ic_milkPrices },
+  { to: "/disease-detection", label: "AI Disease Scan", img: ic_diseaseScan },
+  { to: "/vet-contacts", label: "Veterinary", img: ic_vet },
+  { to: "/cattle-market", label: "Buy & Sell Cattle", img: ic_cattle },
+  { to: "/marketplace?category=feed", label: "Feed & Supplies", img: ic_feed },
+  { to: "/schemes", label: "Govt Schemes", img: ic_schemes },
+  { to: "/ai-chat", label: "Jerry AI", img: ic_jerry },
+  { to: "/cattle-market?type=cow", label: "Cow Marketplace", img: ic_cow },
+  { to: "/cattle-market?type=buffalo", label: "Buffalo Marketplace", img: ic_buffalo },
+  { to: "/dashboard", label: "Dairy Analytics", img: ic_analytics },
+  { to: "/notifications", label: "Smart Alerts", img: ic_alerts },
+  { to: "/vet-contacts", label: "Medical Stores", img: ic_medicalStores },
+  { to: "/dashboard", label: "Milk Collection", img: ic_milkCollection },
+  { to: "/dashboard", label: "Milk Transport", img: ic_milkTransport },
+  { to: "/dashboard", label: "Health Monitoring", img: ic_health },
+  { to: "/ai-chat", label: "AI Chat", img: ic_aiChat },
+  { to: "/support", label: "Customer Care", img: ic_customerCare },
+  { to: "/welcome/language", label: "Language", img: ic_language },
+  { to: "/profile", label: "Farmer Profile", img: ic_profile },
+  { to: "/settings", label: "Settings", img: ic_settings },
 ];
 
 const BANNERS = [
@@ -170,23 +204,23 @@ export default function MobileHome() {
           </button>
         </div>
         <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
-          {QUICK_ACTIONS.map((a) => {
-            const Icon = a.icon;
-            return (
-              <Link
-                key={a.to}
-                to={a.to}
-                className="group flex w-[92px] shrink-0 flex-col items-center gap-2 text-center"
-              >
-                <span
-                  className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${a.tint} text-white shadow-lg shadow-black/10 transition-transform group-active:scale-95`}
-                >
-                  <Icon className="h-7 w-7" strokeWidth={2.2} />
-                </span>
-                <span className="text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
-              </Link>
-            );
-          })}
+          {QUICK_ACTIONS.map((a) => (
+            <Link
+              key={a.label}
+              to={a.to}
+              className="group flex w-[80px] shrink-0 flex-col items-center gap-2 text-center"
+            >
+              <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/10 ring-1 ring-black/5 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-xl group-active:scale-95">
+                <img
+                  src={a.img}
+                  alt={a.label}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </span>
+              <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-foreground">{a.label}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -372,9 +406,9 @@ export default function MobileHome() {
       <Link
         to="/disease-detection"
         aria-label="AI Disease Scan"
-        className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-2xl shadow-emerald-500/40 ring-4 ring-white/60 transition-transform active:scale-95 md:hidden"
+        className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-2xl shadow-emerald-500/40 ring-4 ring-white/60 transition-transform active:scale-95"
       >
-        <ScanLine className="h-6 w-6" strokeWidth={2.5} />
+        <img src={ic_diseaseScan} alt="" className="h-8 w-8 rounded-lg object-cover" />
         <span className="absolute -top-1 -right-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900">AI</span>
       </Link>
     </div>

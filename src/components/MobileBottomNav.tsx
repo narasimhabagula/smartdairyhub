@@ -16,7 +16,7 @@ export default function MobileBottomNav() {
     <>
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)] backdrop-blur-xl"
       >
         <ul className="mx-auto grid max-w-md grid-cols-4">
           {TABS.map((t) => {
@@ -47,7 +47,7 @@ export default function MobileBottomNav() {
         </ul>
       </nav>
       {/* Spacer so page content isn't hidden behind fixed nav on mobile */}
-      <div aria-hidden className="h-16 md:hidden" />
+      <div aria-hidden className="h-16" />
     </>
   );
 }
