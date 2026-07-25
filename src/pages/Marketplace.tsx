@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import MobilePageHero from "@/components/MobilePageHero";
 import heroFeed from "@/assets/card-feed.jpg";
+import bannerMarketplace from "@/assets/banner-marketplace.jpg";
+import bannerMedical from "@/assets/banner-medical.jpg";
+import phFeed from "@/assets/ph-feed.jpg";
+import phMedicine from "@/assets/ph-medicine.jpg";
+
 import { demoProducts } from "@/data/demo/products";
 import { USE_DEMO_DATA } from "@/data/demo";
 
