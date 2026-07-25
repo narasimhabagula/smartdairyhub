@@ -659,13 +659,9 @@ function ProductDetailsDialog({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-            {p.image_url ? (
-              <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                <Sparkles className="h-10 w-10 opacity-40" />
-              </div>
-            )}
+            <img src={p.image_url || placeholderFor(p.category)} alt={p.name} className="h-full w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderFor(p.category); }} />
+
           </div>
 
           <div className="space-y-3">
