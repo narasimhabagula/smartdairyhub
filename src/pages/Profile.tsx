@@ -280,6 +280,86 @@ export default function Profile() {
 
 }
 
+function SignedOutProfile() {
+  const [busy, setBusy] = useState(false);
+
+  const google = async () => {
+    setBusy(true);
+    try {
+      sessionStorage.setItem("postLoginRedirect", "/profile");
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      if (result.error) toast.error((result.error as any).message || "Google sign-in failed");
+    } catch (e: any) {
+      toast.error(e?.message || "Google sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="relative flex min-h-[80svh] items-center justify-center overflow-hidden px-4 py-10">
+      <img src={farmBg} alt="" width={1600} height={912} className="absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-background/60 to-background" />
+
+      <div className="relative w-full max-w-sm">
+        <img
+          src={farmerAvatar}
+          alt="Smart Dairy Hub farmer"
+          width={1024}
+          height={1024}
+          className="mx-auto -mb-10 h-40 w-40 drop-shadow-2xl"
+        />
+        <div className="rounded-3xl border border-white/50 bg-white/60 p-6 pt-14 text-center shadow-2xl backdrop-blur-2xl dark:bg-card/60">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+            <Sparkles className="h-3 w-3" /> Farmer Portal
+          </span>
+          <h1 className="mt-2 font-display text-2xl font-bold">Welcome to your farm</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign in to manage your herd, milk income, orders and vet appointments.
+          </p>
+
+          <div className="mt-6 space-y-2.5">
+            <Button onClick={google} disabled={busy} variant="outline" className="h-12 w-full rounded-xl bg-background/80 text-base">
+              <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-hidden>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
+                <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
+              </svg>
+              Continue with Google
+            </Button>
+            <Button asChild className="h-12 w-full rounded-xl text-base shadow-md">
+              <Link to="/login?method=phone"><Phone className="mr-2 h-4 w-4" /> Continue with Phone</Link>
+            </Button>
+            <Button asChild variant="ghost" className="h-12 w-full rounded-xl text-base">
+              <Link to="/login"><Mail className="mr-2 h-4 w-4" /> Continue with Email</Link>
+            </Button>
+          </div>
+
+          <p className="mt-5 text-[11px] text-muted-foreground">
+            New here? <Link to="/login" className="font-semibold text-primary underline-offset-4 hover:underline">Create a free farmer account</Link>
+          </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+          {[
+            { icon: Milk, label: "Milk income" },
+            { icon: Stethoscope, label: "Vet booking" },
+            { icon: ShieldCheck, label: "Verified deals" },
+          ].map((f) => (
+            <div key={f.label} className="rounded-2xl border border-white/50 bg-white/50 p-3 backdrop-blur-xl dark:bg-card/50">
+              <f.icon className="mx-auto mb-1 h-4 w-4 text-primary" />
+              <span className="text-[11px] font-medium text-muted-foreground">{f.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
