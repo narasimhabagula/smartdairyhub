@@ -54,6 +54,7 @@ const CATEGORIES = [
   { id: "feed", label: "Feed", icon: Wheat },
   { id: "minerals", label: "Minerals", icon: FlaskConical },
   { id: "supplements", label: "Supplements", icon: Pill },
+  { id: "medicine", label: "Medical Store", icon: Pill },
   { id: "equipment", label: "Equipment", icon: Truck },
 ];
 
@@ -65,10 +66,12 @@ const CATEGORY_MAP: Record<string, string[]> = {
   butter: ["butter"],
   feed: ["feed", "cattle_feed", "fodder"],
   minerals: ["minerals", "mineral_mix"],
-  supplements: ["supplements", "medicine", "medicines"],
+  supplements: ["supplements"],
+  medicine: ["medicine", "medicines", "vaccine", "vaccines", "first_aid"],
   equipment: ["equipment"],
   sweets: ["sweets"],
 };
+
 const ALLOWED_CATEGORIES = Object.values(CATEGORY_MAP).flat();
 
 const SORTS = [
