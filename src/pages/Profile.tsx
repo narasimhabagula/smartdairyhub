@@ -274,8 +274,10 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
+
 }
 
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
