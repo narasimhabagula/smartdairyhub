@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import MobilePageHero from "@/components/MobilePageHero";
 import heroFeed from "@/assets/card-feed.jpg";
+import bannerMarketplace from "@/assets/banner-marketplace.jpg";
+import bannerMedical from "@/assets/banner-medical.jpg";
+import phFeed from "@/assets/ph-feed.jpg";
+import phMedicine from "@/assets/ph-medicine.jpg";
+
 import { demoProducts } from "@/data/demo/products";
 import { USE_DEMO_DATA } from "@/data/demo";
 
@@ -54,6 +59,7 @@ const CATEGORIES = [
   { id: "feed", label: "Feed", icon: Wheat },
   { id: "minerals", label: "Minerals", icon: FlaskConical },
   { id: "supplements", label: "Supplements", icon: Pill },
+  { id: "medicine", label: "Medical Store", icon: Pill },
   { id: "equipment", label: "Equipment", icon: Truck },
 ];
 
@@ -65,11 +71,23 @@ const CATEGORY_MAP: Record<string, string[]> = {
   butter: ["butter"],
   feed: ["feed", "cattle_feed", "fodder"],
   minerals: ["minerals", "mineral_mix"],
-  supplements: ["supplements", "medicine", "medicines"],
+  supplements: ["supplements"],
+  medicine: ["medicine", "medicines", "vaccine", "vaccines", "first_aid"],
   equipment: ["equipment"],
   sweets: ["sweets"],
 };
+
 const ALLOWED_CATEGORIES = Object.values(CATEGORY_MAP).flat();
+
+/** Premium fallback imagery so no product card ever renders empty. */
+function placeholderFor(category?: string | null) {
+  const c = (category || "").toLowerCase();
+  if (["medicine", "medicines", "vaccine", "vaccines", "first_aid", "supplements", "minerals", "mineral_mix"].includes(c)) {
+    return phMedicine;
+  }
+  return phFeed;
+}
+
 
 const SORTS = [
   { id: "newest", label: "Newest first" },
@@ -295,6 +313,48 @@ export default function Marketplace() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <MobilePageHero image={heroFeed} eyebrow="Verified Sellers" title="Feed & Supplies" subtitle="Premium cattle feed and vet medicines" />
+
+      {/* Premium marketplace hero banner */}
+      <section className="px-4 pt-4 md:container md:pt-8">
+        <div className="relative overflow-hidden rounded-3xl shadow-xl">
+          <img
+            src={bannerMarketplace}
+            alt="Premium dairy farm supplies"
+            width={1600}
+            height={900}
+            className="h-48 w-full object-cover sm:h-64 md:h-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
+          <div className="absolute inset-y-0 left-0 flex max-w-[80%] flex-col justify-center gap-2 p-5 text-white sm:p-8">
+            <span className="w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest backdrop-blur">
+              Trusted by 50,000+ farmers
+            </span>
+            <h2 className="font-display text-xl font-bold leading-tight sm:text-3xl md:text-4xl">
+              Everything Your Dairy Farm Needs
+            </h2>
+            <p className="max-w-md text-xs text-white/85 sm:text-sm">
+              Feed, minerals, silage, medicines and equipment — delivered to your village.
+            </p>
+            <Button size="lg" className="mt-1 w-fit rounded-full shadow-lg" onClick={() => setTab("feed")}>
+              Shop Now <Sparkles className="ml-1.5 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Medical Store strip */}
+        <button
+          type="button"
+          onClick={() => setTab("medicine")}
+          className="mt-3 flex w-full items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <img src={bannerMedical} alt="Medical store" loading="lazy" className="h-20 w-28 shrink-0 object-cover sm:h-24 sm:w-40" />
+          <div className="py-2 pr-3">
+            <p className="text-sm font-bold sm:text-base">Medical Store</p>
+            <p className="text-xs text-muted-foreground">Vaccines · Mineral mixtures · First aid kits</p>
+          </div>
+        </button>
+      </section>
+
       <section className="hidden border-b bg-card md:block">
         <div className="container py-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -487,14 +547,10 @@ function ProductCard({
     <Card className="group flex flex-col overflow-hidden rounded-2xl border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-xl">
       <button type="button" onClick={onDetails} aria-label="View details"
         className="relative block aspect-[4/3] overflow-hidden bg-muted text-left">
-        {p.image_url ? (
-          <img src={p.image_url} alt={p.name} loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <Sparkles className="h-10 w-10 opacity-40" />
-          </div>
-        )}
+        <img src={p.image_url || placeholderFor(p.category)} alt={p.name} loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderFor(p.category); }} />
+
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           {discount > 0 && (
             <Badge className="bg-rose-500 text-white hover:bg-rose-500">{discount}% OFF</Badge>
@@ -603,13 +659,9 @@ function ProductDetailsDialog({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-            {p.image_url ? (
-              <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                <Sparkles className="h-10 w-10 opacity-40" />
-              </div>
-            )}
+            <img src={p.image_url || placeholderFor(p.category)} alt={p.name} className="h-full w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderFor(p.category); }} />
+
           </div>
 
           <div className="space-y-3">

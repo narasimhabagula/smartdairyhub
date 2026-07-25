@@ -70,7 +70,7 @@ const QUICK_ACTIONS = [
   { to: "/cattle-market?type=buffalo", label: "Buffalo Marketplace", img: ic_buffalo },
   { to: "/dashboard", label: "Dairy Analytics", img: ic_analytics },
   { to: "/notifications", label: "Smart Alerts", img: ic_alerts },
-  { to: "/vet-contacts", label: "Medical Stores", img: ic_medicalStores },
+  { to: "/marketplace?category=medicine", label: "Medical Store", img: ic_medicalStores },
   { to: "/dashboard", label: "Milk Collection", img: ic_milkCollection },
   { to: "/dashboard", label: "Milk Transport", img: ic_milkTransport },
   { to: "/dashboard", label: "Health Monitoring", img: ic_health },

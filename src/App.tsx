@@ -86,7 +86,7 @@ const App = () => (
                   <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/disease-detection" element={<DiseaseDetection />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path="/select-role" element={<SelectRole />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/milk-rates" element={<MilkRates />} />
