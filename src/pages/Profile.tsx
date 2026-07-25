@@ -108,20 +108,62 @@ export default function Profile() {
 
   const initials = useMemo(() => (fullName || "U").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase(), [fullName]);
 
-  if (!user) return <div className="container py-10">Please <Link to="/login" className="text-primary underline">sign in</Link> to view your profile.</div>;
+  if (!user) return <SignedOutProfile />;
+
+  const locationLabel = [extras.village, extras.mandal, extras.district, extras.state].filter(Boolean).join(", ");
 
   return (
-    <div className="container max-w-4xl py-6">
-      <header className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">Farmer Profile</h1>
-          <p className="text-sm text-muted-foreground">Manage your personal info, farm and dairy details.</p>
-        </div>
-        <Button onClick={save} disabled={saving}><Save className="mr-2 h-4 w-4" /> {saving ? "Saving…" : "Save changes"}</Button>
-      </header>
+    <div className="relative">
+      {/* Premium blurred farm backdrop */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[320px] overflow-hidden">
+        <img src={farmBg} alt="" width={1600} height={912} className="h-full w-full scale-105 object-cover blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/25 via-background/70 to-background" />
+      </div>
+
+      <div className="container relative max-w-4xl py-6">
+        {/* Hero identity card */}
+        <section className="mb-6 overflow-hidden rounded-3xl border border-white/40 bg-white/60 p-5 shadow-xl backdrop-blur-xl dark:bg-card/60">
+          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-primary/10 ring-4 ring-primary/25">
+              {extras.avatar_url ? (
+                <img src={extras.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <img src={farmerAvatar} alt="" width={1024} height={1024} loading="lazy" className="h-full w-full object-cover" />
+              )}
+              <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-primary p-1.5 text-primary-foreground shadow-md hover:opacity-90">
+                <Camera className="h-3.5 w-3.5" />
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onAvatarFile(e.target.files[0])} />
+              </label>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <h1 className="font-display text-2xl font-bold sm:text-3xl">{fullName || "Add your name"}</h1>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                  <ShieldCheck className="h-3 w-3" /> Verified Farmer
+                </span>
+              </div>
+              {extras.farm_name && <p className="text-sm font-medium text-primary">{extras.farm_name}</p>}
+              <p className="mt-0.5 flex flex-wrap items-center justify-center gap-1 text-xs text-muted-foreground sm:justify-start">
+                <MapPin className="h-3.5 w-3.5" /> {locationLabel || "Add your village & district"}
+              </p>
+              <p className="text-xs text-muted-foreground break-all">{user.email}</p>
+            </div>
+            <Button onClick={save} disabled={saving} className="rounded-full shadow-md">
+              <Save className="mr-2 h-4 w-4" /> {saving ? "Saving…" : "Save"}
+            </Button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Stat label="Cows" value={extras.cow_count ?? 0} />
+            <Stat label="Buffalo" value={extras.buffalo_count ?? 0} />
+            <Stat label="Poultry" value={extras.poultry_count ?? 0} />
+            <Stat label="Saved" value={favListings} />
+          </div>
+        </section>
 
       <div className="grid gap-5 md:grid-cols-[260px_1fr]">
         {/* Avatar card */}
+
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-5">
             <div className="relative h-28 w-28 overflow-hidden rounded-full bg-primary/10 ring-4 ring-primary/20">
