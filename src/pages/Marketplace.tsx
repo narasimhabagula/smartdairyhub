@@ -79,6 +79,16 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 const ALLOWED_CATEGORIES = Object.values(CATEGORY_MAP).flat();
 
+/** Premium fallback imagery so no product card ever renders empty. */
+function placeholderFor(category?: string | null) {
+  const c = (category || "").toLowerCase();
+  if (["medicine", "medicines", "vaccine", "vaccines", "first_aid", "supplements", "minerals", "mineral_mix"].includes(c)) {
+    return phMedicine;
+  }
+  return phFeed;
+}
+
+
 const SORTS = [
   { id: "newest", label: "Newest first" },
   { id: "price_asc", label: "Price: Lowest first" },
