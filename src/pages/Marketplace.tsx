@@ -325,7 +325,7 @@ export default function Marketplace() {
             <p className="max-w-md text-xs text-white/85 sm:text-sm">
               Feed, minerals, silage, medicines and equipment — delivered to your village.
             </p>
-            <Button size="lg" className="mt-1 w-fit rounded-full shadow-lg" onClick={() => setCategory("feed")}>
+            <Button size="lg" className="mt-1 w-fit rounded-full shadow-lg" onClick={() => setTab("feed")}>
               Shop Now <Sparkles className="ml-1.5 h-4 w-4" />
             </Button>
           </div>
@@ -334,7 +334,7 @@ export default function Marketplace() {
         {/* Medical Store strip */}
         <button
           type="button"
-          onClick={() => setCategory("medicine")}
+          onClick={() => setTab("medicine")}
           className="mt-3 flex w-full items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
         >
           <img src={bannerMedical} alt="Medical store" loading="lazy" className="h-20 w-28 shrink-0 object-cover sm:h-24 sm:w-40" />
