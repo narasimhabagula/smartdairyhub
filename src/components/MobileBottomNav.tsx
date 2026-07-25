@@ -1,13 +1,15 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Store, Stethoscope, User } from "lucide-react";
+import { Home, Store, Stethoscope, User, Landmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
-  { to: "/marketplace", label: "Marketplace", icon: Store, match: (p: string) => p.startsWith("/marketplace") || p.startsWith("/cattle-market") },
+  { to: "/marketplace", label: "Market", icon: Store, match: (p: string) => p.startsWith("/marketplace") || p.startsWith("/cattle-market") },
   { to: "/vet-contacts", label: "Doctors", icon: Stethoscope, match: (p: string) => p.startsWith("/vet-contacts") },
+  { to: "/schemes", label: "Subsidies", icon: Landmark, match: (p: string) => p.startsWith("/schemes") },
   { to: "/profile", label: "Profile", icon: User, match: (p: string) => p.startsWith("/profile") || p.startsWith("/settings") || p.startsWith("/dashboard") },
 ];
+
 
 export default function MobileBottomNav() {
   const location = useLocation();
@@ -18,7 +20,7 @@ export default function MobileBottomNav() {
         aria-label="Primary"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)] backdrop-blur-xl"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-4">
+        <ul className="mx-auto grid max-w-md grid-cols-5">
           {TABS.map((t) => {
             const active = t.match(location.pathname);
             const Icon = t.icon;
