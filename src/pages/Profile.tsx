@@ -7,13 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   User as UserIcon, Save, MapPin, Phone, Mail, Languages as LangIcon,
-  Milk, Wheat, Stethoscope, Heart, IndianRupee, Camera, ShoppingCart,
+  Milk, Wheat, Stethoscope, Heart, IndianRupee, Camera, ShoppingCart, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { Link } from "react-router-dom";
+import farmBg from "@/assets/bg-farm-soft.jpg";
+import farmerAvatar from "@/assets/farmer-avatar.png";
+
 
 type FarmExtras = {
   avatar_url?: string;
