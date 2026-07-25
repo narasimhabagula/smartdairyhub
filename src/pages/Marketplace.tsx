@@ -537,14 +537,10 @@ function ProductCard({
     <Card className="group flex flex-col overflow-hidden rounded-2xl border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-xl">
       <button type="button" onClick={onDetails} aria-label="View details"
         className="relative block aspect-[4/3] overflow-hidden bg-muted text-left">
-        {p.image_url ? (
-          <img src={p.image_url} alt={p.name} loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <Sparkles className="h-10 w-10 opacity-40" />
-          </div>
-        )}
+        <img src={p.image_url || placeholderFor(p.category)} alt={p.name} loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderFor(p.category); }} />
+
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           {discount > 0 && (
             <Badge className="bg-rose-500 text-white hover:bg-rose-500">{discount}% OFF</Badge>
