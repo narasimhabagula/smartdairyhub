@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { toast } from "sonner";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { Link } from "react-router-dom";
@@ -25,6 +25,7 @@ type FarmExtras = {
   mandal?: string;
   district?: string;
   state?: string;
+  pin_code?: string;
   farm_name?: string;
   dairy_type?: string;
   total_animals?: number;
@@ -222,6 +223,7 @@ export default function Profile() {
               <Field label="Mandal"><Input value={extras.mandal || ""} onChange={(e) => updateExtra("mandal", e.target.value)} /></Field>
               <Field label="District"><Input value={extras.district || ""} onChange={(e) => updateExtra("district", e.target.value)} /></Field>
               <Field label="State"><Input value={extras.state || ""} onChange={(e) => updateExtra("state", e.target.value)} /></Field>
+              <Field label="PIN Code"><Input inputMode="numeric" maxLength={6} value={extras.pin_code || ""} onChange={(e) => updateExtra("pin_code", e.target.value.replace(/\D/g, "").slice(0, 6))} /></Field>
             </CardContent>
           </Card>
 
@@ -281,20 +283,9 @@ export default function Profile() {
 }
 
 function SignedOutProfile() {
-  const [busy, setBusy] = useState(false);
+  const { openAuth } = useAuthModal();
 
-  const google = async () => {
-    setBusy(true);
-    try {
-      sessionStorage.setItem("postLoginRedirect", "/profile");
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-      if (result.error) toast.error((result.error as any).message || "Google sign-in failed");
-    } catch (e: any) {
-      toast.error(e?.message || "Google sign-in failed");
-    } finally {
-      setBusy(false);
-    }
-  };
+  useEffect(() => { openAuth("/profile"); }, [openAuth]);
 
   return (
     <div className="relative flex min-h-[80svh] items-center justify-center overflow-hidden px-4 py-10">
@@ -319,25 +310,13 @@ function SignedOutProfile() {
           </p>
 
           <div className="mt-6 space-y-2.5">
-            <Button onClick={google} disabled={busy} variant="outline" className="h-12 w-full rounded-xl bg-background/80 text-base">
-              <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-hidden>
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
-                <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
-              </svg>
-              Continue with Google
-            </Button>
-            <Button asChild className="h-12 w-full rounded-xl text-base shadow-md">
-              <Link to="/login?method=phone"><Phone className="mr-2 h-4 w-4" /> Continue with Phone</Link>
-            </Button>
-            <Button asChild variant="ghost" className="h-12 w-full rounded-xl text-base">
-              <Link to="/login"><Mail className="mr-2 h-4 w-4" /> Continue with Email</Link>
+            <Button onClick={() => openAuth("/profile")} className="h-12 w-full rounded-2xl text-base font-semibold shadow-lg transition-transform duration-200 hover:-translate-y-0.5">
+              Sign In / Create Account
             </Button>
           </div>
 
           <p className="mt-5 text-[11px] text-muted-foreground">
-            New here? <Link to="/login" className="font-semibold text-primary underline-offset-4 hover:underline">Create a free farmer account</Link>
+            Secure authentication • Google protected • Trusted by farmers
           </p>
         </div>
 
