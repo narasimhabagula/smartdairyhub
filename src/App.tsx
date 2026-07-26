@@ -70,7 +70,9 @@ const App = () => (
       <BrowserRouter>
         <ThemeProvider>
         <AuthProvider>
+          <AuthModalProvider>
           <CartProvider>
+
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
               <div className="hidden">
