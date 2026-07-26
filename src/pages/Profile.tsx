@@ -96,7 +96,7 @@ export default function Profile() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const location = [extras.village, extras.mandal, extras.district, extras.state].filter(Boolean).join(", ");
+    const location = [extras.village, extras.mandal, extras.district, extras.state, extras.pin_code].filter(Boolean).join(", ");
     const { error } = await supabase.from("profiles").update({
       full_name: fullName, phone, language, location,
     } as any).eq("user_id", user.id);
@@ -111,7 +111,7 @@ export default function Profile() {
 
   if (!user) return <SignedOutProfile />;
 
-  const locationLabel = [extras.village, extras.mandal, extras.district, extras.state].filter(Boolean).join(", ");
+  const locationLabel = [extras.village, extras.mandal, extras.district, extras.state, extras.pin_code].filter(Boolean).join(", ");
 
   return (
     <div className="relative">
