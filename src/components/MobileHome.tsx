@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { demoProducts } from "@/data/demo/products";
@@ -119,6 +120,7 @@ const FEATURE_CARDS = [
 
 export default function MobileHome() {
   const { user, profile } = useAuth();
+  const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [bannerIdx, setBannerIdx] = useState(0);
@@ -171,7 +173,7 @@ export default function MobileHome() {
             </DropdownMenu>
             {/* Notifications */}
             <button
-              onClick={() => navigate(user ? "/notifications" : "/login")}
+              onClick={() => (user ? navigate("/notifications") : openAuth("/notifications"))}
               aria-label="Notifications"
               className="relative flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
             >
@@ -180,7 +182,7 @@ export default function MobileHome() {
             </button>
             {/* Profile */}
             <button
-              onClick={() => navigate(user ? "/profile" : "/login")}
+              onClick={() => (user ? navigate("/profile") : openAuth("/profile"))}
               aria-label="Profile"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground"
             >

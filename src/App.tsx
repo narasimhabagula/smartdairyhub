@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import JerryFab from "./components/JerryFab";
 import LanguagePicker from "./components/LanguagePicker";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthModalProvider } from "./components/auth/AuthModalProvider";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import MilkCalculator from "./pages/MilkCalculator";
@@ -137,6 +138,7 @@ const App = () => (
               <MobileBottomNav />
             </div>
           </CartProvider>
+          </AuthModalProvider>
         </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>
