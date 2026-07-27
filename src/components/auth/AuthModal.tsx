@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { z } from "zod";
-import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck, Sparkles, User as UserIcon, X } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck, User as UserIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
