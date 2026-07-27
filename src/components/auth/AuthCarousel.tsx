@@ -75,7 +75,7 @@ export default function AuthCarousel() {
             src={s.img}
             alt={s.title}
             loading={idx === 0 ? "eager" : "lazy"}
-            fetchPriority={idx === 0 ? "high" : "auto"}
+            {...(idx === 0 ? { fetchpriority: "high" } as any : {})}
             decoding="async"
             className={`absolute inset-0 h-full w-full object-contain object-center transition-transform duration-[6000ms] ease-out ${
               idx === i ? "scale-[1.04]" : "scale-100"
