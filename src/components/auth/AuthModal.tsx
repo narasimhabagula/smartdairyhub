@@ -159,7 +159,7 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
           </Dialog.Description>
 
           {/* Left — premium carousel (desktop) */}
-          <div className="relative hidden min-h-[560px] md:block">
+          <div className="relative hidden min-h-[560px] overflow-hidden md:block lg:min-h-[620px]">
             <AuthCarousel />
             <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary shadow-lg backdrop-blur">
               <img src="/logo.png" alt="" className="h-4 w-4 object-contain" /> Smart Dairy Hub
@@ -176,7 +176,7 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
             </Dialog.Close>
 
             {/* Mobile carousel — fixed aspect ratio, no layout shift */}
-            <div className="relative aspect-[16/9] w-full overflow-hidden md:hidden">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-b-[24px] sm:aspect-[16/10] md:hidden">
               <AuthCarousel />
               <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary shadow backdrop-blur">
                 <img src="/logo.png" alt="" className="h-3.5 w-3.5 object-contain" /> Smart Dairy Hub
