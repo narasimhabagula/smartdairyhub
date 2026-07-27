@@ -283,9 +283,25 @@ export default function Profile() {
 }
 
 function SignedOutProfile() {
-  const { openAuth } = useAuthModal();
+  const { openAuth, isAuthOpen } = useAuthModal();
+  const navigate = useNavigate();
+  const openedRef = useRef(false);
 
-  useEffect(() => { openAuth("/profile"); }, [openAuth]);
+  useEffect(() => {
+    if (!openedRef.current) {
+      openedRef.current = true;
+      openAuth("/profile");
+    }
+  }, [openAuth]);
+
+  // If the user dismisses the modal without signing in, go back Home
+  useEffect(() => {
+    if (openedRef.current && !isAuthOpen) {
+      const t = setTimeout(() => navigate("/", { replace: true }), 150);
+      return () => clearTimeout(t);
+    }
+  }, [isAuthOpen, navigate]);
+
 
   return (
     <div className="relative flex min-h-[80svh] items-center justify-center overflow-hidden px-4 py-10">
