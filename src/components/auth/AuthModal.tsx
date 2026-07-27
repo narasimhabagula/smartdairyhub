@@ -158,7 +158,7 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
             Sign in with Google or your email to continue your Smart Dairy Hub experience.
           </Dialog.Description>
 
-          {/* Left — premium carousel */}
+          {/* Left — premium carousel (desktop) */}
           <div className="relative hidden min-h-[560px] md:block">
             <AuthCarousel />
             <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary shadow-lg backdrop-blur">
@@ -167,19 +167,24 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
           </div>
 
           {/* Right — authentication */}
-          <div className="relative overflow-y-auto px-6 py-7 sm:px-8">
+          <div className="relative overflow-y-auto">
             <Dialog.Close
-              className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="absolute right-3 top-3 z-20 rounded-full bg-background/80 p-2 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:bg-transparent md:shadow-none"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
             </Dialog.Close>
 
-            <div className="md:hidden">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                <Sparkles className="h-3 w-3" /> Smart Dairy Hub
-              </span>
+            {/* Mobile carousel — fixed aspect ratio, no layout shift */}
+            <div className="relative aspect-[16/9] w-full overflow-hidden md:hidden">
+              <AuthCarousel />
+              <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary shadow backdrop-blur">
+                <img src="/logo.png" alt="" className="h-3.5 w-3.5 object-contain" /> Smart Dairy Hub
+              </div>
             </div>
+
+            <div className="px-6 py-6 sm:px-8 sm:py-7">
+
 
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight sm:text-[28px]">
               {mode === "signin" ? "Welcome Back" : "Create your account"}
