@@ -335,7 +335,9 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
                 </li>
               ))}
             </ul>
+            </div>
           </div>
+
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
