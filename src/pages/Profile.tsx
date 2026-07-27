@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -283,9 +285,25 @@ export default function Profile() {
 }
 
 function SignedOutProfile() {
-  const { openAuth } = useAuthModal();
+  const { openAuth, isAuthOpen } = useAuthModal();
+  const navigate = useNavigate();
+  const openedRef = useRef(false);
 
-  useEffect(() => { openAuth("/profile"); }, [openAuth]);
+  useEffect(() => {
+    if (!openedRef.current) {
+      openedRef.current = true;
+      openAuth("/profile");
+    }
+  }, [openAuth]);
+
+  // If the user dismisses the modal without signing in, go back Home
+  useEffect(() => {
+    if (openedRef.current && !isAuthOpen) {
+      const t = setTimeout(() => navigate("/", { replace: true }), 150);
+      return () => clearTimeout(t);
+    }
+  }, [isAuthOpen, navigate]);
+
 
   return (
     <div className="relative flex min-h-[80svh] items-center justify-center overflow-hidden px-4 py-10">

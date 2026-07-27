@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AuthModalCtx {
   openAuth: (redirectTo?: string) => void;
   closeAuth: () => void;
+  isAuthOpen: boolean;
 }
 
-const Ctx = createContext<AuthModalCtx>({ openAuth: () => {}, closeAuth: () => {} });
+const Ctx = createContext<AuthModalCtx>({ openAuth: () => {}, closeAuth: () => {}, isAuthOpen: false });
 
 export const useAuthModal = () => useContext(Ctx);
 
@@ -28,9 +29,10 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   return (
-    <Ctx.Provider value={{ openAuth, closeAuth }}>
+    <Ctx.Provider value={{ openAuth, closeAuth, isAuthOpen: open }}>
       {children}
       <AuthModal open={open} onOpenChange={setOpen} redirectTo={redirectTo} />
     </Ctx.Provider>
   );
 }
+
