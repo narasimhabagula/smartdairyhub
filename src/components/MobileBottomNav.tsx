@@ -49,7 +49,7 @@ export default function MobileBottomNav() {
         </ul>
       </nav>
       {/* Spacer so page content isn't hidden behind fixed nav on mobile */}
-      <div aria-hidden className="h-16" />
+      <div aria-hidden className="h-16 md:hidden" />
     </>
   );
 }
