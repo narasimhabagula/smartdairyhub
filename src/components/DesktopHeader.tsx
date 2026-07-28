@@ -39,7 +39,7 @@ export default function DesktopHeader() {
           <span className="font-display text-lg font-bold text-primary lg:text-xl">Smart Dairy Hub</span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden shrink-0 items-center gap-1 xl:flex">
+        <nav aria-label="Primary" className="hidden shrink-0 items-center gap-1 2xl:flex">
           {DESKTOP_NAV.map((n) => (
             <NavLink
               key={n.to}
@@ -56,7 +56,7 @@ export default function DesktopHeader() {
           ))}
         </nav>
 
-        <div className="min-w-[200px] flex-1">
+        <div className="min-w-[220px] flex-1 lg:max-w-2xl">
           <SmartHeroSearch />
         </div>
 
