@@ -103,10 +103,10 @@ export const FEATURE_CARDS = [
 ];
 
 export const DESKTOP_NAV = [
-  { to: "/marketplace", label: "Marketplace" },
-  { to: "/cattle-market", label: "Cattle Market" },
-  { to: "/milk-rates", label: "Milk Rates" },
-  { to: "/vet-contacts", label: "Veterinary" },
+  { to: "/marketplace", label: "Market" },
+  { to: "/cattle-market", label: "Cattle" },
+  { to: "/milk-rates", label: "Rates" },
+  { to: "/vet-contacts", label: "Vets" },
   { to: "/schemes", label: "Schemes" },
   { to: "/disease-detection", label: "AI Scan" },
 ];
