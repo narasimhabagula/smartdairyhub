@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Check, Languages, Search, Sparkles } from "lucide-react";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY_PICKED = "sdh_language_picked";
@@ -58,9 +59,13 @@ export default function LanguageSelect() {
           .from("profiles")
           .update({ language: selected } as any)
           .eq("user_id", user.id);
+        const next = params.get("next") || "/dashboard";
+        navigate(next, { replace: true });
+      } else {
+        // Guests continue to the login experience before browsing.
+        navigate("/", { replace: true });
+        openAuth(params.get("next") || "/");
       }
-      const next = params.get("next") || "/dashboard";
-      navigate(next, { replace: true });
     } finally {
       setSaving(false);
     }
