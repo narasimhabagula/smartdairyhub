@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
+import DesktopHeader from "./components/DesktopHeader";
 import Footer from "./components/Footer";
 import JerryFab from "./components/JerryFab";
 import LanguagePicker from "./components/LanguagePicker";
@@ -80,6 +81,7 @@ const App = () => (
                 <Navbar />
               </div>
 
+              <DesktopHeader />
               <NotificationBanners />
               <main className="flex-1">
                 <Routes>
