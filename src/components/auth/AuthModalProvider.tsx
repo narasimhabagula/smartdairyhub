@@ -31,21 +31,25 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, []);
   const closeAuth = useCallback(() => setOpen(false), []);
 
-  // First-visit gate: after the splash, present the login experience.
+  // Onboarding gate: splash → language selection → login.
+  // Only fires once the visitor has picked a language.
   useEffect(() => {
     if (loading || user) return;
+    if (location.pathname.startsWith("/welcome/language")) return;
     let seen = true;
+    let langPicked = false;
     try {
       seen = sessionStorage.getItem(GATE_KEY) === "1";
+      langPicked = localStorage.getItem("sdh_language_picked") === "1";
     } catch {}
-    if (seen) return;
+    if (seen || !langPicked) return;
     const t = setTimeout(() => {
       isGate.current = true;
       setRedirectTo("/");
       setOpen(true);
     }, SPLASH_MS);
     return () => clearTimeout(t);
-  }, [loading, user]);
+  }, [loading, user, location.pathname]);
 
   const handleOpenChange = useCallback(
     (v: boolean) => {

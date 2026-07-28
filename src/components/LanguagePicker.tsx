@@ -18,19 +18,19 @@ export default function LanguagePicker() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!user) return;
     if (location.pathname.startsWith("/welcome/language")) return;
 
     const picked = localStorage.getItem(STORAGE_KEY_PICKED);
     const profileLang = (profile as any)?.language as LanguageCode | undefined;
 
-    if (profileLang && (LANGUAGE_CODES as string[]).includes(profileLang)) {
+    if (user && profileLang && (LANGUAGE_CODES as string[]).includes(profileLang)) {
       if (i18n.language?.slice(0, 2) !== profileLang) i18n.changeLanguage(profileLang);
       localStorage.setItem(STORAGE_KEY_PICKED, "1");
       localStorage.setItem(STORAGE_KEY_LANG, profileLang);
       return;
     }
 
+    // First-ever visit (guest or signed in): choose a language before anything else.
     if (!picked) {
       const next = encodeURIComponent(location.pathname + location.search);
       navigate(`/welcome/language?next=${next}`, { replace: true });
