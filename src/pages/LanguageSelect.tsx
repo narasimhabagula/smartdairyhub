@@ -29,6 +29,7 @@ const FLAGS: Record<string, string> = {
 export default function LanguageSelect() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [query, setQuery] = useState("");

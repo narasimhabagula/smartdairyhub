@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import farmerPhone from "@/assets/auth/farmer-phone-portrait.jpg";
+import farmerPro from "@/assets/auth/farmer-pro-portrait.jpg";
 import vetPortrait from "@/assets/auth/vet-portrait.jpg";
 import smartFarm from "@/assets/auth/smart-farm-portrait.jpg";
-import farmerWoman from "@/assets/auth/farmer-woman-app.jpg";
 import heroCows from "@/assets/hero-cows.jpg";
-import diseaseHero from "@/assets/disease-hero.jpg";
-import bannerMarketplace from "@/assets/banner-marketplace.jpg";
-import bannerMilk from "@/assets/banner-milk.jpg";
-import bannerSchemes from "@/assets/banner-schemes.jpg";
-import cardFeed from "@/assets/card-feed.jpg";
 
 const SLIDES = [
-  { img: farmerPhone, title: "Welcome to Smart Dairy Hub", sub: "Trusted by dairy farmers across India." },
-  { img: farmerWoman, title: "Farmers Using Smart Dairy Hub", sub: "Manage your herd from one simple app." },
-  { img: heroCows, title: "Healthy Dairy Cows", sub: "Holstein Friesian, Gir, Murrah and more." },
-  { img: vetPortrait, title: "Veterinarian Checking Cattle", sub: "Qualified doctors near your village, anytime." },
-  { img: diseaseHero, title: "AI Disease Detection", sub: "Scan your animal and get answers in seconds." },
-  { img: bannerMilk, title: "Live Milk Rates", sub: "Compare FAT & SNF rates across centres." },
-  { img: bannerMarketplace, title: "Dairy Marketplace", sub: "Buy and sell verified cattle safely." },
-  { img: bannerSchemes, title: "Government Schemes", sub: "Subsidies and loans, explained simply." },
-  { img: cardFeed, title: "Dairy Feed & Supplies", sub: "Quality feed, minerals and nutrition delivered." },
-  { img: smartFarm, title: "Modern Smart Dairy Farm", sub: "Data-driven farming for higher yield." },
+  { img: farmerPro, title: "Welcome to Smart Dairy Hub", sub: "Trusted by dairy farmers across India." },
+  { img: heroCows, title: "Healthy, Productive Herds", sub: "Holstein Friesian, Gir, Murrah and more." },
+  { img: vetPortrait, title: "Vets Near Your Village", sub: "Qualified doctors, available when you need them." },
+  { img: smartFarm, title: "Modern Smart Dairy Farms", sub: "Data-driven farming for higher yield." },
 ];
 
 const INTERVAL = 5000;
