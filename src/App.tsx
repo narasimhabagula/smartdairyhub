@@ -10,7 +10,6 @@ import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import DesktopHeader from "./components/DesktopHeader";
 import Footer from "./components/Footer";
-import JerryFab from "./components/JerryFab";
 import LanguagePicker from "./components/LanguagePicker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthModalProvider } from "./components/auth/AuthModalProvider";
@@ -54,7 +53,9 @@ import Careers from "./pages/Careers";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
-import AIChat from "./pages/AIChat";
+import JerryDemo from "./pages/JerryDemo";
+import JerryBot from "./components/JerryBot/JerryBot";
+import { JerryProvider } from "./context/JerryContext";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import LanguageSelect from "./pages/LanguageSelect";
@@ -74,6 +75,7 @@ const App = () => (
         <AuthProvider>
           <AuthModalProvider>
           <CartProvider>
+            <JerryProvider>
 
             <LanguagePicker />
             <div className="flex min-h-screen flex-col">
@@ -88,7 +90,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<SearchResults />} />
                   <Route path="/welcome/language" element={<LanguageSelect />} />
-                  <Route path="/ai-chat" element={<AIChat />} />
+                  <Route path="/ai-chat" element={<JerryDemo />} />
                   <Route path="/disease-detection" element={<DiseaseDetection />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/profile" element={<Profile />} />
@@ -136,9 +138,10 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
-              <JerryFab />
+              <JerryBot />
               <MobileBottomNav />
             </div>
+            </JerryProvider>
           </CartProvider>
           </AuthModalProvider>
         </AuthProvider>
