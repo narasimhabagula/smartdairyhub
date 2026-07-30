@@ -3,67 +3,92 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
-import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import DesktopHeader from "./components/DesktopHeader";
 import Footer from "./components/Footer";
 import LanguagePicker from "./components/LanguagePicker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthModalProvider } from "./components/auth/AuthModalProvider";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import MilkCalculator from "./pages/MilkCalculator";
-import CattleMarket from "./pages/CattleMarket";
-import CattleNew from "./pages/CattleNew";
-import CattleDetail from "./pages/CattleDetail";
-import MyListings from "./pages/MyListings";
-import VetContacts from "./pages/VetContacts";
-import Schemes from "./pages/Schemes";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Marketplace from "./pages/Marketplace";
-import Cart from "./pages/Cart";
-import Orders from "./pages/Orders";
-import AddProduct from "./pages/AddProduct";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminContent from "./pages/AdminContent";
 import NotificationBanners from "./components/NotificationBanners";
-import SellerDashboard from "./pages/SellerDashboard";
-import SelectRole from "./pages/SelectRole";
-import MilkRates from "./pages/MilkRates";
-import IndustryPanel from "./pages/IndustryPanel";
-import MilkRateManagement from "./pages/MilkRateManagement";
-import MediatorPanel from "./pages/MediatorPanel";
-import VetDashboard from "./pages/VetDashboard";
-import BookVet from "./pages/BookVet";
-import MyAppointments from "./pages/MyAppointments";
-import Notifications from "./pages/Notifications";
-import HelpCenter from "./pages/HelpCenter";
-import Support from "./pages/Support";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Refund from "./pages/Refund";
-import Careers from "./pages/Careers";
-import Feedback from "./pages/Feedback";
-import NotFound from "./pages/NotFound";
-import SearchResults from "./pages/SearchResults";
-import JerryDemo from "./pages/JerryDemo";
+import SplashScreen from "./components/SplashScreen";
+import RouteFallback from "./components/RouteFallback";
 import JerryBot from "./components/JerryBot/JerryBot";
 import { JerryProvider } from "./context/JerryContext";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
+
+// Eager: first paint routes.
+import Index from "./pages/Index";
 import LanguageSelect from "./pages/LanguageSelect";
-import DiseaseDetection from "./pages/DiseaseDetection";
 
+// Lazy: everything else is code-split so the initial bundle stays small.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const MilkCalculator = lazy(() => import("./pages/MilkCalculator"));
+const CattleMarket = lazy(() => import("./pages/CattleMarket"));
+const CattleNew = lazy(() => import("./pages/CattleNew"));
+const CattleDetail = lazy(() => import("./pages/CattleDetail"));
+const MyListings = lazy(() => import("./pages/MyListings"));
+const VetContacts = lazy(() => import("./pages/VetContacts"));
+const Schemes = lazy(() => import("./pages/Schemes"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Orders = lazy(() => import("./pages/Orders"));
+const AddProduct = lazy(() => import("./pages/AddProduct"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminContent = lazy(() => import("./pages/AdminContent"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
+const SelectRole = lazy(() => import("./pages/SelectRole"));
+const MilkRates = lazy(() => import("./pages/MilkRates"));
+const IndustryPanel = lazy(() => import("./pages/IndustryPanel"));
+const MilkRateManagement = lazy(() => import("./pages/MilkRateManagement"));
+const MediatorPanel = lazy(() => import("./pages/MediatorPanel"));
+const VetDashboard = lazy(() => import("./pages/VetDashboard"));
+const BookVet = lazy(() => import("./pages/BookVet"));
+const MyAppointments = lazy(() => import("./pages/MyAppointments"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const Support = lazy(() => import("./pages/Support"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Refund = lazy(() => import("./pages/Refund"));
+const Careers = lazy(() => import("./pages/Careers"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const JerryDemo = lazy(() => import("./pages/JerryDemo"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Profile = lazy(() => import("./pages/Profile"));
+const DiseaseDetection = lazy(() => import("./pages/DiseaseDetection"));
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 60_000, gcTime: 5 * 60_000, refetchOnWindowFocus: false, retry: 1 } },
+});
 
-const queryClient = new QueryClient();
+/** Warms the chunks farmers reach first, during browser idle time. */
+function RoutePrefetcher() {
+  useEffect(() => {
+    const warm = () => {
+      import("./pages/MilkRates");
+      import("./pages/Marketplace");
+      import("./pages/DiseaseDetection");
+      import("./pages/VetContacts");
+      import("./pages/Schemes");
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+    const id = w.requestIdleCallback ? w.requestIdleCallback(warm) : window.setTimeout(warm, 2500);
+    return () => {
+      if (!w.requestIdleCallback) clearTimeout(id as number);
+    };
+  }, []);
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -72,79 +97,75 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ThemeProvider>
-        <AuthProvider>
-          <AuthModalProvider>
-          <CartProvider>
-            <JerryProvider>
-
-            <LanguagePicker />
-            <div className="flex min-h-screen flex-col">
-              <div className="hidden">
-                <Navbar />
-              </div>
-
-              <DesktopHeader />
-              <NotificationBanners />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/search" element={<SearchResults />} />
-                  <Route path="/welcome/language" element={<LanguageSelect />} />
-                  <Route path="/ai-chat" element={<JerryDemo />} />
-                  <Route path="/disease-detection" element={<DiseaseDetection />} />
-                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/select-role" element={<SelectRole />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/milk-rates" element={<MilkRates />} />
-                  <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
-                  <Route path="/milk-rate-management" element={<ProtectedRoute><MilkRateManagement /></ProtectedRoute>} />
-                  <Route path="/mediator" element={<ProtectedRoute><MediatorPanel /></ProtectedRoute>} />
-                  <Route path="/vet-dashboard" element={<ProtectedRoute><VetDashboard /></ProtectedRoute>} />
-                  <Route path="/book-vet" element={<ProtectedRoute><BookVet /></ProtectedRoute>} />
-                  <Route path="/my-appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
-
-
-
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/cattle-market" element={<CattleMarket />} />
-                  <Route path="/cattle-market/new" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
-                  <Route path="/cattle-market/:id" element={<CattleDetail />} />
-                  <Route path="/cattle-market/:id/edit" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
-                  <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
-                  <Route path="/vet-contacts" element={<VetContacts />} />
-                  <Route path="/schemes" element={<Schemes />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/milk-calculator" element={<MilkCalculator />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-                  <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
-                  <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
-                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><AdminContent /></ProtectedRoute>} />
-                  <Route path="/help" element={<HelpCenter />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/refund" element={<Refund />} />
-                  <Route path="/careers" element={<Careers />} />
-                  <Route path="/feedback" element={<Feedback />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-              <JerryBot />
-              <MobileBottomNav />
-            </div>
-            </JerryProvider>
-          </CartProvider>
-          </AuthModalProvider>
-        </AuthProvider>
+          <AuthProvider>
+            <AuthModalProvider>
+              <CartProvider>
+                <JerryProvider>
+                  <SplashScreen />
+                  <LanguagePicker />
+                  <RoutePrefetcher />
+                  <div className="flex min-h-screen flex-col">
+                    <DesktopHeader />
+                    <NotificationBanners />
+                    <main className="flex-1">
+                      <Suspense fallback={<RouteFallback />}>
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/search" element={<SearchResults />} />
+                          <Route path="/welcome/language" element={<LanguageSelect />} />
+                          <Route path="/ai-chat" element={<JerryDemo />} />
+                          <Route path="/disease-detection" element={<DiseaseDetection />} />
+                          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route path="/select-role" element={<SelectRole />} />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/milk-rates" element={<MilkRates />} />
+                          <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
+                          <Route path="/milk-rate-management" element={<ProtectedRoute><MilkRateManagement /></ProtectedRoute>} />
+                          <Route path="/mediator" element={<ProtectedRoute><MediatorPanel /></ProtectedRoute>} />
+                          <Route path="/vet-dashboard" element={<ProtectedRoute><VetDashboard /></ProtectedRoute>} />
+                          <Route path="/book-vet" element={<ProtectedRoute><BookVet /></ProtectedRoute>} />
+                          <Route path="/my-appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
+                          <Route path="/forgot-password" element={<ForgotPassword />} />
+                          <Route path="/reset-password" element={<ResetPassword />} />
+                          <Route path="/marketplace" element={<Marketplace />} />
+                          <Route path="/cattle-market" element={<CattleMarket />} />
+                          <Route path="/cattle-market/new" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
+                          <Route path="/cattle-market/:id" element={<CattleDetail />} />
+                          <Route path="/cattle-market/:id/edit" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
+                          <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
+                          <Route path="/vet-contacts" element={<VetContacts />} />
+                          <Route path="/schemes" element={<Schemes />} />
+                          <Route path="/cart" element={<Cart />} />
+                          <Route path="/milk-calculator" element={<MilkCalculator />} />
+                          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                          <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+                          <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+                          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                          <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><AdminContent /></ProtectedRoute>} />
+                          <Route path="/help" element={<HelpCenter />} />
+                          <Route path="/support" element={<Support />} />
+                          <Route path="/terms" element={<Terms />} />
+                          <Route path="/privacy" element={<Privacy />} />
+                          <Route path="/about" element={<About />} />
+                          <Route path="/contact" element={<Contact />} />
+                          <Route path="/refund" element={<Refund />} />
+                          <Route path="/careers" element={<Careers />} />
+                          <Route path="/feedback" element={<Feedback />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                    </main>
+                    <Footer />
+                    <JerryBot />
+                    <MobileBottomNav />
+                  </div>
+                </JerryProvider>
+              </CartProvider>
+            </AuthModalProvider>
+          </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
