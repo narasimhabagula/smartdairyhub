@@ -14,7 +14,7 @@ const Ctx = createContext<AuthModalCtx>({ openAuth: () => {}, closeAuth: () => {
 export const useAuthModal = () => useContext(Ctx);
 
 const GATE_KEY = "sdh_auth_gate_seen";
-const SPLASH_MS = 2400;
+const SPLASH_MS = 2000; // hands off right as the startup splash fades
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
