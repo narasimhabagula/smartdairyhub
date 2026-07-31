@@ -11,6 +11,7 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import DesktopHeader from "./components/DesktopHeader";
 import Footer from "./components/Footer";
 import LanguagePicker from "./components/LanguagePicker";
+import AutoTranslate from "./components/AutoTranslate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthModalProvider } from "./components/auth/AuthModalProvider";
 import NotificationBanners from "./components/NotificationBanners";
@@ -103,6 +104,7 @@ const App = () => (
                 <JerryProvider>
                   <SplashScreen />
                   <LanguagePicker />
+                  <AutoTranslate />
                   <RoutePrefetcher />
                   <div className="flex min-h-screen flex-col">
                     <DesktopHeader />
