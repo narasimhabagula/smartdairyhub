@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY_PICKED = "sdh_language_picked";
 const STORAGE_KEY_LANG = "i18nextLng";
+const STORAGE_KEY_PREF = "preferred_language";
 
 const FLAGS: Record<string, string> = {
   en: "🇬🇧",
@@ -55,6 +56,7 @@ export default function LanguageSelect() {
       await i18n.changeLanguage(selected);
       localStorage.setItem(STORAGE_KEY_PICKED, "1");
       localStorage.setItem(STORAGE_KEY_LANG, selected);
+      localStorage.setItem(STORAGE_KEY_PREF, selected);
       if (user) {
         await supabase
           .from("profiles")
@@ -81,9 +83,20 @@ export default function LanguageSelect() {
 
       <div className="container relative mx-auto max-w-4xl px-4 py-10 sm:py-16">
         <div className="text-center animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
-            <Languages className="h-8 w-8 text-primary" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Smart Dairy Hub"
+            width={88}
+            height={88}
+            className="mx-auto mb-4 h-20 w-20 rounded-full shadow-lg ring-2 ring-primary/20"
+          />
+          <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            <Languages className="h-3.5 w-3.5" />
+            Smart Dairy Hub
+          </p>
+          <p className="text-base font-medium text-foreground/80">
+            Welcome to Smart Dairy Hub
+          </p>
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">
             {t("picker.title", "Choose Your Language")}
           </h1>
@@ -94,6 +107,7 @@ export default function LanguageSelect() {
             )}
           </p>
         </div>
+
 
         <div className="mx-auto mt-8 max-w-md">
           <div className="relative">
@@ -108,7 +122,7 @@ export default function LanguageSelect() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div data-no-translate className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {filtered.map((lng, idx) => {
             const active = selected === lng.code;
             return (
