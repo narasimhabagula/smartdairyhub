@@ -56,6 +56,7 @@ export default function LanguageSelect() {
       await i18n.changeLanguage(selected);
       localStorage.setItem(STORAGE_KEY_PICKED, "1");
       localStorage.setItem(STORAGE_KEY_LANG, selected);
+      localStorage.setItem(STORAGE_KEY_PREF, selected);
       if (user) {
         await supabase
           .from("profiles")
