@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY_PICKED = "sdh_language_picked";
 const STORAGE_KEY_LANG = "i18nextLng";
+const STORAGE_KEY_PREF = "preferred_language";
 
 const FLAGS: Record<string, string> = {
   en: "🇬🇧",
