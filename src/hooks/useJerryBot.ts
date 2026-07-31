@@ -28,6 +28,8 @@ export function useJerryBot() {
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
   const [muted, setMuted] = useState(() => !loadVoiceSettings().enabled);
+  const { i18n } = useTranslation();
+  const siteLang = (i18n.language || "en").slice(0, 2) as JerryLangCode;
   const [lang, setLang] = useState<JerryLangCode>(() => {
     try {
       return (localStorage.getItem(JERRY_LANG_KEY) as JerryLangCode) || "en";
@@ -50,6 +52,14 @@ export function useJerryBot() {
       /* ignore */
     }
   }, [lang]);
+
+  // Jerry always speaks the language the website is set to.
+  useEffect(() => {
+    setLang((prev) => (prev === siteLang ? prev : siteLang));
+    cancelSpeech();
+    setSpeaking(false);
+  }, [siteLang]);
+
 
   const changeLanguage = useCallback((code: JerryLangCode) => {
     setLang(code);
