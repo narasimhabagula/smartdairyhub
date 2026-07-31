@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { askJerry } from "@/services/jerryAI";
+import { matchNavIntent } from "@/services/jerryNav";
 import { voiceTagFor, jt } from "@/services/translation";
 import { speakText, cancelSpeech, createRecognizer, isRecognitionSupported, requestMicPermission, primeVoices } from "@/services/speech";
 import { sanitizeInput } from "@/utils/formatter";
@@ -33,6 +35,7 @@ export function useJerryBot() {
     }
   });
 
+  const navigate = useNavigate();
   const limiter = useMemo(() => createRateLimiter(12, 60_000), []);
   const abortRef = useRef<AbortController | null>(null);
   const recognizerRef = useRef<ReturnType<typeof createRecognizer> | null>(null);
@@ -104,6 +107,19 @@ export function useJerryBot() {
 
       const userMsg: JerryMessage = { id: uid(), role: "user", content: clean, createdAt: Date.now(), images };
       const nextMessages = [...messages, userMsg];
+
+      // Website control: "open milk rates" → navigate instantly, no AI round-trip.
+      const nav = images?.length ? null : matchNavIntent(clean, replyLang);
+      if (nav) {
+        setMessages([...nextMessages, { id: uid(), role: "assistant", content: nav.reply, createdAt: Date.now() }]);
+        setStatus("idle");
+        speakReply(nav.reply, replyLang);
+        navigate(nav.path);
+        setOpen(false);
+        return;
+      }
+
+
       const assistantId = uid();
       setMessages([...nextMessages, { id: assistantId, role: "assistant", content: "", createdAt: Date.now() }]);
       setStatus("thinking");
@@ -138,7 +154,7 @@ export function useJerryBot() {
         abortRef.current = null;
       }
     },
-    [input, status, limiter, lang, messages, speakReply],
+    [input, status, limiter, lang, messages, speakReply, navigate],
   );
 
   const stopGenerating = useCallback(() => {
