@@ -35,6 +35,7 @@ export function useJerryBot() {
     }
   });
 
+  const navigate = useNavigate();
   const limiter = useMemo(() => createRateLimiter(12, 60_000), []);
   const abortRef = useRef<AbortController | null>(null);
   const recognizerRef = useRef<ReturnType<typeof createRecognizer> | null>(null);
