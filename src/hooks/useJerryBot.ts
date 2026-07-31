@@ -106,6 +106,19 @@ export function useJerryBot() {
 
       const userMsg: JerryMessage = { id: uid(), role: "user", content: clean, createdAt: Date.now(), images };
       const nextMessages = [...messages, userMsg];
+
+      // Website control: "open milk rates" → navigate instantly, no AI round-trip.
+      const nav = images?.length ? null : matchNavIntent(clean, replyLang);
+      if (nav) {
+        setMessages([...nextMessages, { id: uid(), role: "assistant", content: nav.reply, createdAt: Date.now() }]);
+        setStatus("idle");
+        speakReply(nav.reply, replyLang);
+        navigate(nav.path);
+        setOpen(false);
+        return;
+      }
+
+
       const assistantId = uid();
       setMessages([...nextMessages, { id: assistantId, role: "assistant", content: "", createdAt: Date.now() }]);
       setStatus("thinking");
