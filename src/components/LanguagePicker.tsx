@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const STORAGE_KEY_PICKED = "sdh_language_picked";
 const STORAGE_KEY_LANG = "i18nextLng";
+const STORAGE_KEY_PREF = "preferred_language";
 
 /**
  * Side-effect only: on first authenticated session, redirect to the language
