@@ -154,7 +154,7 @@ export function useJerryBot() {
         abortRef.current = null;
       }
     },
-    [input, status, limiter, lang, messages, speakReply],
+    [input, status, limiter, lang, messages, speakReply, navigate],
   );
 
   const stopGenerating = useCallback(() => {
