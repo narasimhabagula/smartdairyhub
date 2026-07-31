@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { askJerry } from "@/services/jerryAI";
+import { matchNavIntent } from "@/services/jerryNav";
 import { voiceTagFor, jt } from "@/services/translation";
 import { speakText, cancelSpeech, createRecognizer, isRecognitionSupported, requestMicPermission, primeVoices } from "@/services/speech";
 import { sanitizeInput } from "@/utils/formatter";
