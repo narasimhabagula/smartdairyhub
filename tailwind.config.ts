@@ -14,8 +14,21 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Poppins", "Inter", "system-ui", "sans-serif"],
+        sans: [
+          "Plus Jakarta Sans",
+          "Noto Sans Devanagari",
+          "Noto Sans Telugu",
+          "Noto Sans Tamil",
+          "Noto Sans Kannada",
+          "Noto Sans Malayalam",
+          "Noto Sans Bengali",
+          "Noto Sans Gujarati",
+          "Noto Sans Gurmukhi",
+          "Noto Sans Oriya",
+          "system-ui",
+          "sans-serif",
+        ],
+        display: ["Sora", "Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
