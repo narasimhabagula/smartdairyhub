@@ -163,17 +163,8 @@ export default function AutoTranslate() {
     };
   }, [lang]);
 
-  // Smooth fade whenever the language changes.
-  useEffect(() => {
-    const root = document.getElementById("root");
-    if (!root) return;
-    root.style.transition = "opacity 320ms ease";
-    root.style.opacity = "0.35";
-    const t = window.setTimeout(() => {
-      root.style.opacity = "1";
-    }, 320);
-    return () => window.clearTimeout(t);
-  }, [lang]);
+  // No opacity flash on language change — swaps happen in place, instantly.
+
 
   return null;
 }
