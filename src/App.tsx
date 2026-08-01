@@ -76,12 +76,15 @@ const queryClient = new QueryClient({
 function RoutePrefetcher() {
   useEffect(() => {
     const warm = () => {
+      import("./pages/Dashboard");
+      import("./pages/Login");
       import("./pages/MilkRates");
       import("./pages/Marketplace");
       import("./pages/DiseaseDetection");
       import("./pages/VetContacts");
       import("./pages/Schemes");
     };
+
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
     const id = w.requestIdleCallback ? w.requestIdleCallback(warm) : window.setTimeout(warm, 2500);
     return () => {
