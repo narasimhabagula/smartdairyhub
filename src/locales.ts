@@ -21,8 +21,8 @@ export const LANGUAGE_CODES: LanguageCode[] = LANGUAGES.map((l) => l.code);
 const en = {
   brand: "Smart Dairy Hub",
   picker: {
-    title: "Select Your Language",
-    subtitle: "Pick a language. You can change it anytime from the top menu.",
+    title: "Choose Your Language",
+    subtitle: "Select your preferred language",
     continue: "Continue",
     change: "Change Language",
   },

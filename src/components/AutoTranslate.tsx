@@ -42,24 +42,39 @@ function skip(el: Element | null): boolean {
   return false;
 }
 
+// Tracks the exact value we last wrote, so React's own updates can be told
+// apart from our translation swaps (prevents re-translating translated text).
+const written = new WeakMap<Node, string>();
+
 function applyText(node: Text, lang: string) {
-  const source = originals.get(node) ?? node.nodeValue ?? "";
+  const current = node.nodeValue ?? "";
+  // React replaced this node's text (e.g. i18n re-render) → new source of truth.
+  if (originals.has(node) && written.get(node) !== current) {
+    originals.set(node, current);
+  }
+  const source = originals.get(node) ?? current;
   if (!translatable(source)) return;
   if (!originals.has(node)) originals.set(node, source);
 
+  const write = (value: string) => {
+    if (node.nodeValue !== value) node.nodeValue = value;
+    written.set(node, value);
+  };
+
   if (lang === "en") {
-    if (node.nodeValue !== source) node.nodeValue = source;
+    write(source);
     return;
   }
   const key = source.trim();
   const hit = lookup(lang, key);
   if (hit) {
-    const next = source.replace(key, hit);
-    if (node.nodeValue !== next) node.nodeValue = next;
+    write(source.replace(key, hit));
   } else {
+    written.set(node, current);
     requestTranslation(lang, key);
   }
 }
+
 
 function applyAttrs(el: Element, lang: string) {
   let store = attrOriginals.get(el);
@@ -163,17 +178,8 @@ export default function AutoTranslate() {
     };
   }, [lang]);
 
-  // Smooth fade whenever the language changes.
-  useEffect(() => {
-    const root = document.getElementById("root");
-    if (!root) return;
-    root.style.transition = "opacity 320ms ease";
-    root.style.opacity = "0.35";
-    const t = window.setTimeout(() => {
-      root.style.opacity = "1";
-    }, 320);
-    return () => window.clearTimeout(t);
-  }, [lang]);
+  // No opacity flash on language change — swaps happen in place, instantly.
+
 
   return null;
 }

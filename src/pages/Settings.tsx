@@ -70,12 +70,21 @@ export default function Settings() {
   useEffect(() => { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notif)); } catch {} }, [notif]);
 
   const switchLang = async (lng: LanguageCode) => {
-    await i18n.changeLanguage(lng);
+    // Instant switch — no reload, no blocking network call.
+    void i18n.changeLanguage(lng);
     localStorage.setItem("sdh_language_picked", "1");
-    if (user) await supabase.from("profiles").update({ language: lng } as any).eq("user_id", user.id);
-    await refreshProfile();
+    localStorage.setItem("preferred_language", lng);
+    localStorage.setItem("i18nextLng", lng);
     toast.success("Language updated");
+    if (user) {
+      void supabase
+        .from("profiles")
+        .update({ language: lng } as any)
+        .eq("user_id", user.id)
+        .then(() => refreshProfile());
+    }
   };
+
 
   const testMic = async () => {
     try {

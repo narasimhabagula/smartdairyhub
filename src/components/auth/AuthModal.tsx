@@ -75,12 +75,16 @@ export default function AuthModal({ open, onOpenChange, redirectTo }: Props) {
 
   const storeRedirect = () => {
     try {
-      const dest = redirectTo || window.location.pathname + window.location.search;
+      const current = window.location.pathname + window.location.search;
+      // Landing/root and /login are not useful post-login destinations.
+      const fallback = current === "/" || current.startsWith("/login") ? "/dashboard" : current;
+      const dest = redirectTo && redirectTo !== "/" ? redirectTo : fallback;
       if (dest.startsWith("/") && !dest.startsWith("//") && dest !== "/login") {
         sessionStorage.setItem("postLoginRedirect", dest);
       }
     } catch {}
   };
+
 
   const handleGoogle = async () => {
     setBusy("google");

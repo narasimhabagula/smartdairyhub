@@ -2,8 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Suspense, lazy, useEffect, type ReactNode } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -76,12 +76,15 @@ const queryClient = new QueryClient({
 function RoutePrefetcher() {
   useEffect(() => {
     const warm = () => {
+      import("./pages/Dashboard");
+      import("./pages/Login");
       import("./pages/MilkRates");
       import("./pages/Marketplace");
       import("./pages/DiseaseDetection");
       import("./pages/VetContacts");
       import("./pages/Schemes");
     };
+
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
     const id = w.requestIdleCallback ? w.requestIdleCallback(warm) : window.setTimeout(warm, 2500);
     return () => {
@@ -89,6 +92,13 @@ function RoutePrefetcher() {
     };
   }, []);
   return null;
+}
+
+/** The welcome/language screen is a full-screen standalone step — no app chrome. */
+function Chrome({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/welcome/language")) return null;
+  return <>{children}</>;
 }
 
 const App = () => (
@@ -107,8 +117,10 @@ const App = () => (
                   <AutoTranslate />
                   <RoutePrefetcher />
                   <div className="flex min-h-screen flex-col">
-                    <DesktopHeader />
-                    <NotificationBanners />
+                    <Chrome>
+                      <DesktopHeader />
+                      <NotificationBanners />
+                    </Chrome>
                     <main className="flex-1">
                       <Suspense fallback={<RouteFallback />}>
                         <Routes>
@@ -160,9 +172,11 @@ const App = () => (
                         </Routes>
                       </Suspense>
                     </main>
-                    <Footer />
-                    <JerryBot />
-                    <MobileBottomNav />
+                    <Chrome>
+                      <Footer />
+                      <JerryBot />
+                      <MobileBottomNav />
+                    </Chrome>
                   </div>
                 </JerryProvider>
               </CartProvider>
