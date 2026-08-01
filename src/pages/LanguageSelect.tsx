@@ -3,29 +3,28 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Globe2, Search, Sparkles } from "lucide-react";
+import { Check, Search, ArrowRight } from "lucide-react";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { supabase } from "@/integrations/supabase/client";
-import farmBg from "@/assets/bg-language-farm.jpg";
 
 const STORAGE_KEY_PICKED = "sdh_language_picked";
 const STORAGE_KEY_LANG = "i18nextLng";
 const STORAGE_KEY_PREF = "preferred_language";
 
 const FLAGS: Record<string, string> = {
-  en: "🇬🇧",
+  en: "🇮🇳",
   hi: "🇮🇳",
-  te: "🟢",
-  ta: "🟠",
-  kn: "🟡",
-  ml: "🌴",
-  mr: "🟣",
-  gu: "🦁",
-  pa: "🌾",
-  bn: "🐅",
-  or: "🛕",
+  te: "🇮🇳",
+  ta: "🇮🇳",
+  kn: "🇮🇳",
+  ml: "🇮🇳",
+  mr: "🇮🇳",
+  gu: "🇮🇳",
+  pa: "🇮🇳",
+  bn: "🇮🇳",
+  or: "🇮🇳",
 };
 
 export default function LanguageSelect() {
@@ -35,10 +34,10 @@ export default function LanguageSelect() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<LanguageCode>(
-    ((i18n.language || "en").slice(0, 2) as LanguageCode) || "en",
-  );
-  const [saving, setSaving] = useState(false);
+  const [selected, setSelected] = useState<LanguageCode>(() => {
+    const current = (i18n.language || "en").slice(0, 2) as LanguageCode;
+    return LANGUAGES.some((l) => l.code === current) ? current : "en";
+  });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -53,84 +52,64 @@ export default function LanguageSelect() {
 
   const selectedMeta = LANGUAGES.find((l) => l.code === selected);
 
-  const onContinue = async () => {
-    setSaving(true);
-    try {
-      await i18n.changeLanguage(selected);
-      localStorage.setItem(STORAGE_KEY_PICKED, "1");
-      localStorage.setItem(STORAGE_KEY_LANG, selected);
-      localStorage.setItem(STORAGE_KEY_PREF, selected);
-      if (user) {
-        await supabase
-          .from("profiles")
-          .update({ language: selected } as any)
-          .eq("user_id", user.id);
-        const next = params.get("next") || "/dashboard";
-        navigate(next, { replace: true });
-      } else {
-        // Guests continue to the login experience before browsing.
-        navigate("/", { replace: true });
-        openAuth(params.get("next") || "/");
-      }
-    } finally {
-      setSaving(false);
+  const onContinue = () => {
+    // Apply + persist instantly; never block navigation on the network.
+    void i18n.changeLanguage(selected);
+    localStorage.setItem(STORAGE_KEY_PICKED, "1");
+    localStorage.setItem(STORAGE_KEY_LANG, selected);
+    localStorage.setItem(STORAGE_KEY_PREF, selected);
+
+    if (user) {
+      void supabase
+        .from("profiles")
+        .update({ language: selected } as any)
+        .eq("user_id", user.id);
+      navigate(params.get("next") || "/dashboard", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+      openAuth(params.get("next") || "/");
     }
   };
 
   return (
-    <div className="relative min-h-[100svh] overflow-hidden">
-      {/* Dairy farm backdrop */}
-      <img
-        src={farmBg}
-        alt=""
-        aria-hidden="true"
-        width={1536}
-        height={1024}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background/90 backdrop-blur-[2px]" />
-      <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl" />
+    <div className="relative min-h-[100svh] overflow-hidden bg-background">
+      {/* Soft brand wash — clean, light, Material 3 inspired */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 translate-x-1/4 rounded-full bg-accent/10 blur-3xl" />
 
-      <div className="container relative mx-auto max-w-5xl px-4 py-8 sm:py-14">
-        {/* Header card */}
-        <div className="mx-auto max-w-2xl rounded-3xl border border-white/40 bg-card/70 p-6 text-center shadow-xl backdrop-blur-xl sm:p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="container relative mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {/* Header */}
+        <div className="mx-auto max-w-2xl text-center animate-fade-in">
           <img
             src="/logo.png"
             alt="Smart Dairy Hub"
             width={128}
             height={128}
             fetchPriority="high"
-            className="mx-auto mb-3 h-24 w-24 object-contain drop-shadow-md sm:h-28 sm:w-28"
+            className="mx-auto mb-4 h-24 w-24 object-contain sm:h-28 sm:w-28"
           />
-          <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-            <Globe2 className="h-3.5 w-3.5" />
-            Smart Dairy Hub
-          </p>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-4xl">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
             {t("picker.title", "Choose Your Language")}
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground sm:text-base">
-            {t(
-              "picker.subtitle",
-              "Select your preferred language. You can change it anytime from Settings.",
-            )}
+            {t("picker.subtitle", "Select your preferred language")}
           </p>
 
-          <div className="relative mx-auto mt-5 max-w-sm">
+          <div className="relative mx-auto mt-6 max-w-sm">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("common.search", "Search") + "..."}
-              className="h-12 rounded-2xl border-white/50 bg-background/70 pl-10 text-base shadow-sm backdrop-blur"
+              className="h-12 rounded-full border-border bg-card pl-10 text-base shadow-sm"
               aria-label="Search language"
             />
           </div>
         </div>
 
         {/* Language grid */}
-        <div data-no-translate className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {filtered.map((lng, idx) => {
+        <div data-no-translate className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {filtered.map((lng) => {
             const active = selected === lng.code;
             return (
               <button
@@ -138,11 +117,10 @@ export default function LanguageSelect() {
                 type="button"
                 onClick={() => setSelected(lng.code)}
                 aria-pressed={active}
-                style={{ animationDelay: `${idx * 30}ms` }}
-                className={`group relative flex min-h-[112px] flex-col items-start justify-between rounded-2xl border p-4 text-left backdrop-blur-xl transition-all duration-300 animate-in fade-in zoom-in-95 ${
+                className={`group relative flex min-h-[116px] flex-col items-start justify-between rounded-3xl border p-4 text-left transition-all duration-200 will-change-transform ${
                   active
-                    ? "border-primary bg-card/90 shadow-[0_0_28px_-6px_hsl(var(--primary)/0.55)] ring-2 ring-primary/40"
-                    : "border-white/45 bg-card/60 hover:-translate-y-1 hover:border-primary/50 hover:bg-card/85 hover:shadow-lg"
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                    : "border-border bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
                 }`}
               >
                 <div className="flex w-full items-start justify-between">
@@ -150,7 +128,7 @@ export default function LanguageSelect() {
                     {FLAGS[lng.code] || "🌐"}
                   </span>
                   <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ${
+                    className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-200 ${
                       active
                         ? "scale-100 bg-primary text-primary-foreground"
                         : "scale-0 bg-muted text-transparent"
@@ -161,13 +139,16 @@ export default function LanguageSelect() {
                 </div>
                 <div className="mt-3">
                   <div className="text-base font-bold leading-tight">{lng.native}</div>
-                  <div className="text-xs text-muted-foreground">{lng.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {lng.label}
+                    {lng.code === "en" ? " · Default" : ""}
+                  </div>
                 </div>
               </button>
             );
           })}
           {filtered.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-white/45 bg-card/70 p-6 text-center text-sm text-muted-foreground backdrop-blur">
+            <div className="col-span-full rounded-3xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
               No matching language.
             </div>
           )}
@@ -175,23 +156,19 @@ export default function LanguageSelect() {
 
         {/* Sticky continue bar */}
         <div className="sticky bottom-4 mt-8 flex justify-center">
-          <div className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-white/50 bg-card/80 p-2.5 shadow-2xl backdrop-blur-xl">
-            <div className="min-w-0 flex-1 pl-2" data-no-translate>
+          <div className="flex w-full max-w-md items-center gap-3 rounded-full border border-border bg-card/95 p-2.5 shadow-xl backdrop-blur">
+            <div className="min-w-0 flex-1 pl-3" data-no-translate>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {t("picker.selected", "Selected")}
               </p>
               <p className="truncate text-sm font-bold">
-                {selectedMeta?.native} <span className="text-muted-foreground">({selectedMeta?.label})</span>
+                {selectedMeta?.native}{" "}
+                <span className="text-muted-foreground">({selectedMeta?.label})</span>
               </p>
             </div>
-            <Button
-              size="lg"
-              onClick={onContinue}
-              disabled={saving}
-              className="h-12 rounded-xl px-6 text-base shadow-lg"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              {saving ? t("common.loading", "Loading...") : t("picker.continue", "Continue")}
+            <Button size="lg" onClick={onContinue} className="h-12 rounded-full px-6 text-base shadow-md">
+              {t("picker.continue", "Continue")}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
