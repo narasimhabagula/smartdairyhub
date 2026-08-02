@@ -47,6 +47,8 @@ type Product = {
   _demo_reviews?: number;
   _demo_mrp?: number;
   _demo_delivery_days?: number;
+  /** Sample catalog row (no backend record) — cannot be ordered. */
+  _demo?: boolean;
 };
 
 const CATEGORIES = [
@@ -204,6 +206,7 @@ export default function Marketplace() {
             _demo_reviews: d.reviews,
             _demo_mrp: d.mrp,
             _demo_delivery_days: d.deliveryDays,
+            _demo: true,
           }))
         : [];
       setProducts([...rows, ...demoRows]);
@@ -297,7 +300,15 @@ export default function Marketplace() {
     } catch {}
   };
 
+  /** Sample rows have no backend record, so ordering them would always fail. */
+  const blockDemo = (p: Product) => {
+    if (!p._demo) return false;
+    toast.info("Sample listing — this is a catalog preview and can't be ordered yet.");
+    return true;
+  };
+
   const buyNow = (p: Product) => {
+    if (blockDemo(p)) return;
     addItem({
       id: p.id, name: p.name, price: Number(p.price), unit: p.unit || "unit",
       image_url: p.image_url || undefined, seller_id: p.seller_id,
@@ -483,6 +494,7 @@ export default function Marketplace() {
                   onFav={() => toggleWishlist(p.id)}
                   onShare={() => shareProduct(p)}
                   onAdd={() => {
+                    if (blockDemo(p)) return;
                     addItem({
                       id: p.id, name: p.name, price: Number(p.price), unit: p.unit || "unit",
                       image_url: p.image_url || undefined, seller_id: p.seller_id,
@@ -518,7 +530,7 @@ export default function Marketplace() {
         onFav={() => detail && toggleWishlist(detail.id)}
         onShare={() => detail && shareProduct(detail)}
         onAdd={() => {
-          if (!detail) return;
+          if (!detail || blockDemo(detail)) return;
           addItem({
             id: detail.id, name: detail.name, price: Number(detail.price), unit: detail.unit || "unit",
             image_url: detail.image_url || undefined, seller_id: detail.seller_id,
@@ -555,11 +567,13 @@ function ProductCard({
           {discount > 0 && (
             <Badge className="bg-rose-500 text-white hover:bg-rose-500">{discount}% OFF</Badge>
           )}
-          {p.seller_name && (
+          {p._demo ? (
+            <Badge variant="secondary" className="gap-1">Sample</Badge>
+          ) : p.seller_name ? (
             <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
               <ShieldCheck className="h-3 w-3" /> Verified
             </Badge>
-          )}
+          ) : null}
         </div>
         <span onClick={(e) => { e.stopPropagation(); onFav(); }}
           role="button" aria-label="Save to wishlist"
