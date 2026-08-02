@@ -16,6 +16,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthModalProvider } from "./components/auth/AuthModalProvider";
 import NotificationBanners from "./components/NotificationBanners";
 import SplashScreen from "./components/SplashScreen";
+import StartupRedirect from "./components/StartupRedirect";
 import RouteFallback from "./components/RouteFallback";
 import JerryBot from "./components/JerryBot/JerryBot";
 import { JerryProvider } from "./context/JerryContext";
@@ -114,6 +115,7 @@ const App = () => (
                 <JerryProvider>
                   <SplashScreen />
                   <LanguagePicker />
+                  <StartupRedirect />
                   <AutoTranslate />
                   <RoutePrefetcher />
                   <div className="flex min-h-screen flex-col">
