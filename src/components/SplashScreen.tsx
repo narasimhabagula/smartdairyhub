@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
+import { hasStoredSession } from "@/lib/session";
 
 const SESSION_KEY = "sdh_splash_shown";
-const DURATION = 1300;
-const FADE = 320;
+const DURATION = 2200;
+const FADE = 500;
 
 /**
- * Premium startup splash: white background, logo fade + zoom, shown once per
- * browser session. Purely presentational — never blocks routing or data fetching.
+ * Premium startup splash: white background, logo fade + zoom with tagline.
+ * Guests see it on every visit; signed-in users skip straight to the app.
+ * Purely presentational — never blocks routing or data fetching.
  */
 export default function SplashScreen() {
   const [show, setShow] = useState(() => {
+    if (hasStoredSession()) return false;
     try {
       return sessionStorage.getItem(SESSION_KEY) !== "1";
     } catch {
@@ -38,12 +41,12 @@ export default function SplashScreen() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background transition-opacity duration-500 ${
         leaving ? "opacity-0" : "opacity-100"
       }`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,hsl(var(--primary)/0.10),transparent_65%)]" />
-      <div className="relative flex flex-col items-center">
+      <div className="relative flex flex-col items-center px-6 text-center">
         <img
           src="/logo.png"
           alt=""
@@ -54,6 +57,13 @@ export default function SplashScreen() {
           className="animate-scale-in will-change-transform"
           style={{ height: 168, width: 168, animationDuration: "700ms" }}
         />
+        <p
+          data-no-translate
+          className="animate-fade-in mt-6 max-w-xs font-display text-base font-bold leading-snug text-foreground sm:max-w-sm sm:text-lg"
+          style={{ animationDelay: "220ms", animationFillMode: "both" }}
+        >
+          Smart Dairy Hub – Empowering Farmers with AI
+        </p>
         <div className="mt-8 h-1 w-28 overflow-hidden rounded-full bg-muted">
           <div className="h-full w-1/3 animate-[slide-in-right_0.9s_ease-in-out_infinite] rounded-full bg-primary" />
         </div>
