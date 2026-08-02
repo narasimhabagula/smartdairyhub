@@ -14,7 +14,6 @@ const Ctx = createContext<AuthModalCtx>({ openAuth: () => {}, closeAuth: () => {
 export const useAuthModal = () => useContext(Ctx);
 
 const GATE_KEY = "sdh_auth_gate_seen";
-const SPLASH_MS = 350; // hands off right as the startup splash fades
 
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
@@ -32,25 +31,9 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, []);
   const closeAuth = useCallback(() => setOpen(false), []);
 
-  // Onboarding gate: splash → language selection → login.
-  // Only fires once the visitor has picked a language.
-  useEffect(() => {
-    if (loading || user) return;
-    if (location.pathname.startsWith("/welcome/language")) return;
-    let seen = true;
-    let langPicked = false;
-    try {
-      seen = sessionStorage.getItem(GATE_KEY) === "1";
-      langPicked = localStorage.getItem("sdh_language_picked") === "1";
-    } catch {}
-    if (seen || !langPicked) return;
-    const t = setTimeout(() => {
-      isGate.current = true;
-      setRedirectTo("/");
-      setOpen(true);
-    }, SPLASH_MS);
-    return () => clearTimeout(t);
-  }, [loading, user, location.pathname]);
+  // No forced login gate: guests land on the animated landing page after the
+  // language step and sign in only when they choose Login / Get Started.
+
 
   const handleOpenChange = useCallback(
     (v: boolean) => {
