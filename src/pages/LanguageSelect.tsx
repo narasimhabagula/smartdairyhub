@@ -58,6 +58,9 @@ export default function LanguageSelect() {
     localStorage.setItem(STORAGE_KEY_PICKED, "1");
     localStorage.setItem(STORAGE_KEY_LANG, selected);
     localStorage.setItem(STORAGE_KEY_PREF, selected);
+    try {
+      sessionStorage.setItem("sdh_language_visit", "1");
+    } catch {}
 
     if (user) {
       void supabase
@@ -66,10 +69,11 @@ export default function LanguageSelect() {
         .eq("user_id", user.id);
       navigate(params.get("next") || "/dashboard", { replace: true });
     } else {
+      // Guests continue to the animated landing page — login stays optional.
       navigate("/", { replace: true });
-      openAuth(params.get("next") || "/");
     }
   };
+
 
   return (
     <div className="relative min-h-[100svh] overflow-hidden bg-background">
