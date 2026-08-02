@@ -18,10 +18,23 @@ export default function Cart() {
   const [address, setAddress] = useState("");
   const [placing, setPlacing] = useState(false);
 
+  /** Real product ids are UUIDs; anything else is a leftover sample row. */
+  const isRealProductId = (id: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
   const handleCheckout = async () => {
     if (!user) { toast.error("Please login first"); return; }
     if (!address.trim()) { toast.error("Please enter shipping address"); return; }
     if (items.length === 0) { toast.error("Cart is empty"); return; }
+
+    const sample = items.filter((i) => !isRealProductId(i.id));
+    if (sample.length) {
+      sample.forEach((i) => removeItem(i.id));
+      toast.error("Removed sample items that can't be ordered. Please review your cart.");
+      return;
+    }
+
+
 
     setPlacing(true);
     // Server-authoritative checkout — prices are re-fetched on the backend

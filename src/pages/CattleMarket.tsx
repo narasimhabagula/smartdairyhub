@@ -266,7 +266,53 @@ export default function CattleMarket() {
   return (
     <div className="min-h-screen bg-gradient-mint">
       <MobilePageHero image={heroMarket} eyebrow="AI-Powered" title="Cattle Marketplace" subtitle="Verified sellers, healthy livestock" />
+
+      {/* ============= MOBILE SEARCH + ANIMAL FILTER + SELL ============= */}
+      <div className="border-b border-border/60 bg-background/80 px-4 py-4 md:hidden">
+        <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-card p-1.5 shadow-soft">
+          <Search className="ml-2 h-4 w-4 shrink-0 text-primary" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search breed, village, price…"
+            aria-label="Search listings"
+            className="h-10 border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+          />
+        </div>
+
+        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
+          {ANIMALS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setAnimal(a.id)}
+              aria-pressed={animal === a.id}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${
+                animal === a.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card"
+              }`}
+            >
+              <span className="text-base">{a.emoji}</span> {a.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <Button asChild className="h-11 flex-1 rounded-full">
+            <Link to={user ? "/cattle-market/new" : "/login"}>
+              <Plus className="mr-2 h-4 w-4" /> Sell Animal
+            </Link>
+          </Button>
+          {user && (
+            <Button asChild variant="outline" className="h-11 rounded-full">
+              <Link to="/my-listings"><Heart className="mr-2 h-4 w-4" /> My Listings</Link>
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* ============= HERO / AI SEARCH ============= */}
+
       <section className="relative hidden overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5 md:block">
         <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent/15 blur-3xl" />
