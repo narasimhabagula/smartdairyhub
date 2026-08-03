@@ -20,14 +20,20 @@ const JerryButton = memo(({ open, onClick, lang }: Props) => (
     aria-label={open ? jt(lang, "close") : jt(lang, "open")}
     aria-expanded={open}
     initial={{ scale: 0.8, opacity: 0 }}
-    animate={{ scale: 1, opacity: 1 }}
-    transition={{ type: "spring", stiffness: 320, damping: 18 }}
-    whileHover={{ scale: 1.06 }}
+    animate={open ? { scale: 1, opacity: 1, y: 0 } : { scale: 1, opacity: 1, y: [0, -5, 0] }}
+    transition={
+      open
+        ? { type: "spring", stiffness: 320, damping: 18 }
+        : { y: { duration: 3.4, repeat: Infinity, ease: "easeInOut" }, scale: { type: "spring", stiffness: 320, damping: 18 } }
+    }
+    whileHover={{ scale: 1.07 }}
     whileTap={{ scale: 0.94 }}
     className={cn(
       "fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full",
-      "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
-      "shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.6)] ring-4 ring-background/70 backdrop-blur-xl",
+      open
+        ? "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground"
+        : "bg-background/70 text-foreground",
+      "shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.6)] ring-2 ring-primary/40 backdrop-blur-xl",
       "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60 md:bottom-6 md:right-6",
     )}
   >
@@ -35,13 +41,15 @@ const JerryButton = memo(({ open, onClick, lang }: Props) => (
       <X className="h-6 w-6" />
     ) : (
       <>
+        <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/25 blur-md" />
         <img
           src={jerryMascot}
           alt=""
-          width={512}
-          height={512}
+          width={112}
+          height={112}
           loading="lazy"
-          className="h-11 w-11 object-contain drop-shadow"
+          decoding="async"
+          className="relative h-12 w-12 object-contain drop-shadow"
         />
         <span className="absolute -right-0.5 -top-0.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-emerald-950 shadow">
           AI
