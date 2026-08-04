@@ -310,9 +310,11 @@ export default function LanguageSelect() {
         .eq("user_id", user.id);
       navigate(params.get("next") || "/dashboard", { replace: true });
     } else {
-      navigate("/", { replace: true });
+      // Guests continue to the premium login page (they can Skip from there).
+      navigate("/login", { replace: true });
     }
   };
+
 
   return (
     <div className="flex min-h-[100svh] items-center justify-center bg-slate-950 p-2 sm:p-6">
