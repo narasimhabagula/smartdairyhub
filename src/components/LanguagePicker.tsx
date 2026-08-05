@@ -37,14 +37,15 @@ export default function LanguagePicker() {
       localStorage.setItem(STORAGE_KEY_PREF, preferred);
     }
 
-    // Signed-in users skip the language step entirely.
-    if (signedIn) return;
+    // Signed-in users with a saved language skip the language step entirely.
+    if (signedIn && preferred) return;
 
     let visited = true;
     try {
       visited = sessionStorage.getItem(VISIT_KEY) === "1";
     } catch {}
     if (visited) return;
+
 
     const next = encodeURIComponent(location.pathname + location.search);
     navigate(`/welcome/language?next=${next}`, { replace: true });

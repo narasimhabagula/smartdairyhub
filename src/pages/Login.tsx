@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Cpu, Loader2, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Cpu, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,13 +19,14 @@ function friendlyAuthError(message: string): string {
   return message;
 }
 
+/** After signing in a farmer always lands on Home first — never straight on the dashboard. */
 function safePostLoginDest(): string {
   try {
     const dest = sessionStorage.getItem("postLoginRedirect");
     sessionStorage.removeItem("postLoginRedirect");
     if (dest && dest.startsWith("/") && !dest.startsWith("//")) return dest;
   } catch {}
-  return "/dashboard";
+  return "/";
 }
 
 /** Gently floating leaves & light particles behind the card. */
@@ -43,7 +44,7 @@ function AmbientCanvas() {
     resize();
     window.addEventListener("resize", resize);
 
-    const particles = Array.from({ length: 18 }, () => ({
+    const particles = Array.from({ length: 16 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 10 + 4,
@@ -94,6 +95,11 @@ function AmbientCanvas() {
   return <canvas ref={ref} className="pointer-events-none absolute inset-0 z-[1] h-full w-full" />;
 }
 
+const FIELD =
+  "h-14 w-full rounded-2xl border-[1.5px] border-gray-200 bg-white pl-12 pr-4 text-[15px] font-medium text-gray-900 outline-none transition-all placeholder:font-normal placeholder:text-gray-400 focus:border-[#2E7D32] focus:ring-4 focus:ring-[#2E7D32]/15";
+const BTN =
+  "flex h-[58px] w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985]";
+
 export default function Login() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -123,12 +129,12 @@ export default function Login() {
       return;
     }
     toast.success("Welcome back! Redirecting…");
-    navigate("/dashboard", { replace: true });
+    navigate("/", { replace: true });
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      sessionStorage.setItem("postLoginRedirect", "/dashboard");
+      sessionStorage.setItem("postLoginRedirect", "/");
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
@@ -151,68 +157,61 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-[100svh] w-full overflow-hidden bg-[#FFFCF7] text-gray-900 antialiased">
+    <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-[#FFFCF7] text-gray-900 antialiased">
       {/* Premium ambient background: soft green gradient, cream white, emerald glow */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_-10%,#F0F9F1_0%,#FFFCF7_55%,#F6FBF6_100%)]" />
-      <div className="pointer-events-none absolute -right-20 -top-20 z-0 h-80 w-80 animate-pulse rounded-full bg-gradient-to-br from-amber-200/40 via-emerald-200/25 to-transparent blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 z-0 h-80 w-80 rounded-full bg-gradient-to-tr from-[#B9E2BC]/45 via-blue-100/25 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_-10%,#EAF6EB_0%,#FFFCF7_55%,#F4FAF4_100%)]" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 z-0 h-80 w-80 rounded-full bg-gradient-to-tr from-[#B9E2BC]/45 via-emerald-100/25 to-transparent blur-3xl" />
       <AmbientCanvas />
 
-      {/* MAIN SINGLE VIEWPORT CONTAINER */}
-      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-md flex-col justify-between p-3 sm:p-5">
-        {/* TOP HERO SECTION: AUTO IMAGE SLIDER + BRAND BADGE */}
-        <header className="group relative min-h-[160px] w-full flex-shrink-0 overflow-hidden rounded-2xl border border-white/60 shadow-lg sm:min-h-[190px]">
+      <main className="relative z-10 mx-auto w-full max-w-[520px] pb-6">
+        {/* HERO: fills the top of the screen, full photos, no crop */}
+        <header className="relative h-[46svh] min-h-[300px] w-full overflow-hidden rounded-b-[34px] shadow-[0_18px_40px_-18px_rgba(7,26,11,0.45)] sm:h-[48svh] sm:min-h-[360px]">
           <LoginHeroSlider />
 
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#1B5E20]/40 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/15 to-black/35" />
 
-          <div className="pointer-events-none relative z-10 flex h-full min-h-[160px] flex-col justify-between p-3.5 text-white sm:min-h-[190px] sm:p-4">
+          <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between p-4 text-white sm:p-5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3 py-1 backdrop-blur-md">
-                <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-4 w-4 object-contain" />
-                <span className="font-heading text-xs font-extrabold tracking-tight">
+              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3.5 py-1.5 backdrop-blur-md">
+                <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-5 w-5 object-contain" />
+                <span className="font-heading text-sm font-extrabold tracking-tight">
                   Smart Dairy <span className="text-emerald-400">Hub</span>
                 </span>
               </div>
 
-              <div className="flex animate-[pulse_4s_ease-in-out_infinite] items-center gap-1.5 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
-                <Cpu className="h-2.5 w-2.5" />
+              <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
+                <Cpu className="h-3 w-3" />
                 <span>AI v3.4</span>
               </div>
             </div>
 
-            <div className="mt-auto max-w-[75%]">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-200">
+            <div className="mb-6 max-w-[86%]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
                 Trusted by 140,000+ Farmers
               </p>
-              <h1 className="font-heading text-sm font-extrabold leading-tight tracking-tight text-white sm:text-base">
+              <h1 className="font-heading mt-1 text-xl font-extrabold leading-tight tracking-tight text-white sm:text-2xl">
                 Next-Gen Precision Dairy Management
               </h1>
             </div>
           </div>
         </header>
 
-        {/* MIDDLE SECTION: GLASS LOGIN CARD */}
-        <section className="my-auto w-full py-2">
-          <div className="relative rounded-[24px] border border-white/90 bg-white/[0.88] p-4 shadow-[0_20px_40px_-10px_rgba(7,26,11,0.12),0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-6">
-            <div className="mb-4 text-center">
-              <h2 className="font-heading text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
-                Welcome Back
-              </h2>
-              <p className="mt-0.5 text-[11px] font-normal text-gray-500 sm:text-xs">
-                Sign in to continue your Smart Dairy Hub journey.
-              </p>
+        {/* LOGIN CARD: overlaps the hero naturally */}
+        <section className="relative z-20 -mt-9 px-4 sm:px-6">
+          <div className="rounded-[28px] border border-white/90 bg-white/90 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7">
+            <div className="mb-5 text-center">
+              <h2 className="font-heading text-2xl font-extrabold tracking-tight text-gray-900">Welcome Back</h2>
+              <p className="mt-1 text-[13px] text-gray-500">Sign in to continue your Smart Dairy Hub journey.</p>
             </div>
 
-            <form onSubmit={handleSignIn} className="space-y-3">
+            <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <label htmlFor="sdh-email" className="mb-1 block text-[11px] font-bold text-gray-700">
+                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-gray-700">
                   Email / Farmer ID
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Mail className="h-3.5 w-3.5" />
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                    <Mail className="h-5 w-5" />
                   </span>
                   <input
                     id="sdh-email"
@@ -223,23 +222,23 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ramesh.patel@dairyhub.in"
-                    className="w-full rounded-xl border-[1.5px] border-gray-200 bg-white py-2.5 pl-8 pr-3 text-xs font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-[#2E7D32] focus:ring-[3.5px] focus:ring-[#2E7D32]/15"
+                    className={FIELD}
                   />
                 </div>
               </div>
 
               <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <label htmlFor="sdh-password" className="text-[11px] font-bold text-gray-700">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label htmlFor="sdh-password" className="text-[12px] font-bold text-gray-700">
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-[10px] font-bold text-[#2E7D32] hover:underline">
+                  <Link to="/forgot-password" className="text-[12px] font-bold text-[#2E7D32] hover:underline">
                     Forgot Password?
                   </Link>
                 </div>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Lock className="h-3.5 w-3.5" />
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                    <Lock className="h-5 w-5" />
                   </span>
                   <input
                     id="sdh-password"
@@ -250,67 +249,58 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full rounded-xl border-[1.5px] border-gray-200 bg-white py-2.5 pl-8 pr-9 text-xs font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-[#2E7D32] focus:ring-[3.5px] focus:ring-[#2E7D32]/15"
+                    className={`${FIELD} pr-12`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPwd((v) => !v)}
                     aria-label={showPwd ? "Hide password" : "Show password"}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 hover:text-gray-600"
                   >
-                    {showPwd ? <EyeOff className="h-3.5 w-3.5 text-[#2E7D32]" /> : <Eye className="h-3.5 w-3.5" />}
+                    {showPwd ? <EyeOff className="h-5 w-5 text-[#2E7D32]" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-0.5">
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="h-3.5 w-3.5 cursor-pointer rounded accent-[#2E7D32]"
-                  />
-                  <span className="text-[11px] font-medium text-gray-600">Remember this device</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={continueAsGuest}
-                  className="text-[11px] font-bold text-gray-500 transition-colors hover:text-[#2E7D32]"
-                >
-                  Skip
-                </button>
-              </div>
+              <label className="flex cursor-pointer items-center gap-2.5 py-0.5">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="h-[18px] w-[18px] cursor-pointer rounded accent-[#2E7D32]"
+                />
+                <span className="text-[13px] font-medium text-gray-600">Remember this device</span>
+              </label>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#2E7D32] to-[#43A047] py-2.5 text-xs font-bold tracking-wide text-white shadow-[0_8px_20px_-3px_rgba(46,125,50,0.4)] transition-all duration-300 hover:-translate-y-px hover:from-[#1B5E20] hover:to-[#2E7D32] hover:shadow-[0_12px_24px_-4px_rgba(46,125,50,0.5)] active:translate-y-[0.5px] disabled:opacity-70"
+                className={`${BTN} bg-gradient-to-br from-[#2E7D32] to-[#43A047] text-white shadow-[0_12px_26px_-8px_rgba(46,125,50,0.55)] hover:-translate-y-px hover:from-[#1B5E20] hover:to-[#2E7D32] disabled:opacity-70`}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Authenticating...
+                    <Loader2 className="h-5 w-5 animate-spin" /> Authenticating…
                   </>
                 ) : (
                   <>
-                    Sign In <ArrowRight className="h-3.5 w-3.5" />
+                    Sign In <ArrowRight className="h-5 w-5" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="my-3 flex items-center gap-3">
+            <div className="my-4 flex items-center gap-3">
               <div className="h-px flex-1 bg-gray-200" />
-              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">or continue with</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">or continue with</span>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-xs font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow active:scale-[0.99]"
+              className={`${BTN} border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow`}
             >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" aria-hidden>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -322,19 +312,19 @@ export default function Login() {
             <button
               type="button"
               onClick={continueAsGuest}
-              className="mt-2.5 w-full rounded-xl border border-emerald-100 bg-emerald-50/60 py-2.5 text-xs font-bold text-[#1B5E20] transition hover:bg-emerald-50 active:scale-[0.99]"
+              className={`${BTN} mt-3 border border-emerald-100 bg-emerald-50/70 text-[#1B5E20] hover:bg-emerald-50`}
             >
               Continue as Guest
             </button>
           </div>
         </section>
 
-        {/* FOOTER SECTION */}
-        <footer className="w-full flex-shrink-0 py-1 text-center">
-          <p className="text-[10px] font-medium text-gray-500">
+        <footer className="mt-5 px-4 text-center">
+          <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gray-500">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#2E7D32]" />
             Encrypted with 256-Bit SSL Security • ISO 27001 Certified
           </p>
-          <div className="mt-1 flex items-center justify-center gap-3 text-[10px] font-semibold text-gray-600">
+          <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-gray-600">
             <Link to="/privacy" className="hover:text-[#1B5E20]">Privacy</Link>
             <span>•</span>
             <Link to="/terms" className="hover:text-[#1B5E20]">Terms</Link>

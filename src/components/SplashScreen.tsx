@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
-import { hasStoredSession } from "@/lib/session";
 
 const SESSION_KEY = "sdh_splash_shown";
-const DURATION = 2200;
+const DURATION = 2400;
 const FADE = 500;
 
 /**
- * Premium startup splash: white background, logo fade + zoom with tagline.
- * Guests see it on every visit; signed-in users skip straight to the app.
+ * Premium startup splash: soft green gradient, logo fade + zoom with tagline.
+ * Shown once per browser session for every visitor (guest or signed in).
  * Purely presentational — never blocks routing or data fetching.
  */
 export default function SplashScreen() {
   const [show, setShow] = useState(() => {
-    if (hasStoredSession()) return false;
     try {
       return sessionStorage.getItem(SESSION_KEY) !== "1";
     } catch {
       return true;
     }
   });
+
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
