@@ -16,7 +16,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthModalProvider } from "./components/auth/AuthModalProvider";
 import NotificationBanners from "./components/NotificationBanners";
 import SplashScreen from "./components/SplashScreen";
-import StartupRedirect from "./components/StartupRedirect";
+
 import RouteFallback from "./components/RouteFallback";
 import JerryBot from "./components/JerryBot/JerryBot";
 import { JerryProvider } from "./context/JerryContext";
@@ -95,12 +95,13 @@ function RoutePrefetcher() {
   return null;
 }
 
-/** The welcome/language screen is a full-screen standalone step — no app chrome. */
+/** Welcome/language and login are full-screen standalone steps — no app chrome, no Jerry. */
 function Chrome({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  if (pathname.startsWith("/welcome/language")) return null;
+  if (pathname.startsWith("/welcome/language") || pathname.startsWith("/login")) return null;
   return <>{children}</>;
 }
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -115,8 +116,8 @@ const App = () => (
                 <JerryProvider>
                   <SplashScreen />
                   <LanguagePicker />
-                  <StartupRedirect />
                   <AutoTranslate />
+
                   <RoutePrefetcher />
                   <div className="flex min-h-screen flex-col">
                     <Chrome>
