@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check, Search, Volume1, Volume2, VolumeX, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Check, Search, Volume1, Volume2, VolumeX, CheckCircle2, Globe } from "lucide-react";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,191 +31,30 @@ const SPEECH_LANG: Record<string, string> = {
   bn: "bn-IN", mr: "mr-IN", gu: "gu-IN", pa: "pa-IN", or: "or-IN",
 };
 
-/** Animated sunrise dairy-farm canvas backdrop (rays, hills, barn, cows, pollen). */
-function FarmCanvas() {
-  const ref = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let raf = 0;
-    let rayAngle = 0;
-
-    const resize = () => {
-      const parent = canvas.parentElement;
-      canvas.width = parent?.clientWidth || window.innerWidth;
-      canvas.height = parent?.clientHeight || window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const particles = Array.from({ length: 40 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 2.5 + 0.5,
-      alpha: Math.random() * 0.7 + 0.2,
-      speedY: -Math.random() * 0.35 - 0.1,
-      speedX: Math.random() * 0.3 - 0.15,
-    }));
-
-    const cow = (x: number, y: number, scale: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(scale, scale);
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 32, 20, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#0f172a";
-      ctx.beginPath();
-      ctx.ellipse(-10, -5, 12, 10, 0.2, 0, Math.PI * 2);
-      ctx.ellipse(12, 2, 10, 12, -0.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(-32, 6, 10, 8, 0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(-20, 12, 5, 22);
-      ctx.fillRect(-10, 12, 5, 22);
-      ctx.fillRect(8, 12, 5, 22);
-      ctx.fillRect(18, 12, 5, 22);
-      ctx.restore();
-    };
-
-    const barn = (w: number, h: number) => {
-      const bx = w * 0.72;
-      const by = h * 0.48;
-      ctx.fillStyle = "#dc2626";
-      ctx.fillRect(bx, by, 55, 35);
-      ctx.fillStyle = "#991b1b";
-      ctx.beginPath();
-      ctx.moveTo(bx - 5, by);
-      ctx.lineTo(bx + 27.5, by - 20);
-      ctx.lineTo(bx + 60, by);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(bx + 18, by + 12, 20, 23);
-      ctx.strokeStyle = "#dc2626";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(bx + 18, by + 12, 20, 23);
-      ctx.beginPath();
-      ctx.moveTo(bx + 18, by + 12);
-      ctx.lineTo(bx + 38, by + 35);
-      ctx.moveTo(bx + 38, by + 12);
-      ctx.lineTo(bx + 18, by + 35);
-      ctx.stroke();
-      const sx = bx + 60;
-      const sy = by - 12;
-      ctx.fillStyle = "#94a3b8";
-      ctx.fillRect(sx, sy, 18, 47);
-      ctx.beginPath();
-      ctx.arc(sx + 9, sy, 9, Math.PI, 0);
-      ctx.fill();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      [12, 24, 36].forEach((o) => {
-        ctx.moveTo(sx, sy + o);
-        ctx.lineTo(sx + 18, sy + o);
-      });
-      ctx.stroke();
-    };
-
-    const draw = () => {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      const sky = ctx.createLinearGradient(0, 0, 0, h);
-      sky.addColorStop(0, "#0284c7");
-      sky.addColorStop(0.3, "#38bdf8");
-      sky.addColorStop(0.5, "#f59e0b");
-      sky.addColorStop(0.65, "#16a34a");
-      sky.addColorStop(1, "#052e16");
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, h);
-
-      const sunX = w * 0.5;
-      const sunY = h * 0.28;
-      ctx.save();
-      ctx.translate(sunX, sunY);
-      if (!reduce) rayAngle += 0.002;
-      ctx.rotate(rayAngle);
-      ctx.fillStyle = "rgba(254, 240, 138, 0.12)";
-      for (let i = 0; i < 12; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, Math.max(w, h) * 1.2, (i * Math.PI) / 6, (i * Math.PI) / 6 + 0.18);
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.restore();
-
-      const glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 90);
-      glow.addColorStop(0, "rgba(255,255,255,1)");
-      glow.addColorStop(0.2, "rgba(253,224,71,0.9)");
-      glow.addColorStop(0.6, "rgba(245,158,11,0.4)");
-      glow.addColorStop(1, "rgba(245,158,11,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, 90, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "rgba(21,128,61,0.85)";
-      ctx.beginPath();
-      ctx.moveTo(0, h * 0.52);
-      ctx.bezierCurveTo(w * 0.3, h * 0.46, w * 0.6, h * 0.54, w, h * 0.48);
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.fill();
-
-      barn(w, h);
-
-      const fore = ctx.createLinearGradient(0, h * 0.55, 0, h);
-      fore.addColorStop(0, "#16a34a");
-      fore.addColorStop(0.5, "#15803d");
-      fore.addColorStop(1, "#052e16");
-      ctx.fillStyle = fore;
-      ctx.beginPath();
-      ctx.moveTo(0, h * 0.58);
-      ctx.bezierCurveTo(w * 0.35, h * 0.52, w * 0.7, h * 0.62, w, h * 0.56);
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.fill();
-
-      cow(w * 0.15, h * 0.62, 0.55);
-      cow(w * 0.34, h * 0.66, 0.45);
-      cow(w * 0.86, h * 0.64, 0.5);
-
-      particles.forEach((p) => {
-        if (!reduce) {
-          p.y += p.speedY;
-          p.x += p.speedX;
-          if (p.y < 0) p.y = h;
-          if (p.x > w) p.x = 0;
-          if (p.x < 0) p.x = w;
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(254, 243, 199, ${p.alpha})`;
-        ctx.fill();
-      });
-
-      raf = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return <canvas ref={ref} aria-hidden className="absolute inset-0 z-0 h-full w-full" />;
+/**
+ * Premium, very light full-page backdrop: soft white base, light blue + soft
+ * green aurora blooms, a minimal dairy horizon line and a faint grid.
+ * Purely decorative, CSS only — no canvas, no battery drain.
+ */
+function PremiumBackdrop() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-white">
+      <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_-20%,#F0F9FF_0%,#FFFFFF_45%,#F5FBF6_100%)]" />
+      <div className="absolute -left-40 -top-32 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.16),transparent_65%)] blur-3xl" />
+      <div className="absolute -right-40 top-10 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.16),transparent_65%)] blur-3xl" />
+      <div className="absolute bottom-[-14rem] left-1/2 h-[32rem] w-[52rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(163,230,153,0.22),transparent_68%)] blur-3xl" />
+      <div className="absolute inset-0 opacity-[0.35] [background-image:linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(70%_60%_at_50%_30%,black,transparent)]" />
+      {/* Minimal dairy horizon */}
+      <svg
+        className="absolute inset-x-0 bottom-0 h-40 w-full sm:h-56"
+        viewBox="0 0 1440 240"
+        preserveAspectRatio="none"
+      >
+        <path d="M0 150 C 260 96 420 178 720 132 C 1010 88 1200 168 1440 118 V240 H0Z" fill="rgba(22,163,74,0.07)" />
+        <path d="M0 186 C 300 140 560 210 880 168 C 1150 132 1290 196 1440 166 V240 H0Z" fill="rgba(22,163,74,0.10)" />
+      </svg>
+    </div>
+  );
 }
 
 export default function LanguageSelect() {
@@ -315,26 +154,45 @@ export default function LanguageSelect() {
     }
   };
 
-
   return (
-    <div className="flex min-h-[100svh] items-center justify-center bg-slate-950 p-2 sm:p-6">
-      <div className="relative flex h-[min(100svh-1rem,880px)] w-full max-w-[520px] flex-col justify-between overflow-hidden rounded-[clamp(24px,5vw,42px)] border-4 border-slate-700/60 bg-slate-950 shadow-2xl">
-        <FarmCanvas />
+    <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-x-hidden px-4 py-6 sm:px-6 sm:py-10">
+      <PremiumBackdrop />
 
+      {/* Card — grows on desktop, never taller than the viewport, sticky footer */}
+      <section
+        className="relative z-10 flex w-full max-w-[560px] flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/80 shadow-[0_30px_80px_-30px_rgba(7,26,11,0.28),0_2px_8px_-2px_rgba(7,26,11,0.06)] backdrop-blur-2xl animate-fade-in md:max-w-[720px] lg:max-w-[860px]"
+        style={{ maxHeight: "calc(100svh - 3rem)" }}
+      >
         {/* Header */}
-        <header className="relative z-20 flex items-center justify-between px-4 pt-4 sm:px-6 sm:pt-6">
-          <div className="flex items-center gap-2 rounded-full border border-white/20 bg-slate-900/60 px-3 py-1.5 shadow-lg backdrop-blur-md">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-              Smart Dairy Hub
-            </span>
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-900/[0.06] px-5 py-4 sm:px-8 sm:py-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Smart Dairy Hub logo"
+              width={96}
+              height={96}
+              fetchPriority="high"
+              className="h-11 w-11 shrink-0 rounded-2xl bg-white object-contain p-1 shadow-sm ring-1 ring-emerald-500/25 sm:h-14 sm:w-14"
+            />
+            <div className="min-w-0">
+              <h1 className="truncate text-[17px] font-extrabold leading-tight tracking-tight text-slate-900 sm:text-2xl">
+                Smart Dairy Hub
+              </h1>
+              <p
+                className="mt-0.5 truncate text-[11px] font-medium text-emerald-700 sm:text-[13px]"
+                data-no-translate
+              >
+                {GREETINGS[selected] || t("picker.subtitle", "Select your preferred language")}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setSound((s) => !s)}
               aria-label={sound ? "Mute selection chime" : "Unmute selection chime"}
-              className="rounded-full border border-white/30 bg-slate-900/60 p-2 text-white shadow-md backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
             >
               {sound ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </button>
@@ -342,135 +200,99 @@ export default function LanguageSelect() {
               type="button"
               onClick={() => speak()}
               aria-label="Listen to the selected language name"
-              className="flex items-center gap-1.5 rounded-full border border-emerald-300/50 bg-gradient-to-r from-emerald-600 to-emerald-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+              className="flex h-10 items-center gap-1.5 rounded-full bg-emerald-600 px-4 text-xs font-bold text-white shadow-[0_8px_20px_-8px_rgba(22,163,74,0.7)] transition hover:bg-emerald-700 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
             >
-              <Volume1 className="h-4 w-4" /> <span>Listen</span>
+              <Volume1 className="h-4 w-4" />
+              <span className="hidden sm:inline">Listen</span>
             </button>
           </div>
         </header>
 
-        {/* Glass HUD */}
-        <main className="relative z-10 my-auto min-h-0 px-3 py-3 sm:px-6">
-          <div className="glass relative overflow-hidden rounded-[clamp(20px,4vw,32px)] p-4 shadow-2xl sm:p-6">
-            <div className="pointer-events-none absolute -left-20 -top-20 h-48 w-48 rounded-full bg-amber-300/30 blur-2xl" />
-            <div className="pointer-events-none absolute -bottom-20 -right-20 h-48 w-48 rounded-full bg-emerald-400/30 blur-2xl" />
+        {/* Body */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+              <Globe className="h-3 w-3" /> <span data-no-translate>{LANGUAGES.length} Languages</span>
+            </span>
+            <span className="text-[12px] font-medium text-slate-500">
+              {t("picker.subtitle", "Select your preferred language")}
+            </span>
+          </div>
 
-            {/* Logo + title */}
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/40 pb-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <img
-                  src="/logo.png"
-                  alt="Smart Dairy Hub logo"
-                  width={96}
-                  height={96}
-                  fetchPriority="high"
-                  className="h-12 w-12 shrink-0 rounded-full bg-white/90 object-contain p-1 shadow-lg ring-2 ring-emerald-500 sm:h-14 sm:w-14"
-                />
-                <div className="min-w-0">
-                  <h1 className="truncate text-lg font-extrabold leading-none tracking-tight text-slate-900 sm:text-xl">
-                    Smart Dairy Hub
-                  </h1>
-                  <p className="mt-1 truncate text-[11px] font-semibold text-emerald-900 sm:text-xs" data-no-translate>
-                    {GREETINGS[selected] || t("picker.subtitle", "Select your preferred language")}
-                  </p>
-                </div>
-              </div>
-              <span className="shrink-0 rounded-full border border-emerald-500 bg-emerald-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
-                Official
-              </span>
-            </div>
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("common.search", "Search") + "..."}
+              aria-label="Search language"
+              className="h-12 rounded-2xl border-slate-200 bg-white pl-11 text-[15px] text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:ring-emerald-500/25"
+            />
+          </div>
 
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-800" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("common.search", "Search") + "..."}
-                aria-label="Search language"
-                className="h-11 rounded-2xl border-white/70 bg-white/70 pl-10 text-sm text-slate-900 placeholder:text-slate-500"
-              />
-            </div>
-
-            {/* Cards */}
-            <div
-              data-no-translate
-              className="grid max-h-[min(46svh,420px)] grid-cols-1 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-2"
-            >
-              {filtered.map((lng) => {
-                const active = selected === lng.code;
-                return (
-                  <button
-                    key={lng.code}
-                    type="button"
-                    onClick={() => pick(lng.code)}
-                    aria-pressed={active}
-                    className={`flex min-h-[56px] items-center justify-between gap-2 rounded-2xl border p-2.5 text-left transition-all duration-300 ${
+          {/* Cards */}
+          <div
+            data-no-translate
+            className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {filtered.map((lng) => {
+              const active = selected === lng.code;
+              return (
+                <button
+                  key={lng.code}
+                  type="button"
+                  onClick={() => pick(lng.code)}
+                  aria-pressed={active}
+                  className={`group flex min-h-[62px] items-center justify-between gap-2 rounded-2xl border p-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 ${
+                    active
+                      ? "border-emerald-500 bg-emerald-50/80 shadow-[0_10px_24px_-12px_rgba(22,163,74,0.55)]"
+                      : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_12px_28px_-18px_rgba(7,26,11,0.35)]"
+                  }`}
+                >
+                  <span className="flex min-w-0 flex-col">
+                    <span className="truncate text-[15px] font-bold text-slate-900">{lng.native}</span>
+                    <span className="truncate text-[11px] font-medium text-slate-500">{lng.label}</span>
+                  </span>
+                  <span
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition ${
                       active
-                        ? "border-2 border-emerald-600 bg-white shadow-[0_0_25px_rgba(22,163,74,0.45)]"
-                        : "border-white/70 bg-white/60 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-lg"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "border border-slate-300 bg-white text-transparent group-hover:border-emerald-300"
                     }`}
                   >
-                    <span className="flex min-w-0 items-center gap-2.5">
-                      <span className="text-lg leading-none" aria-hidden>
-                        🇮🇳
-                      </span>
-                      <span className="flex min-w-0 flex-col">
-                        <span className="truncate text-sm font-bold text-slate-900">{lng.native}</span>
-                        <span className="truncate text-[10px] font-semibold text-slate-700">
-                          ({lng.label})
-                        </span>
-                      </span>
-                    </span>
-                    <span
-                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition ${
-                        active
-                          ? "bg-emerald-600 text-white shadow-md"
-                          : "border border-slate-400/60 bg-white/50 text-transparent"
-                      }`}
-                    >
-                      <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
-                    </span>
-                  </button>
-                );
-              })}
-              {filtered.length === 0 && (
-                <div className="col-span-full rounded-2xl border border-white/70 bg-white/70 p-5 text-center text-sm text-slate-700">
-                  No matching language.
-                </div>
-              )}
-            </div>
-
-            {/* Action bar */}
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/40 pt-3.5">
-              <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold" data-no-translate>
-                <span className="text-slate-700">{t("picker.selected", "Selected")}:</span>
-                <span className="truncate rounded-lg border border-emerald-400/60 bg-white/80 px-2.5 py-1 font-bold text-emerald-800 shadow-sm">
-                  {selectedMeta?.native} ({selectedMeta?.label})
-                </span>
+                    <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
+                  </span>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+                No matching language.
               </div>
-              <Button
-                onClick={onContinue}
-                className="h-11 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 text-xs font-extrabold tracking-wide text-white shadow-lg transition active:scale-95 hover:brightness-110"
-              >
-                {t("picker.continue", "Continue")}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            )}
           </div>
-        </main>
+        </div>
 
-        {/* Footer */}
-        <footer className="relative z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent px-4 pb-4 pt-2 sm:px-6 sm:pb-6">
-          <div className="text-[11px] text-white/90">
-            <p className="font-bold text-emerald-300">Empowering Dairy Farmers Across India</p>
-            <p className="text-[10px] text-slate-300">Premium glassmorphism • AI-powered dairy platform</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-slate-900/60 px-2.5 py-1">
-            <span className="h-2 w-2 animate-ping rounded-full bg-emerald-400" />
-            <span className="text-[10px] font-bold text-emerald-200" data-no-translate>
-              {LANGUAGES.length} Languages
-            </span>
+        {/* Sticky action bar — always visible & clickable on every screen */}
+        <footer
+          className="shrink-0 border-t border-slate-900/[0.06] bg-white/85 px-5 py-4 backdrop-blur-xl sm:px-8"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2 text-[12px]" data-no-translate>
+              <span className="font-medium text-slate-500">{t("picker.selected", "Selected")}:</span>
+              <span className="truncate rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-bold text-emerald-800">
+                {selectedMeta?.native} ({selectedMeta?.label})
+              </span>
+            </div>
+            <Button
+              onClick={onContinue}
+              className="h-12 min-w-[160px] flex-1 rounded-2xl bg-emerald-600 px-6 text-sm font-extrabold tracking-wide text-white shadow-[0_14px_30px_-12px_rgba(22,163,74,0.7)] transition hover:bg-emerald-700 active:scale-[0.98] sm:flex-none"
+            >
+              {t("picker.continue", "Continue")}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </footer>
 
@@ -479,14 +301,14 @@ export default function LanguageSelect() {
           <div
             role="dialog"
             aria-modal="true"
-            className="absolute inset-0 z-50 flex animate-fade-in items-center justify-center bg-slate-950/75 p-6 backdrop-blur-md"
+            className="absolute inset-0 z-50 flex animate-fade-in items-center justify-center bg-white/70 p-6 backdrop-blur-md"
           >
-            <div className="w-full max-w-xs animate-scale-in rounded-3xl border-2 border-emerald-400 bg-white/95 p-6 text-center shadow-2xl">
-              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 shadow-md">
+            <div className="w-full max-w-sm animate-scale-in rounded-3xl border border-emerald-100 bg-white p-7 text-center shadow-[0_30px_70px_-24px_rgba(7,26,11,0.3)]">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                 <CheckCircle2 className="h-9 w-9" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">Welcome to Smart Dairy Hub</h2>
-              <p className="mb-5 mt-1 text-xs text-slate-600">
+              <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Welcome to Smart Dairy Hub</h2>
+              <p className="mb-6 mt-1.5 text-[13px] text-slate-500">
                 App language configured to{" "}
                 <strong className="font-bold text-emerald-700" data-no-translate>
                   {selectedMeta?.native} ({selectedMeta?.label})
@@ -496,14 +318,14 @@ export default function LanguageSelect() {
               <Button
                 autoFocus
                 onClick={onGetStarted}
-                className="h-12 w-full rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-lg hover:bg-emerald-500"
+                className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-bold text-white shadow-[0_14px_30px_-12px_rgba(22,163,74,0.7)] hover:bg-emerald-700"
               >
                 Get Started
               </Button>
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
