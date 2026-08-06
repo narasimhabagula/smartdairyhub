@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Cpu, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Cpu, Loader2, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,76 +29,10 @@ function safePostLoginDest(): string {
   return "/";
 }
 
-/** Gently floating leaves & light particles behind the card. */
-function AmbientCanvas() {
-  const ref = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const particles = Array.from({ length: 16 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 10 + 4,
-      speedY: Math.random() * 0.3 + 0.1,
-      speedX: (Math.random() - 0.5) * 0.25,
-      rotation: Math.random() * 360,
-      rotSpeed: (Math.random() - 0.5) * 0.8,
-      leaf: Math.random() > 0.45,
-    }));
-
-    let raf = 0;
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particles) {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        p.rotation += p.rotSpeed;
-        if (p.y > canvas.height + 15) {
-          p.y = -15;
-          p.x = Math.random() * canvas.width;
-        }
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        if (p.leaf) {
-          ctx.beginPath();
-          ctx.fillStyle = "rgba(67, 160, 71, 0.16)";
-          ctx.ellipse(0, 0, p.size, p.size / 2.2, 0, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.arc(0, 0, p.size / 4, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(102, 187, 106, 0.35)";
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = "rgba(67, 160, 71, 0.4)";
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-      raf = requestAnimationFrame(render);
-    };
-    render();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-  return <canvas ref={ref} className="pointer-events-none absolute inset-0 z-[1] h-full w-full" />;
-}
-
 const FIELD =
-  "h-14 w-full rounded-2xl border-[1.5px] border-gray-200 bg-white pl-12 pr-4 text-[15px] font-medium text-gray-900 outline-none transition-all placeholder:font-normal placeholder:text-gray-400 focus:border-[#2E7D32] focus:ring-4 focus:ring-[#2E7D32]/15";
+  "h-14 w-full rounded-2xl border-[1.5px] border-slate-200 bg-white pl-12 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/12";
 const BTN =
-  "flex h-[58px] w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985]";
+  "flex h-[56px] w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -157,60 +91,82 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-[#FFFCF7] text-gray-900 antialiased">
-      {/* Premium ambient background: soft green gradient, cream white, emerald glow */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_-10%,#EAF6EB_0%,#FFFCF7_55%,#F4FAF4_100%)]" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 z-0 h-80 w-80 rounded-full bg-gradient-to-tr from-[#B9E2BC]/45 via-emerald-100/25 to-transparent blur-3xl" />
-      <AmbientCanvas />
+    <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-white text-slate-900 antialiased">
+      {/* Ambient premium backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(120%_80%_at_50%_-20%,#F0F9FF_0%,#FFFFFF_50%,#F5FBF6_100%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed -bottom-40 -left-40 z-0 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.14),transparent_65%)] blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed -right-40 top-0 z-0 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_65%)] blur-3xl"
+      />
 
-      <main className="relative z-10 mx-auto w-full max-w-[520px] pb-6">
-        {/* HERO: fills the top of the screen, full photos, no crop */}
-        <header className="relative h-[46svh] min-h-[300px] w-full overflow-hidden rounded-b-[34px] shadow-[0_18px_40px_-18px_rgba(7,26,11,0.45)] sm:h-[48svh] sm:min-h-[360px]">
+      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1400px] flex-col lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-stretch lg:gap-0 lg:px-8 lg:py-8">
+        {/* ── VISUAL PANEL: top on mobile, left on desktop ── */}
+        <section className="relative h-[42svh] min-h-[280px] w-full overflow-hidden rounded-b-[32px] shadow-[0_18px_40px_-18px_rgba(7,26,11,0.4)] sm:h-[46svh] sm:min-h-[340px] lg:h-auto lg:min-h-0 lg:rounded-[32px] lg:shadow-[0_30px_80px_-30px_rgba(7,26,11,0.35)]">
           <LoginHeroSlider />
 
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/15 to-black/35" />
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/78 via-black/12 to-black/35" />
 
-          <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between p-4 text-white sm:p-5">
-            <div className="flex items-center justify-between">
+          <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between p-4 text-white sm:p-6 lg:p-9">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3.5 py-1.5 backdrop-blur-md">
                 <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-5 w-5 object-contain" />
-                <span className="font-heading text-sm font-extrabold tracking-tight">
+                <span className="text-sm font-extrabold tracking-tight">
                   Smart Dairy <span className="text-emerald-400">Hub</span>
                 </span>
               </div>
-
               <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
                 <Cpu className="h-3 w-3" />
                 <span>AI v3.4</span>
               </div>
             </div>
 
-            <div className="mb-6 max-w-[86%]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
+            <div className="max-w-[92%] lg:max-w-[30rem]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
                 Trusted by 140,000+ Farmers
               </p>
-              <h1 className="font-heading mt-1 text-xl font-extrabold leading-tight tracking-tight text-white sm:text-2xl">
+              <h1 className="mt-1.5 text-xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-2xl lg:text-4xl">
                 Next-Gen Precision Dairy Management
               </h1>
+              <p className="mt-2 hidden text-sm leading-relaxed text-white/85 lg:block">
+                AI disease detection, live milk rates, verified livestock marketplace and government
+                schemes — all in one premium platform.
+              </p>
+              <div className="mt-4 hidden items-center gap-2 lg:flex">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold backdrop-blur-md">
+                  <Sparkles className="h-3 w-3 text-emerald-300" /> Jerry AI Assistant
+                </span>
+                <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold backdrop-blur-md">
+                  12 Indian Languages
+                </span>
+              </div>
             </div>
           </div>
-        </header>
+        </section>
 
-        {/* LOGIN CARD: overlaps the hero naturally */}
-        <section className="relative z-20 -mt-9 px-4 sm:px-6">
-          <div className="rounded-[28px] border border-white/90 bg-white/90 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7">
-            <div className="mb-5 text-center">
-              <h2 className="font-heading text-2xl font-extrabold tracking-tight text-gray-900">Welcome Back</h2>
-              <p className="mt-1 text-[13px] text-gray-500">Sign in to continue your Smart Dairy Hub journey.</p>
+        {/* ── LOGIN CARD: below on mobile, right on desktop ── */}
+        <section className="relative z-20 -mt-9 px-4 pb-8 sm:px-6 lg:mt-0 lg:flex lg:items-center lg:justify-center lg:px-0 lg:pb-0 lg:pl-8">
+          <div className="mx-auto w-full max-w-[460px] rounded-[28px] border border-white/90 bg-white/92 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7 lg:p-8">
+            <div className="mb-6 text-center lg:text-left">
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 lg:text-[28px]">Welcome Back</h2>
+              <p className="mt-1.5 text-[13px] text-slate-500">
+                Sign in to continue your Smart Dairy Hub journey.
+              </p>
             </div>
 
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-gray-700">
+                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-slate-700">
                   Email / Farmer ID
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                     <Mail className="h-5 w-5" />
                   </span>
                   <input
@@ -229,15 +185,15 @@ export default function Login() {
 
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <label htmlFor="sdh-password" className="text-[12px] font-bold text-gray-700">
+                  <label htmlFor="sdh-password" className="text-[12px] font-bold text-slate-700">
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-[12px] font-bold text-[#2E7D32] hover:underline">
+                  <Link to="/forgot-password" className="text-[12px] font-bold text-emerald-700 hover:underline">
                     Forgot Password?
                   </Link>
                 </div>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                     <Lock className="h-5 w-5" />
                   </span>
                   <input
@@ -255,9 +211,9 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowPwd((v) => !v)}
                     aria-label={showPwd ? "Hide password" : "Show password"}
-                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600"
                   >
-                    {showPwd ? <EyeOff className="h-5 w-5 text-[#2E7D32]" /> : <Eye className="h-5 w-5" />}
+                    {showPwd ? <EyeOff className="h-5 w-5 text-emerald-700" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
@@ -267,15 +223,15 @@ export default function Login() {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-[18px] w-[18px] cursor-pointer rounded accent-[#2E7D32]"
+                  className="h-[18px] w-[18px] cursor-pointer rounded accent-emerald-600"
                 />
-                <span className="text-[13px] font-medium text-gray-600">Remember this device</span>
+                <span className="text-[13px] font-medium text-slate-600">Remember this device</span>
               </label>
 
               <button
                 type="submit"
                 disabled={loading}
-                className={`${BTN} bg-gradient-to-br from-[#2E7D32] to-[#43A047] text-white shadow-[0_12px_26px_-8px_rgba(46,125,50,0.55)] hover:-translate-y-px hover:from-[#1B5E20] hover:to-[#2E7D32] disabled:opacity-70`}
+                className={`${BTN} bg-gradient-to-br from-emerald-700 to-emerald-500 text-white shadow-[0_14px_30px_-10px_rgba(22,163,74,0.6)] hover:-translate-y-px hover:brightness-[1.06] disabled:opacity-70`}
               >
                 {loading ? (
                   <>
@@ -283,22 +239,24 @@ export default function Login() {
                   </>
                 ) : (
                   <>
-                    Sign In <ArrowRight className="h-5 w-5" />
+                    Continue with Email <ArrowRight className="h-5 w-5" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-gray-200" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">or continue with</span>
-              <div className="h-px flex-1 bg-gray-200" />
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                or continue with
+              </span>
+              <div className="h-px flex-1 bg-slate-200" />
             </div>
 
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className={`${BTN} border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow`}
+              className={`${BTN} border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:shadow`}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -312,26 +270,26 @@ export default function Login() {
             <button
               type="button"
               onClick={continueAsGuest}
-              className={`${BTN} mt-3 border border-emerald-100 bg-emerald-50/70 text-[#1B5E20] hover:bg-emerald-50`}
+              className={`${BTN} mt-3 border border-emerald-100 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-50`}
             >
               Continue as Guest
             </button>
+
+            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
+              <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                Encrypted with 256-Bit SSL Security • ISO 27001 Certified
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-slate-600">
+                <Link to="/privacy" className="hover:text-emerald-700">Privacy</Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/terms" className="hover:text-emerald-700">Terms</Link>
+                <span className="text-slate-300">•</span>
+                <a href="tel:18001801551" className="text-emerald-700 hover:underline">Support</a>
+              </div>
+            </div>
           </div>
         </section>
-
-        <footer className="mt-5 px-4 text-center">
-          <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gray-500">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#2E7D32]" />
-            Encrypted with 256-Bit SSL Security • ISO 27001 Certified
-          </p>
-          <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-gray-600">
-            <Link to="/privacy" className="hover:text-[#1B5E20]">Privacy</Link>
-            <span>•</span>
-            <Link to="/terms" className="hover:text-[#1B5E20]">Terms</Link>
-            <span>•</span>
-            <a href="tel:18001801551" className="text-[#1B5E20] hover:underline">Support</a>
-          </div>
-        </footer>
       </main>
     </div>
   );
