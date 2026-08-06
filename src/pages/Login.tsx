@@ -127,7 +127,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="max-w-[92%] lg:max-w-[30rem]">
+            <div className="mb-12 max-w-[92%] sm:mb-14 lg:mb-0 lg:max-w-[30rem]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
                 Trusted by 140,000+ Farmers
               </p>
