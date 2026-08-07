@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import jerryIcon from "@/assets/jerry-bot-icon.png.asset.json";
+import jerryIcon from "@/assets/jerry-bot-icon.png";
 import { jt } from "@/services/translation";
 import type { JerryLangCode } from "@/types/jerry";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ const JerryButton = memo(({ open, onClick, lang }: Props) => (
           transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 2.2, ease: "easeOut" }}
         />
         <img
-          src={jerryIcon.url}
+          src={jerryIcon}
           alt=""
           width={512}
           height={512}
