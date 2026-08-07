@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   User as UserIcon, Save, MapPin, Phone, Mail, Languages as LangIcon,
-  Milk, Wheat, Stethoscope, Heart, IndianRupee, Camera, ShoppingCart, ShieldCheck, Sparkles,
+  Milk, Wheat, Stethoscope, Heart, IndianRupee, Camera, ImagePlus, LogOut, ShoppingCart, ShieldCheck, Sparkles,
 } from "lucide-react";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
