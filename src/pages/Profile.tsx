@@ -162,45 +162,27 @@ export default function Profile() {
             <Stat label="Poultry" value={extras.poultry_count ?? 0} />
             <Stat label="Saved" value={favListings} />
           </div>
+
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <Link to="/my-listings" className="rounded-xl border bg-card/70 px-3 py-2 text-center text-xs font-medium transition hover:border-primary hover:bg-primary/5">
+              <Heart className="mx-auto mb-0.5 h-4 w-4 text-primary" /> Saved listings: {favListings}
+            </Link>
+            <Link to="/my-appointments" className="rounded-xl border bg-card/70 px-3 py-2 text-center text-xs font-medium transition hover:border-primary hover:bg-primary/5">
+              <Stethoscope className="mx-auto mb-0.5 h-4 w-4 text-primary" /> Vet appointments
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-center text-xs font-semibold text-destructive transition hover:bg-destructive/10"
+            >
+              <LogOut className="mx-auto mb-0.5 h-4 w-4" /> Sign Out
+            </button>
+          </div>
         </section>
 
-      <div className="grid gap-5 md:grid-cols-[260px_1fr]">
-        {/* Avatar card */}
-
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-5">
-            <div className="relative h-28 w-28 overflow-hidden rounded-full bg-primary/10 ring-4 ring-primary/20">
-              {extras.avatar_url ? (
-                <img src={extras.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-primary">{initials}</div>
-              )}
-              <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-primary p-1.5 text-primary-foreground shadow-md hover:opacity-90">
-                <Camera className="h-3.5 w-3.5" />
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onAvatarFile(e.target.files[0])} />
-              </label>
-            </div>
-            <div className="text-center">
-              <div className="font-display text-lg font-semibold">{fullName || "Add your name"}</div>
-              <div className="text-xs text-muted-foreground break-all">{user.email}</div>
-            </div>
-            <div className="grid w-full grid-cols-3 gap-2 pt-2 text-center">
-              <Stat label="Cows" value={extras.cow_count ?? 0} />
-              <Stat label="Buffalo" value={extras.buffalo_count ?? 0} />
-              <Stat label="Poultry" value={extras.poultry_count ?? 0} />
-            </div>
-            <div className="mt-2 grid w-full gap-2 text-center">
-              <Link to="/my-listings" className="rounded-lg border bg-card px-3 py-2 text-xs hover:border-primary hover:bg-primary/5">
-                <Heart className="mx-auto mb-0.5 h-4 w-4 text-primary" /> Saved listings: {favListings}
-              </Link>
-              <Link to="/my-appointments" className="rounded-lg border bg-card px-3 py-2 text-xs hover:border-primary hover:bg-primary/5">
-                <Stethoscope className="mx-auto mb-0.5 h-4 w-4 text-primary" /> Favourite vets
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-5">
         <div className="space-y-5">
+
           {/* Personal */}
           <Card>
             <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><UserIcon className="h-4 w-4" /> Personal Info</CardTitle></CardHeader>
