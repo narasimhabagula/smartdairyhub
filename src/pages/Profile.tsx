@@ -52,7 +52,14 @@ function saveExtras(uid: string, v: FarmExtras) {
 }
 
 export default function Profile() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Signed out");
+    navigate("/login", { replace: true });
+  };
+
   const [fullName, setFullName] = useState(profile?.full_name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
   const [language, setLanguage] = useState<LanguageCode>(((profile?.language as LanguageCode) || "en"));
