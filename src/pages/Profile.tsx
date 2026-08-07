@@ -135,17 +135,44 @@ export default function Profile() {
         {/* Hero identity card */}
         <section className="mb-6 overflow-hidden rounded-3xl border border-white/40 bg-white/60 p-5 shadow-xl backdrop-blur-xl dark:bg-card/60">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-primary/10 ring-4 ring-primary/25">
-              {extras.avatar_url ? (
-                <img src={extras.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <img src={farmerAvatar} alt="" width={1024} height={1024} loading="lazy" className="h-full w-full object-cover" />
+            <div className="flex shrink-0 flex-col items-center gap-2">
+              <div className="relative h-24 w-24 overflow-hidden rounded-full bg-primary/10 ring-4 ring-primary/25">
+                <img
+                  src={extras.avatar_url || farmerAvatar}
+                  alt={fullName ? `${fullName}'s profile photo` : "Profile photo"}
+                  width={1024}
+                  height={1024}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 focus-within:ring-2 focus-within:ring-primary/50"
+                  title="Upload from gallery"
+                >
+                  <ImagePlus className="h-3.5 w-3.5" /> Gallery
+                  <input type="file" accept="image/*" className="sr-only" aria-label="Upload profile photo from gallery" onChange={(e) => e.target.files?.[0] && onAvatarFile(e.target.files[0])} />
+                </label>
+                <label
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-primary/30 bg-card px-2.5 py-1 text-[11px] font-semibold text-primary shadow-sm transition hover:bg-primary/5 focus-within:ring-2 focus-within:ring-primary/50"
+                  title="Take a photo"
+                >
+                  <Camera className="h-3.5 w-3.5" /> Camera
+                  <input type="file" accept="image/*" capture="environment" className="sr-only" aria-label="Take a profile photo with the camera" onChange={(e) => e.target.files?.[0] && onAvatarFile(e.target.files[0])} />
+                </label>
+              </div>
+              {extras.avatar_url && (
+                <button
+                  type="button"
+                  onClick={() => updateExtra("avatar_url", undefined)}
+                  className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
+                >
+                  Remove photo
+                </button>
               )}
-              <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-primary p-1.5 text-primary-foreground shadow-md hover:opacity-90">
-                <Camera className="h-3.5 w-3.5" />
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onAvatarFile(e.target.files[0])} />
-              </label>
             </div>
+
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <h1 className="font-display text-2xl font-bold sm:text-3xl">{fullName || "Add your name"}</h1>
