@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import jerryMascot from "@/assets/jerry.png";
+import jerryIcon from "@/assets/jerry-bot-icon.png";
 import { jt } from "@/services/translation";
 import type { JerryLangCode } from "@/types/jerry";
 import { cn } from "@/lib/utils";
@@ -12,48 +12,63 @@ type Props = {
   lang: JerryLangCode;
 };
 
-/** Floating circular launcher — bottom right, glassmorphism + gradient. */
+/**
+ * Floating launcher — the Jerry mascot itself IS the button.
+ * No square container, no crop: a perfect transparent circle like WhatsApp's FAB.
+ */
 const JerryButton = memo(({ open, onClick, lang }: Props) => (
   <motion.button
     type="button"
     onClick={onClick}
     aria-label={open ? jt(lang, "close") : jt(lang, "open")}
     aria-expanded={open}
-    initial={{ scale: 0.8, opacity: 0 }}
-    animate={open ? { scale: 1, opacity: 1, y: 0 } : { scale: 1, opacity: 1, y: [0, -5, 0] }}
+    initial={{ scale: 0.4, opacity: 0, y: 24 }}
+    animate={
+      open
+        ? { scale: 1, opacity: 1, y: 0 }
+        : { scale: 1, opacity: 1, y: [0, -6, 0] }
+    }
     transition={
       open
         ? { type: "spring", stiffness: 320, damping: 18 }
-        : { y: { duration: 3.4, repeat: Infinity, ease: "easeInOut" }, scale: { type: "spring", stiffness: 320, damping: 18 } }
+        : {
+            y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
+            scale: { type: "spring", stiffness: 260, damping: 12 },
+            opacity: { duration: 0.35 },
+          }
     }
-    whileHover={{ scale: 1.07 }}
-    whileTap={{ scale: 0.94 }}
+    whileHover={{ scale: 1.09 }}
+    whileTap={{ scale: 0.93 }}
     className={cn(
-      "fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full",
-      open
-        ? "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground"
-        : "bg-background/70 text-foreground",
-      "shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.6)] ring-2 ring-primary/40 backdrop-blur-xl",
-      "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60 md:bottom-6 md:right-6",
+      "group fixed bottom-20 right-4 z-40 grid h-[62px] w-[62px] place-items-center rounded-full",
+      "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 md:bottom-6 md:right-6",
+      open && "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_14px_34px_-10px_hsl(var(--primary)/0.65)]",
     )}
   >
     {open ? (
       <X className="h-6 w-6" />
     ) : (
       <>
-        <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/25 blur-md" />
+        {/* Soft glow + slow pulse ring, sitting behind the transparent mascot */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full bg-primary/30 blur-lg transition-opacity group-hover:opacity-90"
+        />
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-primary/45"
+          animate={{ scale: [1, 1.35, 1.35], opacity: [0.65, 0, 0] }}
+          transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 2.2, ease: "easeOut" }}
+        />
         <img
-          src={jerryMascot}
+          src={jerryIcon}
           alt=""
-          width={112}
-          height={112}
+          width={512}
+          height={512}
           loading="lazy"
           decoding="async"
-          className="relative h-12 w-12 object-contain drop-shadow"
+          className="relative h-[62px] w-[62px] rounded-full object-contain drop-shadow-[0_10px_20px_rgba(7,26,11,0.32)]"
         />
-        <span className="absolute -right-0.5 -top-0.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-emerald-950 shadow">
-          AI
-        </span>
       </>
     )}
   </motion.button>

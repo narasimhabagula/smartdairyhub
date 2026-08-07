@@ -287,7 +287,7 @@ export default function Settings() {
         </Card>
 
         {user && (
-          <Button variant="destructive" className="w-full" onClick={async () => { await signOut(); navigate("/"); }}>
+          <Button variant="destructive" className="w-full" onClick={async () => { await signOut(); navigate("/login", { replace: true }); }}>
             <LogOut className="mr-2 h-4 w-4" /> Sign out
           </Button>
         )}
