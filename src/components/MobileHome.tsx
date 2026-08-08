@@ -4,6 +4,7 @@ import {
   Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import DownloadAppSection from "@/components/DownloadAppSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useTranslation } from "react-i18next";
