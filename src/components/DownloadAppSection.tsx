@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, Download, Loader2, Smartphone, ShieldCheck } from "lucide-react";
 import { APK, apkSizeLabel, downloadApk } from "@/lib/apk";
 import { useUiStrings } from "@/lib/uiStrings";
@@ -13,6 +13,7 @@ type Props = { className?: string };
  */
 export default function DownloadAppSection({ className }: Props) {
   const s = useUiStrings();
+  const titleId = useId();
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
 
   const start = () => {
@@ -29,7 +30,7 @@ export default function DownloadAppSection({ className }: Props) {
     state === "working" ? s.dlPreparing : state === "done" ? s.dlStarted : s.dlButton;
 
   return (
-    <section className={cn("px-4 py-10 sm:px-6 lg:py-16", className)} aria-labelledby="sdh-download-title">
+    <section className={cn("px-4 py-10 sm:px-6 lg:py-16", className)} aria-labelledby={titleId}>
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 overflow-hidden rounded-[32px] border border-border/60 bg-gradient-to-br from-primary to-emerald-700 p-6 text-primary-foreground shadow-glow sm:p-9 lg:flex-row lg:gap-14 lg:p-12">
         {/* Copy */}
         <div className="w-full flex-1 text-center lg:text-left">
@@ -37,7 +38,7 @@ export default function DownloadAppSection({ className }: Props) {
             <Smartphone className="h-3 w-3" aria-hidden /> Android
           </span>
           <h2
-            id="sdh-download-title"
+            id={titleId}
             className="mt-3 font-display text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl"
           >
             {s.dlTitle}
