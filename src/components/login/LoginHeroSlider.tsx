@@ -81,7 +81,7 @@ export default function LoginHeroSlider() {
             loading={idx === 0 ? "eager" : "lazy"}
             fetchPriority={idx === 0 ? "high" : "low"}
             decoding="async"
-            className="absolute inset-0 h-full w-full object-contain object-center"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
         </div>
       ))}
