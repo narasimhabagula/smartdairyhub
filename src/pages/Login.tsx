@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Cpu, Loader2, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Loader2, LogIn, ShieldCheck, Sparkles, TrendingUp, ShieldCheck as Shield2, Cpu } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiStrings } from "@/lib/uiStrings";
 import LoginHeroSlider from "@/components/login/LoginHeroSlider";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
@@ -37,6 +38,7 @@ const BTN =
 export default function Login() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const s = useUiStrings();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +64,6 @@ export default function Login() {
       toast.error(friendlyAuthError(error.message));
       return;
     }
-    toast.success("Welcome back! Redirecting…");
     navigate("/", { replace: true });
   };
 
@@ -90,6 +91,12 @@ export default function Login() {
     navigate("/", { replace: true });
   };
 
+  const BENEFITS = [
+    { icon: Cpu, title: s.benefit1, sub: s.benefit1Sub },
+    { icon: TrendingUp, title: s.benefit2, sub: s.benefit2Sub },
+    { icon: Shield2, title: s.benefit3, sub: s.benefit3Sub },
+  ];
+
   return (
     <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-white text-slate-900 antialiased">
       {/* Ambient premium backdrop */}
@@ -103,156 +110,73 @@ export default function Login() {
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed -right-40 top-0 z-0 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_65%)] blur-3xl"
+        className="pointer-events-none fixed -right-40 top-0 z-0 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.12),transparent_65%)] blur-3xl"
       />
 
-      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1400px] flex-col lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-stretch lg:gap-0 lg:px-8 lg:py-8">
-        {/* ── VISUAL PANEL: top on mobile, left on desktop ── */}
-        <section className="relative h-[42svh] min-h-[280px] w-full overflow-hidden rounded-b-[32px] shadow-[0_18px_40px_-18px_rgba(7,26,11,0.4)] sm:h-[46svh] sm:min-h-[340px] lg:h-auto lg:min-h-0 lg:rounded-[32px] lg:shadow-[0_30px_80px_-30px_rgba(7,26,11,0.35)]">
+      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1500px] flex-col md:grid md:grid-cols-[1.05fr_1fr] md:items-stretch md:gap-0 md:px-6 md:py-6 lg:px-10 lg:py-10">
+        {/* ── HERO PANEL: desktop / laptop / tablet only ── */}
+        <section className="relative hidden overflow-hidden rounded-[32px] shadow-[0_30px_80px_-30px_rgba(7,26,11,0.35)] md:block">
           <LoginHeroSlider />
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/25 to-black/45" />
 
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/78 via-black/12 to-black/35" />
-
-          <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between p-4 text-white sm:p-6 lg:p-9">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3.5 py-1.5 backdrop-blur-md">
-                <img src="/logo.png" alt="Smart Dairy Hub logo" className="h-5 w-5 object-contain" />
-                <span className="text-sm font-extrabold tracking-tight">
-                  Smart Dairy <span className="text-emerald-400">Hub</span>
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
-                <Cpu className="h-3 w-3" />
-                <span>AI v3.4</span>
-              </div>
+          <div className="relative z-10 flex h-full flex-col justify-between p-7 text-white lg:p-10">
+            <div className="flex items-center gap-2.5 rounded-full border border-white/20 bg-black/35 px-4 py-2 backdrop-blur-md w-fit">
+              <img src="/logo.png" alt="" width={28} height={28} className="h-6 w-6 object-contain" />
+              <span className="text-sm font-extrabold tracking-tight" data-no-translate>
+                Smart Dairy <span className="text-emerald-300">Hub</span>
+              </span>
             </div>
 
-            <div className="mb-12 max-w-[92%] sm:mb-14 lg:mb-0 lg:max-w-[30rem]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
-                Trusted by 140,000+ Farmers
-              </p>
-              <h1 className="mt-1.5 text-xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-2xl lg:text-4xl">
-                Next-Gen Precision Dairy Management
+            <div className="max-w-[34rem]">
+              <h1 className="font-display text-3xl font-extrabold leading-[1.1] tracking-tight lg:text-[44px]">
+                {s.brand}
               </h1>
-              <p className="mt-2 hidden text-sm leading-relaxed text-white/85 lg:block">
-                AI disease detection, live milk rates, verified livestock marketplace and government
-                schemes — all in one premium platform.
-              </p>
-              <div className="mt-4 hidden items-center gap-2 lg:flex">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold backdrop-blur-md">
-                  <Sparkles className="h-3 w-3 text-emerald-300" /> Jerry AI Assistant
-                </span>
-                <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold backdrop-blur-md">
-                  12 Indian Languages
-                </span>
+              <p className="mt-2 text-lg font-bold text-emerald-300 lg:text-xl">{s.tagline}</p>
+              <p className="mt-3 text-sm leading-relaxed text-white/85 lg:text-[15px]">{s.heroLead}</p>
+
+              <ul className="mt-7 space-y-3.5">
+                {BENEFITS.map((b) => (
+                  <li key={b.title} className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 backdrop-blur">
+                      <b.icon className="h-5 w-5 text-emerald-300" aria-hidden />
+                    </span>
+                    <span>
+                      <span className="block text-[15px] font-bold leading-tight">{b.title}</span>
+                      <span className="block text-[12.5px] text-white/75">{b.sub}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 inline-flex items-center gap-2.5 rounded-2xl border border-white/20 bg-black/35 px-4 py-3 backdrop-blur-md">
+                <Sparkles className="h-4 w-4 shrink-0 text-emerald-300" aria-hidden />
+                <span className="text-[13px] font-semibold leading-snug">{s.footerBadge}</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── LOGIN CARD: below on mobile, right on desktop ── */}
-        <section className="relative z-20 -mt-9 px-4 pb-8 sm:px-6 lg:mt-0 lg:flex lg:items-center lg:justify-center lg:px-0 lg:pb-0 lg:pl-8">
-          <div className="mx-auto w-full max-w-[460px] rounded-[28px] border border-white/90 bg-white/92 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7 lg:p-8">
-            <div className="mb-6 text-center lg:text-left">
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 lg:text-[28px]">Welcome Back</h2>
-              <p className="mt-1.5 text-[13px] text-slate-500">
-                Sign in to continue your Smart Dairy Hub journey.
-              </p>
+        {/* ── LOGIN CARD ── */}
+        <section className="relative z-20 flex flex-1 items-center justify-center px-4 py-8 sm:px-6 md:py-0 md:pl-8 lg:pl-12">
+          <div className="mx-auto w-full max-w-[440px] rounded-[28px] border border-white/90 bg-white/95 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7 lg:p-8">
+            {/* Brand — mobile leads with the logo, no heavy hero image */}
+            <div className="mb-6 flex flex-col items-center text-center">
+              <img
+                src="/logo.png"
+                alt="Smart Dairy Hub"
+                width={72}
+                height={72}
+                fetchPriority="high"
+                decoding="sync"
+                className="h-16 w-16 object-contain md:h-14 md:w-14"
+              />
+              <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-slate-900">
+                {s.welcomeBack} <span aria-hidden>👋</span>
+              </h2>
+              <p className="mt-1.5 text-[13px] text-slate-500">{s.signInSubtitle}</p>
             </div>
 
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div>
-                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-slate-700">
-                  Email / Farmer ID
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                    <Mail className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="sdh-email"
-                    type="text"
-                    required
-                    autoComplete="email"
-                    maxLength={255}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ramesh.patel@dairyhub.in"
-                    className={FIELD}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <label htmlFor="sdh-password" className="text-[12px] font-bold text-slate-700">
-                    Password
-                  </label>
-                  <Link to="/forgot-password" className="text-[12px] font-bold text-emerald-700 hover:underline">
-                    Forgot Password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                    <Lock className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="sdh-password"
-                    type={showPwd ? "text" : "password"}
-                    required
-                    autoComplete="current-password"
-                    maxLength={128}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className={`${FIELD} pr-12`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd((v) => !v)}
-                    aria-label={showPwd ? "Hide password" : "Show password"}
-                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600"
-                  >
-                    {showPwd ? <EyeOff className="h-5 w-5 text-emerald-700" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <label className="flex cursor-pointer items-center gap-2.5 py-0.5">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="h-[18px] w-[18px] cursor-pointer rounded accent-emerald-600"
-                />
-                <span className="text-[13px] font-medium text-slate-600">Remember this device</span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`${BTN} bg-gradient-to-br from-emerald-700 to-emerald-500 text-white shadow-[0_14px_30px_-10px_rgba(22,163,74,0.6)] hover:-translate-y-px hover:brightness-[1.06] disabled:opacity-70`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" /> Authenticating…
-                  </>
-                ) : (
-                  <>
-                    Continue with Email <ArrowRight className="h-5 w-5" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                or continue with
-              </span>
-              <div className="h-px flex-1 bg-slate-200" />
-            </div>
-
+            {/* 1. Google */}
             <button
               type="button"
               onClick={handleGoogleSignIn}
@@ -264,28 +188,132 @@ export default function Login() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <span>Continue with Google</span>
+              <span>{s.google}</span>
             </button>
 
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.orEmail}</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            {/* 2. Email  3. Password  4. Sign In */}
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div>
+                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                  {s.emailLabel}
+                </label>
+                <div className="relative">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <Mail className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="sdh-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    maxLength={255}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={s.emailPlaceholder}
+                    className={FIELD}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="sdh-password" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                  {s.passwordLabel}
+                </label>
+                <div className="relative">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <Lock className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="sdh-password"
+                    type={showPwd ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    maxLength={128}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={s.passwordPlaceholder}
+                    className={`${FIELD} pr-12`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((v) => !v)}
+                    aria-label={showPwd ? s.hidePassword : s.showPassword}
+                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+                  >
+                    {showPwd ? <EyeOff className="h-5 w-5 text-emerald-700" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <label className="flex cursor-pointer items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-[18px] w-[18px] cursor-pointer rounded accent-emerald-600"
+                  />
+                  <span className="text-[13px] font-medium text-slate-600">{s.remember}</span>
+                </label>
+                <Link to="/forgot-password" className="text-[12px] font-bold text-emerald-700 hover:underline">
+                  {s.forgot}
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`${BTN} bg-gradient-to-br from-emerald-700 to-emerald-600 text-white shadow-[0_14px_30px_-10px_rgba(22,163,74,0.6)] hover:-translate-y-px hover:brightness-[1.06] disabled:opacity-70`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> {s.signingIn}
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="h-5 w-5" aria-hidden /> {s.signIn}
+                  </>
+                )}
+              </button>
+            </form>
+
+            <p className="mt-4 text-center text-[13px] text-slate-500">
+              {s.newHere}{" "}
+              <Link to="/select-role" className="font-bold text-emerald-700 hover:underline">
+                {s.createAccount}
+              </Link>
+            </p>
+
+            <div className="my-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.or}</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            {/* 5. Guest */}
             <button
               type="button"
               onClick={continueAsGuest}
-              className={`${BTN} mt-3 border border-emerald-100 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-50`}
+              className={`${BTN} border border-emerald-100 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-50`}
             >
-              Continue as Guest
+              {s.guest}
             </button>
 
             <div className="mt-6 border-t border-slate-100 pt-4 text-center">
               <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                Encrypted with 256-Bit SSL Security • ISO 27001 Certified
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+                {s.secure}
               </p>
               <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-slate-600">
-                <Link to="/privacy" className="hover:text-emerald-700">Privacy</Link>
-                <span className="text-slate-300">•</span>
-                <Link to="/terms" className="hover:text-emerald-700">Terms</Link>
-                <span className="text-slate-300">•</span>
-                <a href="tel:18001801551" className="text-emerald-700 hover:underline">Support</a>
+                <Link to="/privacy" className="hover:text-emerald-700">{s.privacy}</Link>
+                <span aria-hidden className="text-slate-300">•</span>
+                <Link to="/terms" className="hover:text-emerald-700">{s.terms}</Link>
               </div>
             </div>
           </div>
