@@ -305,6 +305,9 @@ export default function MobileHome() {
         </Link>
       </section>
 
+      {/* ============ DOWNLOAD APP ============ */}
+      <DownloadAppSection className="mt-8 px-0" />
+
       {/* AI Scan is now available via the unified Jerry floating menu */}
     </div>
   );

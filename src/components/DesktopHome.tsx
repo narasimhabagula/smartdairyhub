@@ -5,6 +5,7 @@ import { BANNERS, FEATURE_CARDS, QUICK_ACTIONS, IMG } from "@/components/home/ho
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
+import DownloadAppSection from "@/components/DownloadAppSection";
 
 const SHELL = "mx-auto w-full max-w-[1600px] px-6 lg:px-10 xl:px-14";
 
@@ -198,6 +199,9 @@ export default function DesktopHome() {
           </Button>
         </div>
       </section>
+
+      {/* ================= DOWNLOAD APP ================= */}
+      <DownloadAppSection />
     </div>
   );
 }
