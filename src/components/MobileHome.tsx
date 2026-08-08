@@ -4,6 +4,7 @@ import {
   Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import DownloadAppSection from "@/components/DownloadAppSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useTranslation } from "react-i18next";
@@ -304,6 +305,9 @@ export default function MobileHome() {
           <ChevronRight className="h-5 w-5" />
         </Link>
       </section>
+
+      {/* ============ DOWNLOAD APP ============ */}
+      <DownloadAppSection className="mt-8 px-0" />
 
       {/* AI Scan is now available via the unified Jerry floating menu */}
     </div>
