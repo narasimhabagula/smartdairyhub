@@ -171,7 +171,7 @@ export default function Login() {
                 className="h-16 w-16 object-contain md:h-14 md:w-14"
               />
               <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-slate-900">
-                {s.welcomeBack} <span aria-hidden>👋</span>
+                {s.welcomeBack}
               </h2>
               <p className="mt-1.5 text-[13px] text-slate-500">{s.signInSubtitle}</p>
             </div>
