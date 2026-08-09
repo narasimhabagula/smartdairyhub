@@ -126,6 +126,28 @@ const hi: Strings = {
   dlPoint1: "सेव किए गए डेटा के लिए ऑफ़लाइन काम करता है",
   dlPoint2: "आपकी भाषा में वॉइस असिस्टेंट",
   dlPoint3: "तुरंत दूध दर और पशु चिकित्सक अलर्ट",
+  dlBadge: "एंड्रॉइड ऐप",
+  dlHeadA: "डाउनलोड करें",
+  dlHeadB: "स्मार्ट डेयरी हब",
+  dlDesc:
+    "दूध दर, पशु सेवाएँ, पशु चिकित्सा सहायता, AI सहायता और बहुत कुछ के लिए आपका संपूर्ण डेयरी साथी।",
+  dlHowTo: "इंस्टॉल कैसे करें",
+  dlAndroidVersion: "एंड्रॉइड 6.0+",
+  dlSafe: "100% सुरक्षित",
+  dlVerified: "सत्यापित APK",
+  dlPlayA: "जल्द आ रहा है",
+  dlPlayB: "Google Play पर",
+  dlPlayLead: "स्मार्ट डेयरी हब जल्द ही Google Play स्टोर पर उपलब्ध होगा।",
+  dlComingSoon: "जल्द आ रहा है",
+  dlAndroidApp: "एंड्रॉइड ऐप",
+  dlPlayNote: "Google Play पर जल्द आ रहा है",
+  dlInstallTitle: "स्मार्ट डेयरी हब इंस्टॉल कैसे करें",
+  dlStep1: "Smart Dairy Hub.apk डाउनलोड करें",
+  dlStep2: "डाउनलोड की गई APK फ़ाइल खोलें",
+  dlStep3: "एंड्रॉइड पूछे तो इंस्टॉल की अनुमति दें",
+  dlStep4: "Install दबाएँ और स्मार्ट डेयरी हब शुरू करें",
+  dlGotIt: "समझ गया",
+
 };
 
 const te: Strings = {
@@ -173,6 +195,28 @@ const te: Strings = {
   dlPoint1: "సేవ్ చేసిన డేటాకు ఆఫ్‌లైన్‌లో పనిచేస్తుంది",
   dlPoint2: "మీ భాషలో వాయిస్ అసిస్టెంట్",
   dlPoint3: "తక్షణ పాల ధర & పశువైద్య హెచ్చరికలు",
+  dlBadge: "ఆండ్రాయిడ్ యాప్",
+  dlHeadA: "డౌన్‌లోడ్ చేయండి",
+  dlHeadB: "స్మార్ట్ డెయిరీ హబ్",
+  dlDesc:
+    "పాల ధరలు, పశు సేవలు, పశువైద్య సహాయం, AI సహాయం మరియు మరిన్ని కోసం మీ సంపూర్ణ డెయిరీ సహచరుడు.",
+  dlHowTo: "ఇన్‌స్టాల్ ఎలా చేయాలి",
+  dlAndroidVersion: "ఆండ్రాయిడ్ 6.0+",
+  dlSafe: "100% సురక్షితం",
+  dlVerified: "ధృవీకరించిన APK",
+  dlPlayA: "త్వరలో",
+  dlPlayB: "Google Playలో",
+  dlPlayLead: "స్మార్ట్ డెయిరీ హబ్ త్వరలో Google Play స్టోర్‌లో అందుబాటులో ఉంటుంది.",
+  dlComingSoon: "త్వరలో",
+  dlAndroidApp: "ఆండ్రాయిడ్ యాప్",
+  dlPlayNote: "Google Playలో త్వరలో",
+  dlInstallTitle: "స్మార్ట్ డెయిరీ హబ్ ఇన్‌స్టాల్ చేయడం ఎలా",
+  dlStep1: "Smart Dairy Hub.apk డౌన్‌లోడ్ చేయండి",
+  dlStep2: "డౌన్‌లోడ్ చేసిన APK ఫైల్‌ను తెరవండి",
+  dlStep3: "ఆండ్రాయిడ్ అడిగితే ఇన్‌స్టాల్ అనుమతి ఇవ్వండి",
+  dlStep4: "Install నొక్కి స్మార్ట్ డెయిరీ హబ్ ప్రారంభించండి",
+  dlGotIt: "అర్థమైంది",
+
 };
 
 const ta: Strings = {
@@ -220,6 +264,28 @@ const ta: Strings = {
   dlPoint1: "சேமித்த தரவுக்கு ஆஃப்லைனில் இயங்கும்",
   dlPoint2: "உங்கள் மொழியில் குரல் உதவியாளர்",
   dlPoint3: "உடனடி பால் விலை & மருத்துவ எச்சரிக்கைகள்",
+  dlBadge: "ஆண்ட்ராய்டு ஆப்",
+  dlHeadA: "பதிவிறக்கவும்",
+  dlHeadB: "ஸ்மார்ட் டெய்ரி ஹப்",
+  dlDesc:
+    "பால் விலைகள், கால்நடை சேவைகள், மருத்துவ உதவி, AI உதவி மற்றும் பலவற்றுக்கான உங்கள் முழுமையான டெய்ரி துணை.",
+  dlHowTo: "எப்படி நிறுவுவது",
+  dlAndroidVersion: "ஆண்ட்ராய்டு 6.0+",
+  dlSafe: "100% பாதுகாப்பானது",
+  dlVerified: "சரிபார்க்கப்பட்ட APK",
+  dlPlayA: "விரைவில்",
+  dlPlayB: "Google Play-இல்",
+  dlPlayLead: "ஸ்மார்ட் டெய்ரி ஹப் விரைவில் Google Play ஸ்டோரில் கிடைக்கும்.",
+  dlComingSoon: "விரைவில்",
+  dlAndroidApp: "ஆண்ட்ராய்டு ஆப்",
+  dlPlayNote: "Google Play-இல் விரைவில்",
+  dlInstallTitle: "ஸ்மார்ட் டெய்ரி ஹப் நிறுவும் முறை",
+  dlStep1: "Smart Dairy Hub.apk பதிவிறக்கவும்",
+  dlStep2: "பதிவிறக்கிய APK கோப்பைத் திறக்கவும்",
+  dlStep3: "ஆண்ட்ராய்டு கேட்டால் நிறுவல் அனுமதி வழங்கவும்",
+  dlStep4: "Install அழுத்தி ஸ்மார்ட் டெய்ரி ஹப்பைத் தொடங்கவும்",
+  dlGotIt: "சரி",
+
 };
 
 const bn: Strings = {
@@ -267,6 +333,28 @@ const bn: Strings = {
   dlPoint1: "সংরক্ষিত ডেটার জন্য অফলাইনে কাজ করে",
   dlPoint2: "আপনার ভাষায় ভয়েস সহকারী",
   dlPoint3: "তাৎক্ষণিক দুধের দাম ও পশুচিকিৎসা সতর্কতা",
+  dlBadge: "অ্যান্ড্রয়েড অ্যাপ",
+  dlHeadA: "ডাউনলোড করুন",
+  dlHeadB: "স্মার্ট ডেইরি হাব",
+  dlDesc:
+    "দুধের দাম, গবাদি সেবা, পশুচিকিৎসা সহায়তা, AI সহায়তা ও আরও অনেক কিছুর জন্য আপনার সম্পূর্ণ ডেইরি সঙ্গী।",
+  dlHowTo: "কীভাবে ইনস্টল করবেন",
+  dlAndroidVersion: "অ্যান্ড্রয়েড ৬.০+",
+  dlSafe: "১০০% নিরাপদ ও সুরক্ষিত",
+  dlVerified: "যাচাই করা APK",
+  dlPlayA: "শীঘ্রই আসছে",
+  dlPlayB: "Google Play-তে",
+  dlPlayLead: "স্মার্ট ডেইরি হাব শীঘ্রই Google Play স্টোরে পাওয়া যাবে।",
+  dlComingSoon: "শীঘ্রই আসছে",
+  dlAndroidApp: "অ্যান্ড্রয়েড অ্যাপ",
+  dlPlayNote: "Google Play-তে শীঘ্রই আসছে",
+  dlInstallTitle: "স্মার্ট ডেইরি হাব ইনস্টল করার নিয়ম",
+  dlStep1: "Smart Dairy Hub.apk ডাউনলোড করুন",
+  dlStep2: "ডাউনলোড করা APK ফাইলটি খুলুন",
+  dlStep3: "অ্যান্ড্রয়েড অনুমতি চাইলে ইনস্টল অনুমতি দিন",
+  dlStep4: "ইনস্টল চাপুন এবং স্মার্ট ডেইরি হাব শুরু করুন",
+  dlGotIt: "বুঝেছি",
+
 };
 
 const TABLE: Record<string, Strings> = { en, hi, te, ta, bn };
