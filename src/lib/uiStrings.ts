@@ -52,7 +52,32 @@ const en = {
   dlPoint1: "Works offline for saved data",
   dlPoint2: "Voice assistant in your language",
   dlPoint3: "Instant milk rate & vet alerts",
+
+  dlBadge: "ANDROID APP",
+  dlHeadA: "Download",
+  dlHeadB: "Smart Dairy Hub",
+  dlDesc:
+    "Your complete dairy companion for milk rates, cattle services, veterinary support, AI assistance and more.",
+  dlHowTo: "How to Install",
+  dlApkLabel: "APK",
+  dlAndroidVersion: "Android 6.0+",
+  dlSafe: "100% Safe & Secure",
+  dlVerified: "Verified APK",
+  dlPlayA: "Coming Soon on",
+  dlPlayB: "Google Play",
+  dlPlayLead: "Smart Dairy Hub will soon be available on the Google Play Store.",
+  dlComingSoon: "Coming Soon",
+  dlAndroidApp: "Android App",
+  dlPlayNote: "Coming Soon on Google Play",
+  dlGetItOn: "GET IT ON",
+  dlInstallTitle: "How to install Smart Dairy Hub",
+  dlStep1: "Download Smart Dairy Hub.apk",
+  dlStep2: "Open the downloaded APK file",
+  dlStep3: "Allow installation permission if Android asks",
+  dlStep4: "Tap Install and start Smart Dairy Hub",
+  dlGotIt: "Got it",
 };
+
 
 type Strings = typeof en;
 
