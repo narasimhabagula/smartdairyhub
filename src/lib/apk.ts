@@ -7,10 +7,12 @@ import apkAsset from "@/assets/smart-dairy-hub.apk.asset.json";
  */
 export const APK = {
   url: apkAsset.url as string,
-  filename: (apkAsset.original_filename as string) || "smart-dairy-hub.apk",
+  /** Always the human-friendly APK name — never translated, never .zip. */
+  filename: "Smart Dairy Hub.apk",
   bytes: (apkAsset.size as number) || 0,
   updatedAt: (apkAsset.created_at as string) || "",
 };
+
 
 export function apkSizeLabel(bytes = APK.bytes): string {
   if (!bytes) return "";
