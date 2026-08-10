@@ -99,22 +99,24 @@ export default function Login() {
   ];
 
   return (
-    <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-white text-slate-900 antialiased">
-      {/* Ambient premium backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(120%_80%_at_50%_-20%,#F0F9FF_0%,#FFFFFF_50%,#F5FBF6_100%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -bottom-40 -left-40 z-0 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.14),transparent_65%)] blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -right-40 top-0 z-0 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.12),transparent_65%)] blur-3xl"
-      />
+    <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-white text-slate-900 antialiased md:h-auto md:min-h-[100svh] md:max-h-none md:overflow-x-hidden md:overflow-y-auto">
+      {/* Premium blended dairy/agri backdrop (mobile-first, merged not stacked) */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
+        <img
+          src={bgFarm}
+          alt=""
+          className="h-full w-full object-cover object-center opacity-[0.55] md:opacity-40"
+          loading="eager"
+          decoding="async"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(120%_85%_at_50%_-10%,rgba(240,249,255,0.95)_0%,rgba(255,255,255,0.9)_45%,rgba(236,253,245,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/45 to-emerald-50/85" />
+        <div className="absolute -bottom-32 -left-32 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.18),transparent_65%)] blur-3xl" />
+        <div className="absolute -right-32 top-0 h-[22rem] w-[22rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.16),transparent_65%)] blur-3xl" />
+      </div>
 
-      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1500px] flex-col md:grid md:grid-cols-[1.05fr_1fr] md:items-stretch md:gap-0 md:px-6 md:py-6 lg:px-10 lg:py-10">
+      <main className="relative z-10 mx-auto flex h-full w-full max-w-[1500px] flex-col md:grid md:h-auto md:min-h-[100svh] md:grid-cols-[1.05fr_1fr] md:items-stretch md:gap-0 md:px-6 md:py-6 lg:px-10 lg:py-10">
+
         {/* ── HERO PANEL: desktop / laptop / tablet only ── */}
         <section className="relative hidden overflow-hidden rounded-[32px] shadow-[0_30px_80px_-30px_rgba(7,26,11,0.35)] md:block">
           <LoginHeroSlider />
