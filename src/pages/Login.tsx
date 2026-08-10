@@ -31,9 +31,10 @@ function safePostLoginDest(): string {
 }
 
 const FIELD =
-  "h-14 w-full rounded-2xl border-[1.5px] border-slate-200 bg-white pl-12 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/12";
+  "h-12 w-full rounded-xl border-[1.5px] border-slate-200 bg-white pl-11 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/12 md:h-13";
 const BTN =
-  "flex h-[56px] w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
+  "flex h-12 w-full items-center justify-center gap-2.5 rounded-xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
+
 
 export default function Login() {
   const navigate = useNavigate();
