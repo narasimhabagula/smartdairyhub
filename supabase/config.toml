@@ -1,16 +1,15 @@
 project_id = "vqzzvdxwpqkvvtiixzvk"
 
-[functions.nearby-vets]
-verify_jwt = false
-
-[functions.geo-resolve]
-verify_jwt = false
-
-[functions.place-order]
-verify_jwt = true
-
-[functions.chat-assistant]
-verify_jwt = true
-
-[functions.translate]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.chat-assistant]
+    verify_jwt = true
+  [functions.geo-resolve]
+    verify_jwt = false
+  [functions.nearby-vets]
+    verify_jwt = false
+  [functions.place-order]
+    verify_jwt = true
+  [functions.translate]
+    verify_jwt = false
