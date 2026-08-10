@@ -8,6 +8,8 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiStrings } from "@/lib/uiStrings";
 import LoginHeroSlider from "@/components/login/LoginHeroSlider";
+import bgFarm from "@/assets/bg-language-farm.jpg";
+
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(128);
