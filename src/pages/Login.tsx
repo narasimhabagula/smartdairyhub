@@ -197,20 +197,20 @@ export default function Login() {
               <span>{s.google}</span>
             </button>
 
-            <div className="my-5 flex items-center gap-3">
+            <div className="my-3 flex items-center gap-3">
               <div className="h-px flex-1 bg-slate-200" />
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.orEmail}</span>
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
             {/* 2. Email  3. Password  4. Sign In */}
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-3">
               <div>
-                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                <label htmlFor="sdh-email" className="mb-1 block text-[12px] font-bold text-slate-700">
                   {s.emailLabel}
                 </label>
                 <div className="relative">
-                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                     <Mail className="h-5 w-5" />
                   </span>
                   <input
@@ -228,11 +228,11 @@ export default function Login() {
               </div>
 
               <div>
-                <label htmlFor="sdh-password" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                <label htmlFor="sdh-password" className="mb-1 block text-[12px] font-bold text-slate-700">
                   {s.passwordLabel}
                 </label>
                 <div className="relative">
-                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                     <Lock className="h-5 w-5" />
                   </span>
                   <input
@@ -258,14 +258,14 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <label className="flex cursor-pointer items-center gap-2.5">
+                <label className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-[18px] w-[18px] cursor-pointer rounded accent-emerald-600"
+                    className="h-4 w-4 cursor-pointer rounded accent-emerald-600"
                   />
-                  <span className="text-[13px] font-medium text-slate-600">{s.remember}</span>
+                  <span className="text-[12.5px] font-medium text-slate-600">{s.remember}</span>
                 </label>
                 <Link to="/forgot-password" className="text-[12px] font-bold text-emerald-700 hover:underline">
                   {s.forgot}
@@ -289,39 +289,28 @@ export default function Login() {
               </button>
             </form>
 
-            <p className="mt-4 text-center text-[13px] text-slate-500">
-              {s.newHere}{" "}
+            {/* 5. Sign-up + guest — compact single row, no extra vertical bulk */}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12.5px] text-slate-500">
+              <span>{s.newHere}</span>
               <Link to="/select-role" className="font-bold text-emerald-700 hover:underline">
                 {s.createAccount}
               </Link>
-            </p>
-
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.or}</span>
-              <div className="h-px flex-1 bg-slate-200" />
+              <span aria-hidden className="text-slate-300">•</span>
+              <button type="button" onClick={continueAsGuest} className="font-bold text-emerald-700 hover:underline">
+                {s.guest}
+              </button>
             </div>
 
-            {/* 5. Guest */}
-            <button
-              type="button"
-              onClick={continueAsGuest}
-              className={`${BTN} border border-emerald-100 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-50`}
-            >
-              {s.guest}
-            </button>
-
-            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
-              <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-500">
+              <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
                 {s.secure}
-              </p>
-              <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-slate-600">
-                <Link to="/privacy" className="hover:text-emerald-700">{s.privacy}</Link>
-                <span aria-hidden className="text-slate-300">•</span>
-                <Link to="/terms" className="hover:text-emerald-700">{s.terms}</Link>
-              </div>
+              </span>
+              <span aria-hidden className="text-slate-300">•</span>
+              <Link to="/privacy" className="font-semibold hover:text-emerald-700">{s.privacy}</Link>
+              <Link to="/terms" className="font-semibold hover:text-emerald-700">{s.terms}</Link>
             </div>
+
           </div>
         </section>
       </main>
