@@ -162,10 +162,10 @@ export default function Login() {
         </section>
 
         {/* ── LOGIN CARD ── */}
-        <section className="relative z-20 flex flex-1 items-center justify-center px-4 py-8 sm:px-6 md:py-0 md:pl-8 lg:pl-12">
-          <div className="mx-auto w-full max-w-[440px] rounded-[28px] border border-white/90 bg-white/95 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7 lg:p-8">
+        <section className="relative z-20 flex min-h-0 flex-1 items-center justify-center px-4 py-3 sm:px-6 md:py-0 md:pl-8 lg:pl-12">
+          <div className="mx-auto w-full max-w-[440px] rounded-3xl border border-white/90 bg-white/92 p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_24px_60px_-16px_rgba(7,26,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-6 md:pb-6 lg:p-8">
             {/* Brand — mobile leads with the logo, no heavy hero image */}
-            <div className="mb-6 flex flex-col items-center text-center">
+            <div className="mb-4 flex flex-col items-center text-center">
               <img
                 src="/logo.png"
                 alt="Smart Dairy Hub"
@@ -173,13 +173,14 @@ export default function Login() {
                 height={72}
                 fetchPriority="high"
                 decoding="sync"
-                className="h-16 w-16 object-contain md:h-14 md:w-14"
+                className="h-12 w-12 object-contain sm:h-14 sm:w-14"
               />
-              <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-slate-900">
-                {s.welcomeBack}
+              <h2 className="mt-2 font-display text-[20px] font-extrabold tracking-tight text-slate-900 sm:text-[24px]" data-no-translate>
+                Smart Dairy Hub
               </h2>
-              <p className="mt-1.5 text-[13px] text-slate-500">{s.signInSubtitle}</p>
+              <p className="mt-0.5 text-[12px] font-semibold text-emerald-700">{s.tagline}</p>
             </div>
+
 
             {/* 1. Google */}
             <button
