@@ -26,15 +26,17 @@ export default function DownloadAppSection({ className }: Props) {
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
   const [guide, setGuide] = useState(false);
 
-  const start = () => {
+  const start = async () => {
     if (state === "working") return;
     setState("working");
-    window.setTimeout(() => {
-      downloadApk();
+    try {
+      await downloadApk();
+    } finally {
       setState("done");
       window.setTimeout(() => setState("idle"), 4000);
-    }, 300);
+    }
   };
+
 
   const steps = [s.dlStep1, s.dlStep2, s.dlStep3, s.dlStep4];
 

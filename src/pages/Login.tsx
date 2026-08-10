@@ -8,6 +8,8 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiStrings } from "@/lib/uiStrings";
 import LoginHeroSlider from "@/components/login/LoginHeroSlider";
+import bgFarm from "@/assets/bg-language-farm.jpg";
+
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(128);
@@ -31,9 +33,10 @@ function safePostLoginDest(): string {
 }
 
 const FIELD =
-  "h-14 w-full rounded-2xl border-[1.5px] border-slate-200 bg-white pl-12 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/12";
+  "h-12 w-full rounded-xl border-[1.5px] border-slate-200 bg-white pl-11 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/12 md:h-13";
 const BTN =
-  "flex h-[56px] w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
+  "flex h-12 w-full items-center justify-center gap-2.5 rounded-xl text-[15px] font-bold tracking-wide transition-all duration-300 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -98,22 +101,24 @@ export default function Login() {
   ];
 
   return (
-    <div className="relative min-h-[100svh] w-full overflow-x-hidden bg-white text-slate-900 antialiased">
-      {/* Ambient premium backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(120%_80%_at_50%_-20%,#F0F9FF_0%,#FFFFFF_50%,#F5FBF6_100%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -bottom-40 -left-40 z-0 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.14),transparent_65%)] blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed -right-40 top-0 z-0 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.12),transparent_65%)] blur-3xl"
-      />
+    <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-white text-slate-900 antialiased md:h-auto md:min-h-[100svh] md:max-h-none md:overflow-x-hidden md:overflow-y-auto">
+      {/* Premium blended dairy/agri backdrop (mobile-first, merged not stacked) */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
+        <img
+          src={bgFarm}
+          alt=""
+          className="h-full w-full object-cover object-center opacity-[0.55] md:opacity-40"
+          loading="eager"
+          decoding="async"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(120%_85%_at_50%_-10%,rgba(240,249,255,0.95)_0%,rgba(255,255,255,0.9)_45%,rgba(236,253,245,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/45 to-emerald-50/85" />
+        <div className="absolute -bottom-32 -left-32 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(22,163,74,0.18),transparent_65%)] blur-3xl" />
+        <div className="absolute -right-32 top-0 h-[22rem] w-[22rem] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.16),transparent_65%)] blur-3xl" />
+      </div>
 
-      <main className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1500px] flex-col md:grid md:grid-cols-[1.05fr_1fr] md:items-stretch md:gap-0 md:px-6 md:py-6 lg:px-10 lg:py-10">
+      <main className="relative z-10 mx-auto flex h-full w-full max-w-[1500px] flex-col md:grid md:h-auto md:min-h-[100svh] md:grid-cols-[1.05fr_1fr] md:items-stretch md:gap-0 md:px-6 md:py-6 lg:px-10 lg:py-10">
+
         {/* ── HERO PANEL: desktop / laptop / tablet only ── */}
         <section className="relative hidden overflow-hidden rounded-[32px] shadow-[0_30px_80px_-30px_rgba(7,26,11,0.35)] md:block">
           <LoginHeroSlider />
@@ -157,10 +162,10 @@ export default function Login() {
         </section>
 
         {/* ── LOGIN CARD ── */}
-        <section className="relative z-20 flex flex-1 items-center justify-center px-4 py-8 sm:px-6 md:py-0 md:pl-8 lg:pl-12">
-          <div className="mx-auto w-full max-w-[440px] rounded-[28px] border border-white/90 bg-white/95 p-5 shadow-[0_24px_60px_-16px_rgba(7,26,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-7 lg:p-8">
+        <section className="relative z-20 flex min-h-0 flex-1 items-center justify-center px-4 py-3 sm:px-6 md:py-0 md:pl-8 lg:pl-12">
+          <div className="mx-auto w-full max-w-[440px] rounded-3xl border border-white/90 bg-white/92 p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_24px_60px_-16px_rgba(7,26,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:p-6 md:pb-6 lg:p-8">
             {/* Brand — mobile leads with the logo, no heavy hero image */}
-            <div className="mb-6 flex flex-col items-center text-center">
+            <div className="mb-4 flex flex-col items-center text-center">
               <img
                 src="/logo.png"
                 alt="Smart Dairy Hub"
@@ -168,13 +173,14 @@ export default function Login() {
                 height={72}
                 fetchPriority="high"
                 decoding="sync"
-                className="h-16 w-16 object-contain md:h-14 md:w-14"
+                className="h-12 w-12 object-contain sm:h-14 sm:w-14"
               />
-              <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-slate-900">
-                {s.welcomeBack}
+              <h2 className="mt-2 font-display text-[20px] font-extrabold tracking-tight text-slate-900 sm:text-[24px]" data-no-translate>
+                Smart Dairy Hub
               </h2>
-              <p className="mt-1.5 text-[13px] text-slate-500">{s.signInSubtitle}</p>
+              <p className="mt-0.5 text-[12px] font-semibold text-emerald-700">{s.tagline}</p>
             </div>
+
 
             {/* 1. Google */}
             <button
@@ -191,20 +197,20 @@ export default function Login() {
               <span>{s.google}</span>
             </button>
 
-            <div className="my-5 flex items-center gap-3">
+            <div className="my-3 flex items-center gap-3">
               <div className="h-px flex-1 bg-slate-200" />
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.orEmail}</span>
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
             {/* 2. Email  3. Password  4. Sign In */}
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-3">
               <div>
-                <label htmlFor="sdh-email" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                <label htmlFor="sdh-email" className="mb-1 block text-[12px] font-bold text-slate-700">
                   {s.emailLabel}
                 </label>
                 <div className="relative">
-                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                     <Mail className="h-5 w-5" />
                   </span>
                   <input
@@ -222,11 +228,11 @@ export default function Login() {
               </div>
 
               <div>
-                <label htmlFor="sdh-password" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+                <label htmlFor="sdh-password" className="mb-1 block text-[12px] font-bold text-slate-700">
                   {s.passwordLabel}
                 </label>
                 <div className="relative">
-                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                     <Lock className="h-5 w-5" />
                   </span>
                   <input
@@ -252,14 +258,14 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <label className="flex cursor-pointer items-center gap-2.5">
+                <label className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-[18px] w-[18px] cursor-pointer rounded accent-emerald-600"
+                    className="h-4 w-4 cursor-pointer rounded accent-emerald-600"
                   />
-                  <span className="text-[13px] font-medium text-slate-600">{s.remember}</span>
+                  <span className="text-[12.5px] font-medium text-slate-600">{s.remember}</span>
                 </label>
                 <Link to="/forgot-password" className="text-[12px] font-bold text-emerald-700 hover:underline">
                   {s.forgot}
@@ -283,39 +289,28 @@ export default function Login() {
               </button>
             </form>
 
-            <p className="mt-4 text-center text-[13px] text-slate-500">
-              {s.newHere}{" "}
+            {/* 5. Sign-up + guest — compact single row, no extra vertical bulk */}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12.5px] text-slate-500">
+              <span>{s.newHere}</span>
               <Link to="/select-role" className="font-bold text-emerald-700 hover:underline">
                 {s.createAccount}
               </Link>
-            </p>
-
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{s.or}</span>
-              <div className="h-px flex-1 bg-slate-200" />
+              <span aria-hidden className="text-slate-300">•</span>
+              <button type="button" onClick={continueAsGuest} className="font-bold text-emerald-700 hover:underline">
+                {s.guest}
+              </button>
             </div>
 
-            {/* 5. Guest */}
-            <button
-              type="button"
-              onClick={continueAsGuest}
-              className={`${BTN} border border-emerald-100 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-50`}
-            >
-              {s.guest}
-            </button>
-
-            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
-              <p className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-500">
+              <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
                 {s.secure}
-              </p>
-              <div className="mt-2 flex items-center justify-center gap-3 text-[12px] font-semibold text-slate-600">
-                <Link to="/privacy" className="hover:text-emerald-700">{s.privacy}</Link>
-                <span aria-hidden className="text-slate-300">•</span>
-                <Link to="/terms" className="hover:text-emerald-700">{s.terms}</Link>
-              </div>
+              </span>
+              <span aria-hidden className="text-slate-300">•</span>
+              <Link to="/privacy" className="font-semibold hover:text-emerald-700">{s.privacy}</Link>
+              <Link to="/terms" className="font-semibold hover:text-emerald-700">{s.terms}</Link>
             </div>
+
           </div>
         </section>
       </main>
