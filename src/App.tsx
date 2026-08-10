@@ -115,8 +115,11 @@ const App = () => (
               <CartProvider>
                 <JerryProvider>
                   <SplashScreen />
+                  <NativeShell />
+                  <NetworkStatus />
                   <LanguagePicker />
                   <AutoTranslate />
+
 
                   <RoutePrefetcher />
                   <div className="flex min-h-screen flex-col">
