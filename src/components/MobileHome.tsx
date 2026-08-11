@@ -4,6 +4,7 @@ import {
   Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import LanguageSelector from "@/components/LanguageSelector";
 import DownloadAppSection from "@/components/DownloadAppSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
@@ -57,21 +58,8 @@ export default function MobileHome() {
           </Link>
           <div className="flex items-center gap-1">
             {/* Language */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex h-9 items-center gap-1 rounded-full bg-muted px-2.5 text-xs font-semibold text-foreground">
-                🌐 {LANGUAGES.find((l) => l.code === currentLang)?.native.slice(0, 3) ?? "EN"}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="max-h-80 overflow-auto">
-                <DropdownMenuLabel>Choose language</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {LANGUAGES.map((l) => (
-                  <DropdownMenuItem key={l.code} onClick={() => switchLang(l.code)}>
-                    <span className="font-medium">{l.native}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">{l.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageSelector size="sm" />
+
             {/* Notifications */}
             <button
               onClick={() => (user ? navigate("/notifications") : openAuth("/notifications"))}

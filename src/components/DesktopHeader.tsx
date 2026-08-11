@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, Globe, LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import LanguageSelector from "@/components/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { LANGUAGES, type LanguageCode } from "@/locales";
@@ -61,23 +62,8 @@ export default function DesktopHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex h-10 items-center gap-1.5 rounded-full bg-muted px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70">
-              <Globe className="h-4 w-4" />
-              <span className="hidden lg:inline">{LANGUAGES.find((l) => l.code === currentLang)?.native ?? "English"}</span>
-              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-96 overflow-auto">
-              <DropdownMenuLabel>Choose language</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem key={l.code} onClick={() => switchLang(l.code)}>
-                  <span className="font-medium">{l.native}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">{l.label}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <LanguageSelector />
+
 
           <button
             onClick={() => (user ? navigate("/notifications") : openAuth("/notifications"))}
