@@ -76,7 +76,23 @@ const en = {
   dlStep3: "Allow installation permission if Android asks",
   dlStep4: "Tap Install and start Smart Dairy Hub",
   dlGotIt: "Got it",
+
+  // Login page (reference design)
+  welcomeTo: "Welcome to",
+  continueEmail: "Continue with Email",
+  orWord: "OR",
+  byContinuing: "By continuing, you agree to our",
+  andWord: "and",
+  quote: "Smart ideas. Healthy cows. Happy farms.",
+  quoteSub: "Building a better future for dairy farming.",
+  playComingSoon: "Android App Coming Soon",
+  playAvailable: "Available soon on Play Store",
+  trust1: "Secure & Reliable",
+  trust2: "Farmer First",
+  trust3: "Smart & Efficient",
+  trust4: "Sustainable Future",
 };
+
 
 
 type Strings = typeof en;
