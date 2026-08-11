@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, Globe, LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
+import LanguageSelector from "@/components/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { LANGUAGES, type LanguageCode } from "@/locales";
