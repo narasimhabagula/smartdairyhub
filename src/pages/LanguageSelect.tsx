@@ -126,13 +126,7 @@ export default function LanguageSelect() {
   };
 
   const persist = () => {
-    void i18n.changeLanguage(selected);
-    localStorage.setItem(STORAGE_KEY_PICKED, "1");
-    localStorage.setItem(STORAGE_KEY_LANG, selected);
-    localStorage.setItem(STORAGE_KEY_PREF, selected);
-    try {
-      sessionStorage.setItem("sdh_language_visit", "1");
-    } catch {}
+    void setAppLanguage(i18n, selected, user?.id);
   };
 
   const onContinue = () => {
@@ -142,17 +136,15 @@ export default function LanguageSelect() {
   };
 
   const onGetStarted = () => {
+    persist();
     if (user) {
-      void supabase
-        .from("profiles")
-        .update({ language: selected } as any)
-        .eq("user_id", user.id);
       navigate(params.get("next") || "/dashboard", { replace: true });
     } else {
       // Guests continue to the premium login page (they can Skip from there).
       navigate("/login", { replace: true });
     }
   };
+
 
   return (
     <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-x-hidden px-4 py-6 sm:px-6 sm:py-10">
