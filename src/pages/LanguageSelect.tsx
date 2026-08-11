@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight, Check, Search, Volume1, Volume2, VolumeX, CheckCircle2, Globe } from "lucide-react";
 import { LANGUAGES, type LanguageCode } from "@/locales";
 import { useAuth } from "@/contexts/AuthContext";
+import { setAppLanguage } from "@/lib/language";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
