@@ -139,11 +139,11 @@ export default function Login() {
   ];
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-10">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-6">
       <AgriBackdrop />
 
       {/* ── LOGIN CARD (mobile compact · desktop centered premium) ── */}
-      <section className="relative z-10 w-[92%] max-w-[430px] rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_60px_-24px_rgba(7,26,11,0.22)] backdrop-blur-xl sm:w-full sm:p-6 md:max-w-[560px] md:rounded-[26px] md:p-9 lg:max-w-[600px]">
+      <section className="relative z-10 w-[92%] max-w-[430px] rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_60px_-24px_rgba(7,26,11,0.22)] backdrop-blur-xl sm:w-full sm:p-6 md:max-w-[540px] md:rounded-[26px] md:p-7 lg:max-w-[600px]">
         {/* Brand */}
         <div className="flex flex-col items-center text-center">
           <img
@@ -153,13 +153,13 @@ export default function Login() {
             height={96}
             fetchPriority="high"
             decoding="sync"
-            className="h-14 w-14 object-contain md:h-20 md:w-20"
+            className="h-14 w-14 object-contain md:h-16 md:w-16"
           />
           <p className="mt-2.5 font-display text-[19px] font-extrabold leading-tight tracking-tight text-slate-900 md:text-[24px]">
             {s.welcomeTo}
           </p>
           <h1
-            className="font-display text-[24px] font-extrabold leading-tight tracking-tight text-emerald-700 md:text-[32px]"
+            className="font-display text-[24px] font-extrabold leading-tight tracking-tight text-emerald-700 md:text-[28px]"
             data-no-translate
           >
             {s.brand}
@@ -278,7 +278,7 @@ export default function Login() {
       </section>
 
       {/* ── Below the card: quote, trust row, Play Store note ── */}
-      <div className="relative z-10 mt-5 w-full max-w-[720px] text-center md:mt-7">
+      <div className="relative z-10 mt-4 w-full max-w-[720px] text-center md:mt-5">
         <p className="text-[13px] font-semibold text-slate-700 md:text-[15px]">“{s.quote}”</p>
         <p className="mt-0.5 text-[11.5px] text-slate-500 md:text-[13px]">{s.quoteSub}</p>
 
@@ -305,7 +305,7 @@ export default function Login() {
 
 function Divider({ label }: { label: string }) {
   return (
-    <div className="my-3.5 flex items-center gap-3 md:my-4">
+    <div className="my-3 flex items-center gap-3 md:my-3.5">
       <div className="h-px flex-1 bg-slate-200" />
       <span className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</span>
       <div className="h-px flex-1 bg-slate-200" />
