@@ -139,7 +139,7 @@ export default function Login() {
   ];
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-4">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-3">
       <AgriBackdrop />
 
       {/* ── LOGIN CARD (mobile compact · desktop centered premium) ── */}
@@ -291,7 +291,7 @@ export default function Login() {
           ))}
         </ul>
 
-        <div className="mx-auto mt-3 inline-flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white/80 px-3.5 py-2 backdrop-blur">
+        <div className="mx-auto mt-2.5 inline-flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white/80 px-3.5 py-2 backdrop-blur">
           <Smartphone className="h-4 w-4 shrink-0 text-emerald-700" aria-hidden />
           <span className="text-left leading-tight">
             <span className="block text-[11.5px] font-bold text-slate-700">{s.playComingSoon}</span>
