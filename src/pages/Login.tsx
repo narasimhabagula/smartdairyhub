@@ -155,7 +155,7 @@ export default function Login() {
             decoding="sync"
             className="h-14 w-14 object-contain md:h-16 md:w-16"
           />
-          <p className="mt-2.5 font-display text-[19px] font-extrabold leading-tight tracking-tight text-slate-900 md:text-[24px]">
+          <p className="mt-2 font-display text-[19px] font-extrabold leading-tight tracking-tight text-slate-900 md:text-[24px]">
             {s.welcomeTo}
           </p>
           <h1
@@ -164,7 +164,7 @@ export default function Login() {
           >
             {s.brand}
           </h1>
-          <p className="mt-1 text-[12.5px] font-medium text-slate-500 md:text-sm">{s.tagline}</p>
+          <p className="mt-0.5 text-[12.5px] font-medium text-slate-500 md:text-[13px]">{s.tagline}</p>
         </div>
 
         {/* 1 · Google */}
@@ -269,7 +269,7 @@ export default function Login() {
         </button>
 
         {/* Legal */}
-        <p className="mt-4 text-center text-[11.5px] leading-relaxed text-slate-500 md:text-[12.5px]">
+        <p className="mt-3 text-center text-[11.5px] leading-relaxed text-slate-500 md:text-[12.5px]">
           {s.byContinuing}{" "}
           <Link to="/terms" className="font-semibold text-emerald-700 hover:underline">{s.terms}</Link>{" "}
           {s.andWord}{" "}
