@@ -30,9 +30,9 @@ function safePostLoginDest(): string {
 }
 
 const FIELD =
-  "h-[52px] w-full rounded-xl border-[1.5px] border-slate-200 bg-white pl-11 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10";
+  "h-[50px] w-full rounded-xl border-[1.5px] border-slate-200 bg-white pl-11 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10";
 const BTN =
-  "flex h-[52px] w-full items-center justify-center gap-2.5 rounded-xl text-[15px] font-bold tracking-tight transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
+  "flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl text-[15px] font-bold tracking-tight transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/20";
 
 /** Soft agricultural backdrop: hills, leaves and a faint barn/cow silhouette — CSS/SVG only. */
 function AgriBackdrop() {
@@ -139,11 +139,11 @@ export default function Login() {
   ];
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-6">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-5 text-slate-900 antialiased sm:px-6 md:min-h-[100svh] md:py-4">
       <AgriBackdrop />
 
       {/* ── LOGIN CARD (mobile compact · desktop centered premium) ── */}
-      <section className="relative z-10 w-[92%] max-w-[430px] rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_60px_-24px_rgba(7,26,11,0.22)] backdrop-blur-xl sm:w-full sm:p-6 md:max-w-[540px] md:rounded-[26px] md:p-7 lg:max-w-[600px]">
+      <section className="relative z-10 w-[92%] max-w-[430px] rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_60px_-24px_rgba(7,26,11,0.22)] backdrop-blur-xl sm:w-full sm:p-6 md:max-w-[540px] md:rounded-[26px] md:p-6 lg:max-w-[600px]">
         {/* Brand */}
         <div className="flex flex-col items-center text-center">
           <img
@@ -278,11 +278,11 @@ export default function Login() {
       </section>
 
       {/* ── Below the card: quote, trust row, Play Store note ── */}
-      <div className="relative z-10 mt-4 w-full max-w-[720px] text-center md:mt-5">
+      <div className="relative z-10 mt-3.5 w-full max-w-[720px] text-center">
         <p className="text-[13px] font-semibold text-slate-700 md:text-[15px]">“{s.quote}”</p>
         <p className="mt-0.5 text-[11.5px] text-slate-500 md:text-[13px]">{s.quoteSub}</p>
 
-        <ul className="mt-3 hidden flex-wrap items-center justify-center gap-x-6 gap-y-2 md:flex">
+        <ul className="mt-2 hidden flex-wrap items-center justify-center gap-x-6 gap-y-2 md:flex">
           {TRUST.map((tr) => (
             <li key={tr.label} className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-600">
               <tr.icon className="h-4 w-4 text-emerald-600" aria-hidden />
@@ -291,7 +291,7 @@ export default function Login() {
           ))}
         </ul>
 
-        <div className="mx-auto mt-4 inline-flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white/80 px-3.5 py-2 backdrop-blur">
+        <div className="mx-auto mt-3 inline-flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white/80 px-3.5 py-2 backdrop-blur">
           <Smartphone className="h-4 w-4 shrink-0 text-emerald-700" aria-hidden />
           <span className="text-left leading-tight">
             <span className="block text-[11.5px] font-bold text-slate-700">{s.playComingSoon}</span>
@@ -305,7 +305,7 @@ export default function Login() {
 
 function Divider({ label }: { label: string }) {
   return (
-    <div className="my-3 flex items-center gap-3 md:my-3.5">
+    <div className="my-3 flex items-center gap-3">
       <div className="h-px flex-1 bg-slate-200" />
       <span className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</span>
       <div className="h-px flex-1 bg-slate-200" />
