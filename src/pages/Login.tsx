@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, Leaf, ShieldCheck, TrendingUp, Sprout, Smartphone, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, Leaf, ShieldCheck, TrendingUp, Sprout, User } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -291,13 +291,6 @@ export default function Login() {
           ))}
         </ul>
 
-        <div className="mx-auto mt-2.5 inline-flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white/80 px-3.5 py-2 backdrop-blur">
-          <Smartphone className="h-4 w-4 shrink-0 text-emerald-700" aria-hidden />
-          <span className="text-left leading-tight">
-            <span className="block text-[11.5px] font-bold text-slate-700">{s.playComingSoon}</span>
-            <span className="block text-[10.5px] text-slate-500">{s.playAvailable}</span>
-          </span>
-        </div>
       </div>
     </div>
   );
