@@ -117,10 +117,13 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      sessionStorage.setItem("postLoginRedirect", "/");
+      // Preserve a ?next= target (e.g. the OAuth consent screen) across the Google round-trip.
+      const next = new URLSearchParams(window.location.search).get("next");
+      sessionStorage.setItem("postLoginRedirect", isSafeRelativePath(next) ? next : "/");
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
+
       if (result.error) {
         toast.error(friendlyAuthError((result.error as any).message || "Google login failed"));
         return;
