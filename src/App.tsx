@@ -144,6 +144,8 @@ const App = () => (
                           <Route path="/profile" element={<Profile />} />
                           <Route path="/select-role" element={<SelectRole />} />
                           <Route path="/login" element={<Login />} />
+                          <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
                           <Route path="/milk-rates" element={<MilkRates />} />
                           <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
                           <Route path="/milk-rate-management" element={<ProtectedRoute><MilkRateManagement /></ProtectedRoute>} />
