@@ -1444,6 +1444,20 @@ export type Database = {
         }
         Relationships: []
       }
+      help_top_faqs: {
+        Row: {
+          faq_index: number | null
+          hits: number | null
+        }
+        Relationships: []
+      }
+      help_top_searches: {
+        Row: {
+          hits: number | null
+          term: string | null
+        }
+        Relationships: []
+      }
       vet_doctors_public: {
         Row: {
           address: string | null
