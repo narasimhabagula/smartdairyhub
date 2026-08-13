@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/search-milk-rates.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
@@ -201,11 +201,16 @@ var search_faqs_default = defineTool6({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "vqzzvdxwpqkvvtiixzvk";
 var mcp_default = defineMcp({
-  name: "smart-dairy-hub-mcp",
+  name: "smart-dairy-hub",
   title: "Smart Dairy Hub",
   version: "0.1.0",
-  instructions: "Tools for Smart Dairy Hub \u2014 India's dairy farming platform. Use these tools to look up milk procurement rates, calculate milk pricing from FAT/SNF, find veterinary doctors, browse government dairy schemes and subsidies, search the cattle marketplace, and answer common dairy farming questions from the platform FAQ. All tools are read-only and return public data.",
+  instructions: "Tools for Smart Dairy Hub \u2014 India's dairy farming platform. Use these tools to look up milk procurement rates, calculate milk pricing from FAT/SNF, find veterinary doctors, browse government dairy schemes and subsidies, search the cattle marketplace, and answer common dairy farming questions from the platform FAQ. All tools are read-only and run as the signed-in Smart Dairy Hub user.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [
     search_milk_rates_default,
     calculate_milk_price_default,
