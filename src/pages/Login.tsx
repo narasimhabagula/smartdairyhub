@@ -84,23 +84,42 @@ export default function Login() {
   const { user } = useAuth();
   const s = useUiStrings();
 
+  const [mode, setMode] = useState<"signin" | "signup">(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
+    } catch {
+      return "signin";
+    }
+  });
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [pwdStep, setPwdStep] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const isSignup = mode === "signup";
+  // Signup asks for everything at once; sign-in keeps the two-step email → password flow.
+  const showPasswordField = isSignup || pwdStep;
+
   useEffect(() => {
     if (user) navigate(safePostLoginDest(), { replace: true });
   }, [user, navigate]);
+
+  const switchMode = (next: "signin" | "signup") => {
+    setMode(next);
+    setPwdStep(false);
+    setPassword("");
+    setShowPwd(false);
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const em = emailSchema.safeParse(email);
     if (!em.success) return toast.error(em.error.issues[0].message);
 
-    // Step 1: reveal the password field for the existing email/password auth.
-    if (!pwdStep) {
+    // Step 1 (sign-in only): reveal the password field for the existing email/password auth.
+    if (!isSignup && !pwdStep) {
       setPwdStep(true);
       return;
     }
@@ -108,12 +127,38 @@ export default function Login() {
     const pw = passwordSchema.safeParse(password);
     if (!pw.success) return toast.error(pw.error.issues[0].message);
 
+    if (isSignup) {
+      const fullName = name.trim();
+      if (fullName.length < 2) return toast.error("Please enter your full name");
+
+      setLoading(true);
+      const role = new URLSearchParams(window.location.search).get("role");
+      const { data, error } = await supabase.auth.signUp({
+        email: em.data,
+        password: pw.data,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: fullName, ...(role === "farmer" || role === "industry" ? { role } : {}) },
+        },
+      });
+      setLoading(false);
+      if (error) return toast.error(friendlyAuthError(error.message));
+      if (data.session) {
+        navigate(safePostLoginDest(), { replace: true });
+        return;
+      }
+      toast.success("Account created! Check your email to verify, then sign in.");
+      switchMode("signin");
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: em.data, password: pw.data });
     setLoading(false);
     if (error) return toast.error(friendlyAuthError(error.message));
     navigate(safePostLoginDest(), { replace: true });
   };
+
 
   const handleGoogleSignIn = async () => {
     try {
@@ -197,6 +242,25 @@ export default function Login() {
 
         {/* 2 · Email */}
         <form onSubmit={handleEmailSubmit} className="space-y-3">
+          {isSignup && (
+            <div className="relative animate-fade-in">
+              <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
+                <User className="h-5 w-5" />
+              </span>
+              <input
+                type="text"
+                required
+                autoComplete="name"
+                maxLength={80}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+                aria-label="Full name"
+                className={FIELD}
+              />
+            </div>
+          )}
+
           <div className="relative">
             <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
               <Mail className="h-5 w-5" />
@@ -214,7 +278,7 @@ export default function Login() {
             />
           </div>
 
-          {pwdStep && (
+          {showPasswordField && (
             <div className="relative animate-fade-in">
               <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
                 <Lock className="h-5 w-5" />
@@ -222,8 +286,9 @@ export default function Login() {
               <input
                 type={showPwd ? "text" : "password"}
                 required
-                autoFocus
-                autoComplete="current-password"
+                autoFocus={pwdStep}
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                minLength={8}
                 maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -249,22 +314,42 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> {s.signingIn}
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> {isSignup ? "Creating account…" : s.signingIn}
               </>
             ) : (
               <>
-                <span>{pwdStep ? s.signIn : s.continueEmail}</span>
+                <span>{isSignup ? s.createAccount : pwdStep ? s.signIn : s.continueEmail}</span>
                 <ArrowRight className="h-[18px] w-[18px]" aria-hidden />
               </>
             )}
           </button>
 
-          {pwdStep && (
-            <div className="flex items-center justify-between text-[12px] font-semibold">
-              <Link to="/forgot-password" className="text-emerald-700 hover:underline">{s.forgot}</Link>
-              <Link to="/select-role" className="text-emerald-700 hover:underline">{s.createAccount}</Link>
-            </div>
-          )}
+          <div className="flex items-center justify-between gap-3 text-[12px] font-semibold">
+            {isSignup ? (
+              <>
+                <span className="text-slate-500">Already have an account?</span>
+                <button
+                  type="button"
+                  onClick={() => switchMode("signin")}
+                  className="text-emerald-700 hover:underline"
+                >
+                  {s.signIn}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/forgot-password" className="text-emerald-700 hover:underline">{s.forgot}</Link>
+                <button
+                  type="button"
+                  onClick={() => switchMode("signup")}
+                  className="text-emerald-700 hover:underline"
+                >
+                  {s.createAccount}
+                </button>
+              </>
+            )}
+          </div>
+
         </form>
 
         <Divider label={s.orWord} />

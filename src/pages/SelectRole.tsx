@@ -25,7 +25,7 @@ export default function SelectRole() {
   const navigate = useNavigate();
   const choose = (role: string) => {
     localStorage.setItem("sdh_chosen_role", role);
-    navigate(`/login?role=${role}`);
+    navigate(`/login?role=${role}&mode=signup`);
   };
 
   return (
