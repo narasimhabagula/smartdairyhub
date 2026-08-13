@@ -242,6 +242,25 @@ export default function Login() {
 
         {/* 2 · Email */}
         <form onSubmit={handleEmailSubmit} className="space-y-3">
+          {isSignup && (
+            <div className="relative animate-fade-in">
+              <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
+                <User className="h-5 w-5" />
+              </span>
+              <input
+                type="text"
+                required
+                autoComplete="name"
+                maxLength={80}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+                aria-label="Full name"
+                className={FIELD}
+              />
+            </div>
+          )}
+
           <div className="relative">
             <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
               <Mail className="h-5 w-5" />
@@ -259,7 +278,7 @@ export default function Login() {
             />
           </div>
 
-          {pwdStep && (
+          {showPasswordField && (
             <div className="relative animate-fade-in">
               <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-emerald-600">
                 <Lock className="h-5 w-5" />
@@ -267,8 +286,9 @@ export default function Login() {
               <input
                 type={showPwd ? "text" : "password"}
                 required
-                autoFocus
-                autoComplete="current-password"
+                autoFocus={pwdStep}
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                minLength={8}
                 maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -294,22 +314,42 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> {s.signingIn}
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> {isSignup ? "Creating account…" : s.signingIn}
               </>
             ) : (
               <>
-                <span>{pwdStep ? s.signIn : s.continueEmail}</span>
+                <span>{isSignup ? s.createAccount : pwdStep ? s.signIn : s.continueEmail}</span>
                 <ArrowRight className="h-[18px] w-[18px]" aria-hidden />
               </>
             )}
           </button>
 
-          {pwdStep && (
-            <div className="flex items-center justify-between text-[12px] font-semibold">
-              <Link to="/forgot-password" className="text-emerald-700 hover:underline">{s.forgot}</Link>
-              <Link to="/select-role" className="text-emerald-700 hover:underline">{s.createAccount}</Link>
-            </div>
-          )}
+          <div className="flex items-center justify-between gap-3 text-[12px] font-semibold">
+            {isSignup ? (
+              <>
+                <span className="text-slate-500">Already have an account?</span>
+                <button
+                  type="button"
+                  onClick={() => switchMode("signin")}
+                  className="text-emerald-700 hover:underline"
+                >
+                  {s.signIn}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/forgot-password" className="text-emerald-700 hover:underline">{s.forgot}</Link>
+                <button
+                  type="button"
+                  onClick={() => switchMode("signup")}
+                  className="text-emerald-700 hover:underline"
+                >
+                  {s.createAccount}
+                </button>
+              </>
+            )}
+          </div>
+
         </form>
 
         <Divider label={s.orWord} />
