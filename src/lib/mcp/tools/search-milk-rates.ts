@@ -1,12 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-function sb() {
-  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+import { supabaseForUser, unauthenticated } from "../supabase";
 
 export default defineTool({
   name: "search_milk_rates",
@@ -18,8 +13,8 @@ export default defineTool({
     limit: z.number().int().min(1).max(50).optional().describe("Max rows (default 20)"),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ milk_type, limit }) => {
-    let q = sb()
+  handler: async ({ milk_type, limit }, ctx) => {
+    let q = supabaseForUser(ctx)
       .from("milk_rates")
       .select("milk_type,fat,snf,price_per_litre,bonus,effective_date,collection_timing,notes")
       .order("effective_date", { ascending: false })

@@ -1,12 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-function sb() {
-  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+import { supabaseForUser, unauthenticated } from "../supabase";
 
 export default defineTool({
   name: "find_vets",
@@ -19,8 +14,8 @@ export default defineTool({
     limit: z.number().int().min(1).max(50).optional(),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ district, specialization, limit }) => {
-    let q = sb()
+  handler: async ({ district, specialization, limit }, ctx) => {
+    let q = supabaseForUser(ctx)
       .from("vet_doctors_public")
       .select("id,name,qualification,specialization,district,village,hospital_name,rating,available")
       .eq("status", "approved")
