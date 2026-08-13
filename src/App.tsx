@@ -103,7 +103,13 @@ function RoutePrefetcher() {
 /** Welcome/language and login are full-screen standalone steps — no app chrome, no Jerry. */
 function Chrome({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  if (pathname.startsWith("/welcome/language") || pathname.startsWith("/login")) return null;
+  if (
+    pathname.startsWith("/welcome/language") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/.lovable/oauth/")
+  )
+    return null;
+
   return <>{children}</>;
 }
 
