@@ -84,23 +84,42 @@ export default function Login() {
   const { user } = useAuth();
   const s = useUiStrings();
 
+  const [mode, setMode] = useState<"signin" | "signup">(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
+    } catch {
+      return "signin";
+    }
+  });
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [pwdStep, setPwdStep] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const isSignup = mode === "signup";
+  // Signup asks for everything at once; sign-in keeps the two-step email → password flow.
+  const showPasswordField = isSignup || pwdStep;
+
   useEffect(() => {
     if (user) navigate(safePostLoginDest(), { replace: true });
   }, [user, navigate]);
+
+  const switchMode = (next: "signin" | "signup") => {
+    setMode(next);
+    setPwdStep(false);
+    setPassword("");
+    setShowPwd(false);
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const em = emailSchema.safeParse(email);
     if (!em.success) return toast.error(em.error.issues[0].message);
 
-    // Step 1: reveal the password field for the existing email/password auth.
-    if (!pwdStep) {
+    // Step 1 (sign-in only): reveal the password field for the existing email/password auth.
+    if (!isSignup && !pwdStep) {
       setPwdStep(true);
       return;
     }
@@ -108,12 +127,38 @@ export default function Login() {
     const pw = passwordSchema.safeParse(password);
     if (!pw.success) return toast.error(pw.error.issues[0].message);
 
+    if (isSignup) {
+      const fullName = name.trim();
+      if (fullName.length < 2) return toast.error("Please enter your full name");
+
+      setLoading(true);
+      const role = new URLSearchParams(window.location.search).get("role");
+      const { data, error } = await supabase.auth.signUp({
+        email: em.data,
+        password: pw.data,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: fullName, ...(role === "farmer" || role === "industry" ? { role } : {}) },
+        },
+      });
+      setLoading(false);
+      if (error) return toast.error(friendlyAuthError(error.message));
+      if (data.session) {
+        navigate(safePostLoginDest(), { replace: true });
+        return;
+      }
+      toast.success("Account created! Check your email to verify, then sign in.");
+      switchMode("signin");
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: em.data, password: pw.data });
     setLoading(false);
     if (error) return toast.error(friendlyAuthError(error.message));
     navigate(safePostLoginDest(), { replace: true });
   };
+
 
   const handleGoogleSignIn = async () => {
     try {
