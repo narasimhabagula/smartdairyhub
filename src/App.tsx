@@ -71,6 +71,8 @@ const JerryDemo = lazy(() => import("./pages/JerryDemo"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Profile = lazy(() => import("./pages/Profile"));
 const DiseaseDetection = lazy(() => import("./pages/DiseaseDetection"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, gcTime: 5 * 60_000, refetchOnWindowFocus: false, retry: 1 } },
@@ -101,7 +103,13 @@ function RoutePrefetcher() {
 /** Welcome/language and login are full-screen standalone steps — no app chrome, no Jerry. */
 function Chrome({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  if (pathname.startsWith("/welcome/language") || pathname.startsWith("/login")) return null;
+  if (
+    pathname.startsWith("/welcome/language") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/.lovable/oauth/")
+  )
+    return null;
+
   return <>{children}</>;
 }
 
@@ -142,6 +150,8 @@ const App = () => (
                           <Route path="/profile" element={<Profile />} />
                           <Route path="/select-role" element={<SelectRole />} />
                           <Route path="/login" element={<Login />} />
+                          <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
                           <Route path="/milk-rates" element={<MilkRates />} />
                           <Route path="/industry" element={<ProtectedRoute><IndustryPanel /></ProtectedRoute>} />
                           <Route path="/milk-rate-management" element={<ProtectedRoute><MilkRateManagement /></ProtectedRoute>} />

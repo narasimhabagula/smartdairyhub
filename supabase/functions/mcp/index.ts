@@ -3,17 +3,65 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/search-milk-rates.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient } from "npm:@supabase/supabase-js@^2.108.2";
 import { z } from "npm:zod@^3.25.76";
-function sb() {
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+
+// src/lib/mcp/supabase.ts
+import { createClient } from "npm:@supabase/supabase-js@^2.108.2";
+function runtimeEnv(name) {
+  const runtime = globalThis;
+  return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
+}
+function configuredEnv(names) {
+  for (const name of names) {
+    const value = runtimeEnv(name)?.trim();
+    if (value) return value;
+  }
+  return void 0;
+}
+function supabaseProjectUrl() {
+  const url = configuredEnv(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
+  if (!url) throw new Error("SUPABASE_URL (or VITE_SUPABASE_URL) is required");
+  return url;
+}
+function supabasePublishableKey() {
+  const direct = configuredEnv(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"]);
+  if (direct) return direct;
+  const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
+  if (keyset) {
+    try {
+      const parsed = JSON.parse(keyset);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        const keys = parsed;
+        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
+        if (key) return key;
+      }
+    } catch {
+    }
+  }
+  const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
+  if (legacy) return legacy;
+  throw new Error("SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required");
+}
+function supabaseForUser(ctx) {
+  const token = ctx.getToken();
+  if (!token) throw new Error("supabaseForUser requires a verified OAuth token");
+  return createClient(supabaseProjectUrl(), supabasePublishableKey(), {
+    global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
+function unauthenticated() {
+  return {
+    content: [{ type: "text", text: "Not authenticated. Sign in to Smart Dairy Hub to use this tool." }],
+    isError: true
+  };
+}
+
+// src/lib/mcp/tools/search-milk-rates.ts
 var search_milk_rates_default = defineTool({
   name: "search_milk_rates",
   title: "Search milk rates",
@@ -23,8 +71,9 @@ var search_milk_rates_default = defineTool({
     limit: z.number().int().min(1).max(50).optional().describe("Max rows (default 20)")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ milk_type, limit }) => {
-    let q = sb().from("milk_rates").select("milk_type,fat,snf,price_per_litre,bonus,effective_date,collection_timing,notes").order("effective_date", { ascending: false }).limit(limit ?? 20);
+  handler: async ({ milk_type, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    let q = supabaseForUser(ctx).from("milk_rates").select("milk_type,fat,snf,price_per_litre,bonus,effective_date,collection_timing,notes").order("effective_date", { ascending: false }).limit(limit ?? 20);
     if (milk_type) q = q.eq("milk_type", milk_type);
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
@@ -74,13 +123,7 @@ var calculate_milk_price_default = defineTool2({
 
 // src/lib/mcp/tools/find-vets.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.108.2";
 import { z as z3 } from "npm:zod@^3.25.76";
-function sb2() {
-  return createClient2(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
 var find_vets_default = defineTool3({
   name: "find_vets",
   title: "Find veterinary doctors",
@@ -91,8 +134,9 @@ var find_vets_default = defineTool3({
     limit: z3.number().int().min(1).max(50).optional()
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ district, specialization, limit }) => {
-    let q = sb2().from("vet_doctors_public").select("id,name,qualification,specialization,district,village,hospital_name,rating,available").eq("status", "approved").limit(limit ?? 20);
+  handler: async ({ district, specialization, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    let q = supabaseForUser(ctx).from("vet_doctors_public").select("id,name,qualification,specialization,district,village,hospital_name,rating,available").eq("status", "approved").limit(limit ?? 20);
     if (district) q = q.ilike("district", `%${district}%`);
     if (specialization) q = q.ilike("specialization", `%${specialization}%`);
     const { data, error } = await q;
@@ -106,13 +150,7 @@ var find_vets_default = defineTool3({
 
 // src/lib/mcp/tools/list-schemes.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.108.2";
 import { z as z4 } from "npm:zod@^3.25.76";
-function sb3() {
-  return createClient3(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
 var list_schemes_default = defineTool4({
   name: "list_schemes",
   title: "List government schemes",
@@ -123,8 +161,9 @@ var list_schemes_default = defineTool4({
     limit: z4.number().int().min(1).max(50).optional()
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ category, search, limit }) => {
-    let q = sb3().from("schemes").select("id,title,description,eligibility,benefits,category,apply_url").eq("active", true).limit(limit ?? 20);
+  handler: async ({ category, search, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    let q = supabaseForUser(ctx).from("schemes").select("id,title,description,eligibility,benefits,category,apply_url").eq("active", true).limit(limit ?? 20);
     if (category) q = q.eq("category", category);
     if (search) q = q.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
     const { data, error } = await q;
@@ -138,13 +177,7 @@ var list_schemes_default = defineTool4({
 
 // src/lib/mcp/tools/search-cattle-listings.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.108.2";
 import { z as z5 } from "npm:zod@^3.25.76";
-function sb4() {
-  return createClient4(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
 var search_cattle_listings_default = defineTool5({
   name: "search_cattle_listings",
   title: "Search cattle marketplace",
@@ -157,8 +190,9 @@ var search_cattle_listings_default = defineTool5({
     limit: z5.number().int().min(1).max(50).optional()
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ type, breed, district, max_price, limit }) => {
-    let q = sb4().from("cattle_listings_public").select("id,name,type,breed,age,milk_yield,price,district,village,state,health_status").eq("status", "active").limit(limit ?? 20);
+  handler: async ({ type, breed, district, max_price, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    let q = supabaseForUser(ctx).from("cattle_listings_public").select("id,name,type,breed,age,milk_yield,price,district,village,state,health_status").eq("status", "active").limit(limit ?? 20);
     if (type) q = q.ilike("type", `%${type}%`);
     if (breed) q = q.ilike("breed", `%${breed}%`);
     if (district) q = q.ilike("district", `%${district}%`);
@@ -174,13 +208,7 @@ var search_cattle_listings_default = defineTool5({
 
 // src/lib/mcp/tools/search-faqs.ts
 import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient as createClient5 } from "npm:@supabase/supabase-js@^2.108.2";
 import { z as z6 } from "npm:zod@^3.25.76";
-function sb5() {
-  return createClient5(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
 var search_faqs_default = defineTool6({
   name: "search_faqs",
   title: "Search FAQs",
@@ -190,8 +218,9 @@ var search_faqs_default = defineTool6({
     limit: z6.number().int().min(1).max(20).optional()
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ query, limit }) => {
-    const { data, error } = await sb5().from("faqs").select("question,answer,category").eq("active", true).or(`question.ilike.%${query}%,answer.ilike.%${query}%`).limit(limit ?? 10);
+  handler: async ({ query, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const { data, error } = await supabaseForUser(ctx).from("faqs").select("question,answer,category").eq("active", true).or(`question.ilike.%${query}%,answer.ilike.%${query}%`).limit(limit ?? 10);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: JSON.stringify(data) }],
@@ -201,11 +230,16 @@ var search_faqs_default = defineTool6({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "vqzzvdxwpqkvvtiixzvk";
 var mcp_default = defineMcp({
-  name: "smart-dairy-hub-mcp",
+  name: "smart-dairy-hub",
   title: "Smart Dairy Hub",
   version: "0.1.0",
-  instructions: "Tools for Smart Dairy Hub \u2014 India's dairy farming platform. Use these tools to look up milk procurement rates, calculate milk pricing from FAT/SNF, find veterinary doctors, browse government dairy schemes and subsidies, search the cattle marketplace, and answer common dairy farming questions from the platform FAQ. All tools are read-only and return public data.",
+  instructions: "Tools for Smart Dairy Hub \u2014 India's dairy farming platform. Use these tools to look up milk procurement rates, calculate milk pricing from FAT/SNF, find veterinary doctors, browse government dairy schemes and subsidies, search the cattle marketplace, and answer common dairy farming questions from the platform FAQ. All tools are read-only and run as the signed-in Smart Dairy Hub user.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [
     search_milk_rates_default,
     calculate_milk_price_default,

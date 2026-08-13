@@ -23,6 +23,9 @@ export default function LanguagePicker() {
 
   useEffect(() => {
     if (location.pathname.startsWith("/welcome/language")) return;
+    // The OAuth consent screen must never be interrupted by the language gate.
+    if (location.pathname.startsWith("/.lovable/oauth/")) return;
+
 
     const stored = localStorage.getItem(STORAGE_KEY_PREF);
     const profileLang = (profile as any)?.language as LanguageCode | undefined;

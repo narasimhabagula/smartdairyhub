@@ -3,11 +3,15 @@
   "sdk_version": "0.20.0",
   "path": "/functions/v1/mcp",
   "auth": {
-    "type": "none"
+    "type": "oauth",
+    "issuer": "https://vqzzvdxwpqkvvtiixzvk.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
   },
   "mcp": {
     "server": {
-      "name": "smart-dairy-hub-mcp",
+      "name": "smart-dairy-hub",
       "version": "0.1.0",
       "title": "Smart Dairy Hub"
     },
