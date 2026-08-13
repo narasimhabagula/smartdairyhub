@@ -71,6 +71,8 @@ const JerryDemo = lazy(() => import("./pages/JerryDemo"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Profile = lazy(() => import("./pages/Profile"));
 const DiseaseDetection = lazy(() => import("./pages/DiseaseDetection"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, gcTime: 5 * 60_000, refetchOnWindowFocus: false, retry: 1 } },
