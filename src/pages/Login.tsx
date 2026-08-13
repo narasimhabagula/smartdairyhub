@@ -19,15 +19,23 @@ function friendlyAuthError(message: string): string {
   return message;
 }
 
+function isSafeRelativePath(dest: string | null | undefined): dest is string {
+  return !!dest && dest.startsWith("/") && !dest.startsWith("//");
+}
+
 /** After signing in a farmer always lands on Home first — never straight on the dashboard. */
 function safePostLoginDest(): string {
   try {
+    // A ?next= target (e.g. the OAuth consent screen) always wins.
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (isSafeRelativePath(next)) return next;
     const dest = sessionStorage.getItem("postLoginRedirect");
     sessionStorage.removeItem("postLoginRedirect");
-    if (dest && dest.startsWith("/") && !dest.startsWith("//")) return dest;
+    if (isSafeRelativePath(dest)) return dest;
   } catch {}
   return "/";
 }
+
 
 const FIELD =
   "h-[50px] w-full rounded-xl border-[1.5px] border-slate-200 bg-white pl-11 pr-4 text-[15px] font-medium text-slate-900 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10";
