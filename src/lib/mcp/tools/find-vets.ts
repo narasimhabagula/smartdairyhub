@@ -15,6 +15,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ district, specialization, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx)
       .from("vet_doctors_public")
       .select("id,name,qualification,specialization,district,village,hospital_name,rating,available")

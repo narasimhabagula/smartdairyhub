@@ -54,6 +54,12 @@ function supabaseForUser(ctx) {
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
+function unauthenticated() {
+  return {
+    content: [{ type: "text", text: "Not authenticated. Sign in to Smart Dairy Hub to use this tool." }],
+    isError: true
+  };
+}
 
 // src/lib/mcp/tools/search-milk-rates.ts
 var search_milk_rates_default = defineTool({
@@ -66,6 +72,7 @@ var search_milk_rates_default = defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ milk_type, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx).from("milk_rates").select("milk_type,fat,snf,price_per_litre,bonus,effective_date,collection_timing,notes").order("effective_date", { ascending: false }).limit(limit ?? 20);
     if (milk_type) q = q.eq("milk_type", milk_type);
     const { data, error } = await q;
@@ -128,6 +135,7 @@ var find_vets_default = defineTool3({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ district, specialization, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx).from("vet_doctors_public").select("id,name,qualification,specialization,district,village,hospital_name,rating,available").eq("status", "approved").limit(limit ?? 20);
     if (district) q = q.ilike("district", `%${district}%`);
     if (specialization) q = q.ilike("specialization", `%${specialization}%`);
@@ -154,6 +162,7 @@ var list_schemes_default = defineTool4({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ category, search, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx).from("schemes").select("id,title,description,eligibility,benefits,category,apply_url").eq("active", true).limit(limit ?? 20);
     if (category) q = q.eq("category", category);
     if (search) q = q.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
@@ -182,6 +191,7 @@ var search_cattle_listings_default = defineTool5({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ type, breed, district, max_price, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx).from("cattle_listings_public").select("id,name,type,breed,age,milk_yield,price,district,village,state,health_status").eq("status", "active").limit(limit ?? 20);
     if (type) q = q.ilike("type", `%${type}%`);
     if (breed) q = q.ilike("breed", `%${breed}%`);
@@ -209,6 +219,7 @@ var search_faqs_default = defineTool6({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ query, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     const { data, error } = await supabaseForUser(ctx).from("faqs").select("question,answer,category").eq("active", true).or(`question.ilike.%${query}%,answer.ilike.%${query}%`).limit(limit ?? 10);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {

@@ -17,6 +17,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ type, breed, district, max_price, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx)
       .from("cattle_listings_public")
       .select("id,name,type,breed,age,milk_yield,price,district,village,state,health_status")

@@ -14,6 +14,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ query, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     const { data, error } = await supabaseForUser(ctx)
       .from("faqs")
       .select("question,answer,category")

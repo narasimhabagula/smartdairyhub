@@ -14,6 +14,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ milk_type, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx)
       .from("milk_rates")
       .select("milk_type,fat,snf,price_per_litre,bonus,effective_date,collection_timing,notes")

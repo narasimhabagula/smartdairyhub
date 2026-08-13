@@ -15,6 +15,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ category, search, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
     let q = supabaseForUser(ctx)
       .from("schemes")
       .select("id,title,description,eligibility,benefits,category,apply_url")
