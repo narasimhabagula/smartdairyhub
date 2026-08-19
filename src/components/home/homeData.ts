@@ -27,9 +27,7 @@ import ic_analytics from "@/assets/icons3d/analytics.jpg";
 import ic_alerts from "@/assets/icons3d/alerts.jpg";
 import ic_profile from "@/assets/icons3d/profile.jpg";
 import ic_language from "@/assets/icons3d/language.jpg";
-import ic_aiChat from "@/assets/icons3d/ai-chat.jpg";
 import ic_settings from "@/assets/icons3d/settings.jpg";
-import ic_health from "@/assets/icons3d/health.jpg";
 
 export const IMG = {
   banner1: heroCows,
