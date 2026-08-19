@@ -234,6 +234,8 @@ export default function MilkRates() {
         )}
       </div>
 
+      <NearbyMilkRates />
+
       {/* Search + filters */}
       <Card className="mb-6">
         <CardContent className="space-y-3 p-4">
