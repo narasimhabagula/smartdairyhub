@@ -16,6 +16,7 @@ import { telHref, waHref } from "@/lib/phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import MobilePageHero from "@/components/MobilePageHero";
+import NearbyMilkRates from "@/components/milk-rates/NearbyMilkRates";
 import heroMilk from "@/assets/card-milk.jpg";
 
 type Company = {
@@ -233,6 +234,8 @@ export default function MilkRates() {
           </Link>
         )}
       </div>
+
+      <NearbyMilkRates />
 
       {/* Search + filters */}
       <Card className="mb-6">
