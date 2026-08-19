@@ -58,8 +58,6 @@ export const QUICK_ACTIONS = [
   { to: "/marketplace?category=medicine", label: "Medical Store", img: ic_medicalStores },
   { to: "/dashboard", label: "Milk Collection", img: ic_milkCollection },
   { to: "/dashboard", label: "Milk Transport", img: ic_milkTransport },
-  { to: "/dashboard", label: "Health Monitoring", img: ic_health },
-  { to: "/ai-chat", label: "AI Chat", img: ic_aiChat },
   { to: "/support", label: "Customer Care", img: ic_customerCare },
   { to: "/welcome/language", label: "Language", img: ic_language },
   { to: "/profile", label: "Farmer Profile", img: ic_profile },
