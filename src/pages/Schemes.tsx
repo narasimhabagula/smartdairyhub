@@ -61,7 +61,9 @@ export default function Schemes() {
   return (
     <>
       <MobilePageHero image={heroSchemes} eyebrow="Government" title="Schemes & Subsidies" subtitle="Loans, insurance and grants for dairy farmers" />
+      <PageBanner image={schemesBanner.url} alt="Government schemes for dairy farmers — financial assistance, welfare benefits, growth and simple transparent applications" />
     <div className="container py-10">
+
       <div className="mx-auto hidden max-w-3xl text-center md:block">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{t("schemes.title")}</h1>
         <p className="mt-2 text-muted-foreground">{t("schemes.subtitle")}</p>
