@@ -10,7 +10,10 @@ import { isSafeHttpUrl } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import MobilePageHero from "@/components/MobilePageHero";
+import PageBanner from "@/components/PageBanner";
 import heroSchemes from "@/assets/banner-schemes.jpg";
+import schemesBanner from "@/assets/hero-schemes.jpg.asset.json";
+
 
 const categories = ["all", "subsidy", "loan", "insurance", "training", "other"];
 
