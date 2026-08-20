@@ -269,6 +269,8 @@ export default function CattleMarket() {
   return (
     <div className="min-h-screen bg-gradient-mint">
       <MobilePageHero image={heroMarket} eyebrow="AI-Powered" title="Cattle Marketplace" subtitle="Verified sellers, healthy livestock" />
+      <PageBanner image={marketBanner.url} alt="India's smartest livestock marketplace — buy and sell verified cows, buffaloes and poultry. Sell Animals to create a listing, My Listings to manage your listed animals" />
+
 
       {/* ============= MOBILE SEARCH + ANIMAL FILTER + SELL ============= */}
       <div className="border-b border-border/60 bg-background/80 px-4 py-4 md:hidden">
