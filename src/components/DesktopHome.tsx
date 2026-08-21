@@ -29,92 +29,11 @@ export default function DesktopHome() {
 
   return (
     <div className="w-full bg-gradient-to-b from-emerald-50/50 via-background to-background pb-20">
-      {/* ================= HERO ================= */}
-      <section className="relative w-full overflow-hidden">
-        <img
-          src={IMG.banner1}
-          alt="Indian dairy farm with healthy cattle"
-          className="absolute inset-0 h-full w-full object-cover"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/70 to-emerald-950/25" />
-        <div className={`${SHELL} relative grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
-          <div className="max-w-2xl text-white">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest ring-1 ring-inset ring-white/25 backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" /> AI-powered dairy platform
-            </span>
-            <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] lg:text-6xl xl:text-7xl">
-              Everything your dairy farm needs, in one place
-            </h1>
-            <p className="mt-5 max-w-xl text-base text-white/85 lg:text-lg">
-              Live milk rates, AI disease detection, verified veterinarians, cattle trading and government schemes —
-              built for Indian dairy farmers, in 11 languages.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="h-12 rounded-full px-7 text-base">
-                <Link to="/marketplace">
-                  Explore marketplace <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              {user ? (
-                <Button asChild size="lg" variant="secondary" className="h-12 rounded-full px-7 text-base">
-                  <Link to="/dashboard">Go to dashboard</Link>
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="h-12 rounded-full px-7 text-base"
-                  onClick={() => openAuth("/dashboard")}
-                >
-                  Farmer sign in
-                </Button>
-              )}
-            </div>
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/75">
-              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Verified vets & sellers</span>
-              <span className="inline-flex items-center gap-2"><Sparkles className="h-4 w-4" /> AI diagnosis in seconds</span>
-              <span className="inline-flex items-center gap-2"><Newspaper className="h-4 w-4" /> 11 Indian languages</span>
-            </div>
-          </div>
-
-          {/* Rotating banner card */}
-          <div className="hidden lg:block">
-            <div className="relative h-[380px] w-full overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15">
-              {BANNERS.map((b, i) => (
-                <Link
-                  key={b.title}
-                  to={b.to}
-                  aria-hidden={i !== idx}
-                  className={`absolute inset-0 flex flex-col justify-end p-7 text-white transition-opacity duration-700 ${
-                    i === idx ? "opacity-100" : "pointer-events-none opacity-0"
-                  }`}
-                >
-                  <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-                  <div className="relative">
-                    <div className="font-display text-2xl font-bold">{b.title}</div>
-                    <div className="mt-1 text-sm text-white/85">{b.subtitle}</div>
-                    <span className={`mt-4 inline-flex items-center gap-1 rounded-full ${b.accent} px-4 py-1.5 text-xs font-bold`}>
-                      {b.cta} <ChevronRight className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-              <div className="absolute bottom-4 right-6 flex gap-1.5">
-                {BANNERS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setIdx(i)}
-                    aria-label={`Show banner ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-1.5 bg-white/60"}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* ================= MAIN HERO CAROUSEL ================= */}
+      <section className={`${SHELL} pt-6 lg:pt-8`}>
+        <HeroCarousel />
       </section>
+
 
       {/* ================= STATS ================= */}
       <section className="border-b border-border/60 bg-card/60">
