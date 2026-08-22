@@ -110,43 +110,9 @@ export default function MobileHome() {
         </div>
       </section>
 
-      {/* ============ AUTO-SLIDING BANNERS ============ */}
+      {/* ============ HERO CAROUSEL (shared with desktop) ============ */}
       <section className="mt-5 px-4">
-        <div className="relative overflow-hidden rounded-3xl shadow-lift">
-          <div
-            className="flex transition-transform duration-700 ease-out"
-            style={{ transform: `translateX(-${bannerIdx * 100}%)` }}
-          >
-            {BANNERS.map((b) => (
-              <Link
-                key={b.title}
-                to={b.to}
-                className="relative flex h-44 w-full shrink-0 flex-col justify-end overflow-hidden p-5 text-white"
-              >
-                <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                <div className="relative">
-                  <div className="font-display text-lg font-bold leading-tight">{b.title}</div>
-                  <div className="mt-0.5 text-xs text-white/85">{b.subtitle}</div>
-                  <span className={`mt-2.5 inline-flex items-center gap-1 rounded-full ${b.accent} px-3 py-1 text-[11px] font-bold`}>
-                    {b.cta} <ChevronRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-          {/* dots */}
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
-            {BANNERS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setBannerIdx(i)}
-                aria-label={`Slide ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${i === bannerIdx ? "w-5 bg-white" : "w-1.5 bg-white/60"}`}
-              />
-            ))}
-          </div>
-        </div>
+        <HeroCarousel />
       </section>
 
       {/* ============ TRUST STRIP ============ */}
