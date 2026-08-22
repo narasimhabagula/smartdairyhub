@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS } from "@/components/home/homeData";
+import { QUICK_ACTIONS, FEATURE_CARDS } from "@/components/home/homeData";
 
 
 export default function MobileHome() {
