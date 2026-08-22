@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Bot, ChevronRight, Newspaper, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
-import { BANNERS, FEATURE_CARDS, QUICK_ACTIONS, IMG } from "@/components/home/homeData";
+import { Bot } from "lucide-react";
+import { FEATURE_CARDS, QUICK_ACTIONS } from "@/components/home/homeData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
