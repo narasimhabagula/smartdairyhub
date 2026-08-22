@@ -20,12 +20,6 @@ const STATS = [
 export default function DesktopHome() {
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setIdx((i) => (i + 1) % BANNERS.length), 5000);
-    return () => clearInterval(id);
-  }, []);
 
   return (
     <div className="w-full bg-gradient-to-b from-emerald-50/50 via-background to-background pb-20">
