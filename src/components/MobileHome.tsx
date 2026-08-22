@@ -6,6 +6,7 @@ import {
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import LanguageSelector from "@/components/LanguageSelector";
 import DownloadAppSection from "@/components/DownloadAppSection";
+import HeroCarousel from "@/components/hero/HeroCarousel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useTranslation } from "react-i18next";
