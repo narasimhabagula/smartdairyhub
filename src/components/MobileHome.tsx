@@ -26,14 +26,7 @@ export default function MobileHome() {
   const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [bannerIdx, setBannerIdx] = useState(0);
   const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
-
-  // Auto-slide banners
-  useEffect(() => {
-    const id = setInterval(() => setBannerIdx((i) => (i + 1) % BANNERS.length), 4200);
-    return () => clearInterval(id);
-  }, []);
 
   const switchLang = async (lng: LanguageCode) => {
     await i18n.changeLanguage(lng);
