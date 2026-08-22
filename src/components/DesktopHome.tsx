@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
 import DownloadAppSection from "@/components/DownloadAppSection";
+import HeroCarousel from "@/components/hero/HeroCarousel";
 
 const SHELL = "mx-auto w-full max-w-[1600px] px-6 lg:px-10 xl:px-14";
 
