@@ -8,8 +8,11 @@ interface HeroPanelProps {
   showBack?: boolean;
   /** Eager-load the artwork (first hero above the fold). */
   priority?: boolean;
+  /** Replace the link CTAs with custom action buttons (e.g. file upload). */
+  actions?: React.ReactNode;
   className?: string;
 }
+
 
 /**
  * One responsive hero composition used on every screen size.
@@ -17,7 +20,7 @@ interface HeroPanelProps {
  * while the supplied farm artwork renders at its natural aspect ratio
  * (never stretched, never cropped).
  */
-export default function HeroPanel({ content, showBack, priority, className = "" }: HeroPanelProps) {
+export default function HeroPanel({ content, showBack, priority, actions, className = "" }: HeroPanelProps) {
   const navigate = useNavigate();
   const c = content;
 
@@ -70,8 +73,8 @@ export default function HeroPanel({ content, showBack, priority, className = "" 
           </div>
 
           {/* CTAs */}
-          <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
-            {c.ctas.map((cta) => (
+          <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3">
+            {actions ?? c.ctas.map((cta) => (
               <Link
                 key={cta.label}
                 to={cta.to}
@@ -85,6 +88,7 @@ export default function HeroPanel({ content, showBack, priority, className = "" 
               </Link>
             ))}
           </div>
+
         </div>
 
         {/* ---------- Visual side ---------- */}
