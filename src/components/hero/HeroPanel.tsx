@@ -73,8 +73,8 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
           </div>
 
           {/* CTAs */}
-          <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
-            {c.ctas.map((cta) => (
+          <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3">
+            {actions ?? c.ctas.map((cta) => (
               <Link
                 key={cta.label}
                 to={cta.to}
@@ -88,6 +88,7 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
               </Link>
             ))}
           </div>
+
         </div>
 
         {/* ---------- Visual side ---------- */}
