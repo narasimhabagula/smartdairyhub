@@ -14,7 +14,8 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
 import { demoDiseaseResults, USE_DEMO_DATA } from "@/data/demo";
-import heroImg from "@/assets/disease-hero.jpg";
+import HeroPanel from "@/components/hero/HeroPanel";
+import { HERO_AISCAN } from "@/components/hero/heroContent";
 
 type Result = {
   animal: string; breed: string; disease: string;
@@ -177,25 +178,21 @@ export default function DiseaseDetection() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b">
-        <img src={heroImg} alt="AI vet examining cow" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-background/20" />
-        <div className="container relative py-16 md:py-24">
-          <Badge className="mb-4 gap-1.5 bg-primary/10 text-primary hover:bg-primary/20"><Sparkles className="h-3 w-3" /> AI-Powered · Instant</Badge>
-          <h1 className="font-display text-4xl font-bold md:text-6xl max-w-2xl">AI Disease Detection for Dairy Animals</h1>
-          <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-            Snap a photo of your cow or buffalo. Get an AI diagnosis in seconds — disease, severity, treatment plan, and nearest vet.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" onClick={() => fileInput.current?.click()} className="gap-2">
+      <div className="container pt-3 md:pt-6">
+        <HeroPanel
+          content={HERO_AISCAN}
+          priority
+          showBack
+          actions={<>
+            <Button onClick={() => fileInput.current?.click()} className="h-10 gap-1.5 rounded-full px-4 text-[13px] font-semibold sm:h-11 sm:px-6 sm:text-sm">
               <Upload className="h-4 w-4" /> Upload Photos
             </Button>
-            <Button size="lg" variant="outline" onClick={runDemo} className="gap-2 backdrop-blur">
+            <Button variant="outline" onClick={runDemo} className="h-10 gap-1.5 rounded-full border-primary/30 px-4 text-[13px] font-semibold text-primary sm:h-11 sm:px-6 sm:text-sm">
               <Sparkles className="h-4 w-4" /> Try Demo
             </Button>
-          </div>
-        </div>
-      </section>
+          </>}
+        />
+      </div>
 
       <div className="container py-10 space-y-8">
         {/* Upload zone — ChatGPT-style */}
