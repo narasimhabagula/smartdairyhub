@@ -20,7 +20,7 @@ interface HeroPanelProps {
  * while the supplied farm artwork renders at its natural aspect ratio
  * (never stretched, never cropped).
  */
-export default function HeroPanel({ content, showBack, priority, className = "" }: HeroPanelProps) {
+export default function HeroPanel({ content, showBack, priority, actions, className = "" }: HeroPanelProps) {
   const navigate = useNavigate();
   const c = content;
 
