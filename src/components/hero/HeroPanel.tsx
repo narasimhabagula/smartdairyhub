@@ -8,8 +8,11 @@ interface HeroPanelProps {
   showBack?: boolean;
   /** Eager-load the artwork (first hero above the fold). */
   priority?: boolean;
+  /** Replace the link CTAs with custom action buttons (e.g. file upload). */
+  actions?: React.ReactNode;
   className?: string;
 }
+
 
 /**
  * One responsive hero composition used on every screen size.
