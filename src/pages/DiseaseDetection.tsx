@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Upload, Camera, ImageIcon, X, Sparkles, Activity, Pill, Utensils, Syringe,
+  Upload, Camera, X, Sparkles, Activity, Pill, Utensils, Syringe,
   CalendarClock, ShieldAlert, AlertCircle, RefreshCw, Loader2, Plus, CheckCircle2, ScanLine,
+  UploadCloud, ClipboardList, Stethoscope, ShieldCheck, ArrowRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -44,7 +46,15 @@ const healthTrend = Array.from({ length: 12 }, (_, i) => ({
   yield: 18 + Math.round(Math.cos(i / 2) * 4),
 }));
 
-const MAX_IMAGES = 6;
+const MAX_IMAGES = 10;
+
+const WHAT_YOU_GET = [
+  { icon: ShieldAlert, title: "Disease Prediction", body: "AI identifies possible diseases based on symptoms", tint: "bg-emerald-500/10 text-emerald-600" },
+  { icon: Activity, title: "Severity Assessment", body: "Get severity level and confidence score", tint: "bg-amber-500/10 text-amber-600" },
+  { icon: Pill, title: "Treatment Suggestions", body: "Recommended treatment and preventive care", tint: "bg-violet-500/10 text-violet-600" },
+  { icon: Stethoscope, title: "Nearest Vet", body: "Find nearby veterinarians for consultation", tint: "bg-sky-500/10 text-sky-600" },
+  { icon: ClipboardList, title: "Health History", body: "Track and manage your animal's health records", tint: "bg-primary/10 text-primary" },
+];
 
 export default function DiseaseDetection() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
