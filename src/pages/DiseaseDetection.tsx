@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Upload, Camera, ImageIcon, X, Sparkles, Activity, Pill, Utensils, Syringe,
+  Upload, Camera, X, Sparkles, Activity, Pill, Utensils, Syringe,
   CalendarClock, ShieldAlert, AlertCircle, RefreshCw, Loader2, Plus, CheckCircle2, ScanLine,
+  UploadCloud, ClipboardList, Stethoscope, ShieldCheck, ArrowRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
