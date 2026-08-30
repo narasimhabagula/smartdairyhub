@@ -222,14 +222,12 @@ export default function DiseaseDetection() {
                 }`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-emerald-400/[0.04] opacity-0 transition group-hover:opacity-100" />
-                <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg shadow-primary/30">
-                  <ImageIcon className="h-9 w-9 text-white" />
-                </div>
-                <h3 className="mt-5 font-display text-2xl font-semibold">Drop photos or paste from clipboard</h3>
-                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG · up to 10 MB each · up to {MAX_IMAGES} images</p>
+                <UploadCloud className="relative mx-auto h-14 w-14 text-primary" aria-hidden="true" />
+                <h3 className="mt-4 font-display text-xl font-bold sm:text-2xl">Drop photos here or paste from clipboard</h3>
+                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG up to 10MB each, up to {MAX_IMAGES} images</p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-full px-5 shadow-md"><Upload className="h-4 w-4" /> Choose files</Button>
-                  <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-full px-5"><Camera className="h-4 w-4" /> Camera</Button>
+                  <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-xl px-6 shadow-sm"><Upload className="h-4 w-4" /> Choose Files</Button>
+                  <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-xl px-6"><Camera className="h-4 w-4" /> Camera</Button>
                 </div>
               </div>
             ) : (
@@ -360,6 +358,42 @@ export default function DiseaseDetection() {
               onChange={(e) => { const fs = Array.from(e.target.files || []); if (fs.length) addFiles(fs); e.currentTarget.value = ""; }} />
           </CardContent>
         </Card>
+
+        {/* What You Get */}
+        <section aria-labelledby="what-you-get" className="pt-2">
+          <div className="text-center">
+            <h2 id="what-you-get" className="font-display text-2xl font-bold sm:text-3xl">What You Get</h2>
+            <span className="mx-auto mt-2 block h-1 w-14 rounded-full bg-primary" />
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {WHAT_YOU_GET.map((c) => (
+              <div
+                key={c.title}
+                className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.tint}`}>
+                  <c.icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="mt-3 text-sm font-bold">{c.title}</h3>
+                <p className="mt-1 text-[13px] leading-snug text-muted-foreground">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Privacy banner */}
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+            <div>
+              <p className="text-sm font-bold">Your data is secure and private.</p>
+              <p className="text-[13px] text-muted-foreground">We use advanced AI algorithms and do not share your data.</p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="w-full gap-2 rounded-xl border-primary/30 text-primary sm:w-auto">
+            <Link to="/privacy">Learn more about AI Scan <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
+        </div>
 
         {/* Results */}
         {result && (
