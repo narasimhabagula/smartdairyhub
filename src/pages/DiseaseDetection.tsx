@@ -359,6 +359,42 @@ export default function DiseaseDetection() {
           </CardContent>
         </Card>
 
+        {/* What You Get */}
+        <section aria-labelledby="what-you-get" className="pt-2">
+          <div className="text-center">
+            <h2 id="what-you-get" className="font-display text-2xl font-bold sm:text-3xl">What You Get</h2>
+            <span className="mx-auto mt-2 block h-1 w-14 rounded-full bg-primary" />
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {WHAT_YOU_GET.map((c) => (
+              <div
+                key={c.title}
+                className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.tint}`}>
+                  <c.icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="mt-3 text-sm font-bold">{c.title}</h3>
+                <p className="mt-1 text-[13px] leading-snug text-muted-foreground">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Privacy banner */}
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+            <div>
+              <p className="text-sm font-bold">Your data is secure and private.</p>
+              <p className="text-[13px] text-muted-foreground">We use advanced AI algorithms and do not share your data.</p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="w-full gap-2 rounded-xl border-primary/30 text-primary sm:w-auto">
+            <Link to="/privacy">Learn more about AI Scan <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
+        </div>
+
         {/* Results */}
         {result && (
           <div className="animate-fade-in space-y-6">
