@@ -222,14 +222,12 @@ export default function DiseaseDetection() {
                 }`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-emerald-400/[0.04] opacity-0 transition group-hover:opacity-100" />
-                <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg shadow-primary/30">
-                  <ImageIcon className="h-9 w-9 text-white" />
-                </div>
-                <h3 className="mt-5 font-display text-2xl font-semibold">Drop photos or paste from clipboard</h3>
-                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG · up to 10 MB each · up to {MAX_IMAGES} images</p>
+                <UploadCloud className="relative mx-auto h-14 w-14 text-primary" aria-hidden="true" />
+                <h3 className="mt-4 font-display text-xl font-bold sm:text-2xl">Drop photos here or paste from clipboard</h3>
+                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG up to 10MB each, up to {MAX_IMAGES} images</p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-full px-5 shadow-md"><Upload className="h-4 w-4" /> Choose files</Button>
-                  <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-full px-5"><Camera className="h-4 w-4" /> Camera</Button>
+                  <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-xl px-6 shadow-sm"><Upload className="h-4 w-4" /> Choose Files</Button>
+                  <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-xl px-6"><Camera className="h-4 w-4" /> Camera</Button>
                 </div>
               </div>
             ) : (
