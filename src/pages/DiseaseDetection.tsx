@@ -204,10 +204,11 @@ export default function DiseaseDetection() {
         />
       </div>
 
-      <div className="container py-10 space-y-8">
+      <div className="container w-full max-w-full overflow-x-hidden py-6 space-y-6 md:py-10 md:space-y-8">
         {/* Upload zone — ChatGPT-style */}
         <Card className="overflow-hidden rounded-3xl border-primary/10 shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.4)]">
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+
             {queue.length === 0 ? (
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -217,25 +218,25 @@ export default function DiseaseDetection() {
                   const files = Array.from(e.dataTransfer.files || []);
                   if (files.length) addFiles(files);
                 }}
-                className={`group relative overflow-hidden rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-300 ${
+                className={`group relative overflow-hidden rounded-2xl border-2 border-dashed p-6 text-center sm:p-10 md:p-12 transition-all duration-300 ${
                   dragOver ? "border-primary bg-primary/10 scale-[1.01]" : "border-border hover:border-primary/50 hover:bg-primary/[0.03]"
                 }`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-emerald-400/[0.04] opacity-0 transition group-hover:opacity-100" />
                 <UploadCloud className="relative mx-auto h-14 w-14 text-primary" aria-hidden="true" />
                 <h3 className="mt-4 font-display text-xl font-bold sm:text-2xl">Drop photos here or paste from clipboard</h3>
-                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG up to 10MB each, up to {MAX_IMAGES} images</p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-xl px-6 shadow-sm"><Upload className="h-4 w-4" /> Choose Files</Button>
-                  <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-xl px-6"><Camera className="h-4 w-4" /> Camera</Button>
+                <p className="mt-2 text-[13px] text-muted-foreground sm:text-sm">JPG, PNG up to 10MB each, up to {MAX_IMAGES} images</p>
+                <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+                  <Button onClick={() => fileInput.current?.click()} className="w-full gap-2 rounded-xl px-6 shadow-sm sm:w-auto"><Upload className="h-4 w-4" /> Choose Files</Button>
+                  <Button variant="outline" onClick={() => camInput.current?.click()} className="w-full gap-2 rounded-xl px-6 sm:w-auto"><Camera className="h-4 w-4" /> Camera</Button>
                 </div>
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-[1fr,320px]">
+              <div className="grid min-w-0 gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr),320px]">
                 {/* Active preview */}
                 <div className="relative overflow-hidden rounded-2xl border bg-black/5">
                   {active && (
-                    <img src={active.preview} alt="Preview" className="h-auto max-h-[520px] w-full object-contain bg-neutral-900/5" />
+                    <img src={active.preview} alt="Preview" className="h-auto max-h-[320px] w-full object-contain sm:max-h-[420px] lg:max-h-[520px] bg-neutral-900/5" />
                   )}
                   {analyzing && (
                     <>
@@ -277,7 +278,7 @@ export default function DiseaseDetection() {
                 </div>
 
                 {/* Right column: gallery + actions */}
-                <div className="flex flex-col gap-4">
+                <div className="flex min-w-0 flex-col gap-4">
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
@@ -292,7 +293,7 @@ export default function DiseaseDetection() {
                       <p className="text-xs font-semibold text-muted-foreground">{queue.length}/{MAX_IMAGES} images</p>
                       <button onClick={clearAll} className="text-xs text-muted-foreground hover:text-foreground">Clear all</button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3">
                       {queue.map((it) => (
                         <button
                           key={it.id}
@@ -365,7 +366,7 @@ export default function DiseaseDetection() {
             <h2 id="what-you-get" className="font-display text-2xl font-bold sm:text-3xl">What You Get</h2>
             <span className="mx-auto mt-2 block h-1 w-14 rounded-full bg-primary" />
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {WHAT_YOU_GET.map((c) => (
               <div
                 key={c.title}
@@ -398,15 +399,15 @@ export default function DiseaseDetection() {
         {/* Results */}
         {result && (
           <div className="animate-fade-in space-y-6">
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard label="Animal" value={`${result.animal} · ${result.breed}`} icon={Activity} />
               <StatCard label="Disease" value={result.disease} icon={ShieldAlert} />
               <StatCard label="Severity" value={result.severity} accent={severityColor[result.severity]} />
               <StatCard label="Recovery" value={`${result.recoveryChance}%`} icon={RefreshCw} />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <Card className="rounded-2xl"><CardContent className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
+              <Card className="min-w-0 overflow-hidden rounded-2xl"><CardContent className="p-4 sm:p-6">
                 <h3 className="font-display text-lg font-semibold">Confidence</h3>
                 <div className="mt-2 h-48">
                   <ResponsiveContainer><RadialBarChart innerRadius="65%" outerRadius="100%" data={[{ v: result.confidence, fill: "hsl(var(--primary))" }]} startAngle={90} endAngle={-270}>
@@ -416,7 +417,7 @@ export default function DiseaseDetection() {
                 <p className="text-center font-display text-3xl font-bold">{result.confidence}%</p>
               </CardContent></Card>
 
-              <Card className="rounded-2xl"><CardContent className="p-6">
+              <Card className="min-w-0 overflow-hidden rounded-2xl"><CardContent className="p-4 sm:p-6">
                 <h3 className="font-display text-lg font-semibold">Recovery Probability</h3>
                 <div className="mt-2 h-48">
                   <ResponsiveContainer><PieChart>
@@ -428,7 +429,7 @@ export default function DiseaseDetection() {
                 <p className="text-center font-display text-3xl font-bold">{result.recoveryChance}%</p>
               </CardContent></Card>
 
-              <Card className="rounded-2xl"><CardContent className="p-6">
+              <Card className="min-w-0 overflow-hidden rounded-2xl"><CardContent className="p-4 sm:p-6">
                 <h3 className="font-display text-lg font-semibold">12-Month Health Trend</h3>
                 <div className="mt-2 h-48">
                   <ResponsiveContainer><LineChart data={healthTrend}>
@@ -443,8 +444,8 @@ export default function DiseaseDetection() {
               </CardContent></Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card className="rounded-2xl"><CardContent className="p-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
+              <Card className="min-w-0 overflow-hidden rounded-2xl"><CardContent className="p-4 sm:p-6">
                 <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold"><AlertCircle className="h-5 w-5 text-amber-500" /> Symptoms Observed</h3>
                 <ul className="space-y-2">
                   {result.symptoms.map((s, i) => (
@@ -453,7 +454,7 @@ export default function DiseaseDetection() {
                 </ul>
               </CardContent></Card>
 
-              <Card className="rounded-2xl"><CardContent className="p-6">
+              <Card className="min-w-0 overflow-hidden rounded-2xl"><CardContent className="p-4 sm:p-6">
                 <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold"><Pill className="h-5 w-5 text-primary" /> Medicine Plan</h3>
                 <div className="space-y-3">
                   {result.medicines.map((m, i) => (
@@ -466,7 +467,7 @@ export default function DiseaseDetection() {
               </CardContent></Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
               <RecCard icon={ShieldAlert} title="Isolation" body={result.isolation} tint="bg-red-500/10 text-red-600" />
               <RecCard icon={Utensils} title="Nutrition" body={result.nutrition.join(" · ")} tint="bg-emerald-500/10 text-emerald-600" />
               <RecCard icon={Syringe} title="Vaccination" body={result.vaccination} tint="bg-blue-500/10 text-blue-600" />
@@ -474,14 +475,14 @@ export default function DiseaseDetection() {
             </div>
 
             <Card className="rounded-2xl border-primary/30 bg-primary/5">
-              <CardContent className="flex flex-col items-start justify-between gap-4 p-6 md:flex-row md:items-center">
+              <CardContent className="flex flex-col items-start justify-between gap-4 p-5 sm:p-6 md:flex-row md:items-center">
                 <div>
                   <h3 className="font-display text-xl font-semibold">Book a nearby veterinarian</h3>
                   <p className="text-sm text-muted-foreground">Confirm this diagnosis with a licensed vet within 24 hours.</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button asChild variant="outline" className="rounded-full"><a href="/vet-contacts">Find Vets</a></Button>
-                  <Button asChild className="rounded-full"><a href="/book-vet">Book Appointment</a></Button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  <Button asChild variant="outline" className="w-full rounded-full sm:w-auto"><a href="/vet-contacts">Find Vets</a></Button>
+                  <Button asChild className="w-full rounded-full sm:w-auto"><a href="/book-vet">Book Appointment</a></Button>
                 </div>
               </CardContent>
             </Card>
