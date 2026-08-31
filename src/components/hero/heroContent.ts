@@ -135,6 +135,28 @@ export const HERO_AISCAN: HeroContent = {
   alt: "Cow being scanned by a smartphone running AI disease detection",
 };
 
+export const HERO_FEED: HeroContent = {
+  key: "feed",
+  to: "/marketplace",
+  eyebrow: "Verified sellers · fast delivery",
+  title: "Everything Your",
+  titleAccent: "Dairy Farm Needs",
+  subtitle: "Cattle feed, minerals, silage, medicines and equipment — delivered to your village.",
+  cards: [
+    { icon: BadgeCheck, title: "Verified Sellers", sub: "Genuine products" },
+    { icon: IndianRupee, title: "Fair Prices", sub: "Compare & save" },
+    { icon: Timer, title: "Fast Delivery", sub: "To your village" },
+    { icon: ShieldCheck, title: "Quality Assured", sub: "Trusted brands" },
+  ],
+  ctas: [{ label: "Shop feed", to: "/marketplace?category=feed" }, { label: "Medical store", to: "/marketplace?category=medicine", variant: "outline" }],
+  side: {
+    title: "Trusted by 50,000+ farmers",
+    items: ["Feed, minerals & silage", "Vaccines & first-aid kits", "Farm equipment & accessories"],
+  },
+  img: artMarket.url,
+  alt: "Cattle feed sacks, mineral mixture and veterinary supplies on a dairy farm",
+};
+
 /** Homepage carousel order: Milk Rates → Veterinary → Schemes → Marketplace */
 export const HOME_HEROES: HeroContent[] = [HERO_MILK, HERO_VET, HERO_SCHEMES, HERO_MARKET];
 

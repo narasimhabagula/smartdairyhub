@@ -15,8 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { telHref, waHref } from "@/lib/phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import MobilePageHero from "@/components/MobilePageHero";
-import PageBanner from "@/components/PageBanner";
+import HeroPanel from "@/components/hero/HeroPanel";
+import { HERO_MILK } from "@/components/hero/heroContent";
 import milkBanner from "@/assets/hero-milk.jpg.asset.json";
 
 import NearbyMilkRates from "@/components/milk-rates/NearbyMilkRates";
@@ -224,15 +224,13 @@ export default function MilkRates() {
 
   return (
     <>
-      <MobilePageHero image={heroMilk} eyebrow="Live" title="Today's Milk Rates" subtitle="Real-time FAT & SNF prices from verified dairies" />
-      <PageBanner image={milkBanner.url} alt="Today's milk rates — live procurement rates from verified dairy companies" />
+      <div className="container px-4 pt-4 sm:px-6 md:pt-6">
+        <HeroPanel content={HERO_MILK} priority showBack />
+      </div>
     <div className="container py-8 md:py-8">
 
       <div className="mb-6 hidden md:flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Today's Milk Rates</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Live procurement rates from verified dairy companies. Updated in real time.</p>
-        </div>
+        <div />
         {isIndustry && (
           <Link to="/industry">
             <Button variant="outline" className="gap-2"><Factory className="h-4 w-4" /> Industry panel</Button>

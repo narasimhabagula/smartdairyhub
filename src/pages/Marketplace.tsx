@@ -20,7 +20,8 @@ import {
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
   Phone, MessageCircle, Eye, Loader2, Milk, Cookie, Beef, Droplet, FlaskConical,
 } from "lucide-react";
-import MobilePageHero from "@/components/MobilePageHero";
+import HeroPanel from "@/components/hero/HeroPanel";
+import { HERO_FEED } from "@/components/hero/heroContent";
 import heroFeed from "@/assets/card-feed.jpg";
 import bannerMarketplace from "@/assets/banner-marketplace.jpg";
 import bannerMedical from "@/assets/banner-medical.jpg";
@@ -323,34 +324,8 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <MobilePageHero image={heroFeed} eyebrow="Verified Sellers" title="Feed & Supplies" subtitle="Premium cattle feed and vet medicines" />
-
-      {/* Premium marketplace hero banner */}
-      <section className="px-4 pt-4 md:container md:pt-8">
-        <div className="relative overflow-hidden rounded-3xl shadow-xl">
-          <img
-            src={bannerMarketplace}
-            alt="Premium dairy farm supplies"
-            width={1600}
-            height={900}
-            className="h-48 w-full object-cover sm:h-64 md:h-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
-          <div className="absolute inset-y-0 left-0 flex max-w-[80%] flex-col justify-center gap-2 p-5 text-white sm:p-8">
-            <span className="w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest backdrop-blur">
-              Trusted by 50,000+ farmers
-            </span>
-            <h2 className="font-display text-xl font-bold leading-tight sm:text-3xl md:text-4xl">
-              Everything Your Dairy Farm Needs
-            </h2>
-            <p className="max-w-md text-xs text-white/85 sm:text-sm">
-              Feed, minerals, silage, medicines and equipment — delivered to your village.
-            </p>
-            <Button size="lg" className="mt-1 w-fit rounded-full shadow-lg" onClick={() => setTab("feed")}>
-              Shop Now <Sparkles className="ml-1.5 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+      <section className="container px-4 pt-4 sm:px-6 md:pt-6">
+        <HeroPanel content={HERO_FEED} priority showBack />
 
         {/* Medical Store strip */}
         <button
@@ -370,7 +345,7 @@ export default function Marketplace() {
         <div className="container py-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="font-serif text-3xl font-bold md:text-4xl">Dairy Supplies Marketplace</h1>
+              <h2 className="font-serif text-3xl font-bold md:text-4xl">Dairy Supplies Marketplace</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Cattle feed and veterinary medicines from verified sellers across India.
               </p>
