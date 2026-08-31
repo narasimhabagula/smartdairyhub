@@ -204,10 +204,11 @@ export default function DiseaseDetection() {
         />
       </div>
 
-      <div className="container py-10 space-y-8">
+      <div className="container w-full max-w-full overflow-x-hidden py-6 space-y-6 md:py-10 md:space-y-8">
         {/* Upload zone — ChatGPT-style */}
         <Card className="overflow-hidden rounded-3xl border-primary/10 shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.4)]">
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+
             {queue.length === 0 ? (
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
