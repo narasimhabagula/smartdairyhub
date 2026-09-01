@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 import HeroPanel from "@/components/hero/HeroPanel";
 import { HERO_FEED } from "@/components/hero/heroContent";
-import heroFeed from "@/assets/card-feed.jpg";
-import bannerMarketplace from "@/assets/banner-marketplace.jpg";
 import bannerMedical from "@/assets/banner-medical.jpg";
 import phFeed from "@/assets/ph-feed.jpg";
 import phMedicine from "@/assets/ph-medicine.jpg";

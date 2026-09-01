@@ -41,7 +41,7 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
       <div className="grid items-center gap-5 p-4 pt-5 sm:gap-6 sm:p-7 lg:grid-cols-[1.02fr_0.98fr] lg:gap-9 lg:p-10">
         {/* ---------- Text side ---------- */}
         <div className="min-w-0">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary sm:text-[11px]">
+          <span className={`inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 ${showBack ? "ml-11 md:ml-0" : ""} text-[10px] font-bold uppercase tracking-widest text-primary sm:text-[11px]`}>
             <Sparkles className="h-3 w-3" /> {c.eyebrow}
           </span>
 

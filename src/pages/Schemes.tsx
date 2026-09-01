@@ -11,8 +11,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import HeroPanel from "@/components/hero/HeroPanel";
 import { HERO_SCHEMES } from "@/components/hero/heroContent";
-import heroSchemes from "@/assets/banner-schemes.jpg";
-import schemesBanner from "@/assets/hero-schemes.jpg.asset.json";
 
 
 const categories = ["all", "subsidy", "loan", "insurance", "training", "other"];
