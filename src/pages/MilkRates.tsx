@@ -17,10 +17,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import HeroPanel from "@/components/hero/HeroPanel";
 import { HERO_MILK } from "@/components/hero/heroContent";
-import milkBanner from "@/assets/hero-milk.jpg.asset.json";
 
 import NearbyMilkRates from "@/components/milk-rates/NearbyMilkRates";
-import heroMilk from "@/assets/card-milk.jpg";
 
 type Company = {
   id: string;
