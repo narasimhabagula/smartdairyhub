@@ -16,15 +16,16 @@ export default function HeroBannerSlide({ banner, priority }: HeroBannerSlidePro
   return (
     <Link
       to={banner.to}
-      className="relative block h-[190px] w-full overflow-hidden rounded-3xl sm:h-[260px] lg:h-[340px] xl:h-[380px]"
+      className="relative block aspect-[1600/1008] w-full overflow-hidden rounded-3xl bg-muted sm:aspect-auto sm:h-[260px] lg:h-[340px] xl:h-[380px]"
     >
       <img
         src={banner.img}
         alt={banner.alt}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-contain object-center sm:object-cover"
       />
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
       <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 lg:p-10">
         <h2 className="font-display text-xl font-bold leading-tight text-white drop-shadow sm:text-3xl lg:text-4xl">
