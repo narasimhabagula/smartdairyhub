@@ -100,6 +100,11 @@ const JerryButton = memo(({ open, onClick, lang }: Props) => {
     <motion.button
       ref={btnRef}
       type="button"
+      onClick={(e) => {
+        // Keyboard activation (Enter / Space) dispatches a click with detail === 0
+        // and no pointer sequence, so trigger the toggle here for a11y.
+        if (e.detail === 0) onClick();
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
