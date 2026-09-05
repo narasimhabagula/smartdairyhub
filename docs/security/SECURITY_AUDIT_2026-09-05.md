@@ -13,7 +13,7 @@ hardening gaps.** The project already has strong foundations: RLS enabled on all
 checkout, guard triggers on the moderation-sensitive tables, and no secrets in
 client code.
 
-Rating: **B+ / 82-100** (would be A- after items B1, C1, C2 below).
+Rating: **B+ (82/100)** (would be A- after items B1, C1, C2 below).
 
 ## B. Critical issues
 
