@@ -673,7 +673,12 @@ export default function VetContacts() {
   return (
     <>
       <MobilePageHero image={heroVet} eyebrow="Verified" title="Veterinary Doctors" subtitle="Book trusted vets near you" />
+      <PageBanner
+        image={vetBanner.url}
+        alt="Veterinary support for dairy farmers — verified doctors, emergency help and health checkups for cows, buffaloes and poultry"
+      />
     <div className="container py-4 md:py-12">
+
       {/* Header */}
       <div className="hidden md:flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
