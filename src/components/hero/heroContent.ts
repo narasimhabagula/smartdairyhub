@@ -102,7 +102,7 @@ export const HERO_MARKET: HeroContent = {
     { icon: Bolt, title: "Easy & Fast", sub: "Quick Transactions" },
   ],
   ctas: [
-    { label: "Sell Animals", to: "/cattle-market/new" },
+    { label: "Sell Animals", to: "/cattle/new" },
     { label: "My Listings", to: "/my-listings", variant: "outline" },
   ],
   side: {
