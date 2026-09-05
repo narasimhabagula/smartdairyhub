@@ -21,7 +21,14 @@ import { escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
 import MobilePageHero from "@/components/MobilePageHero";
+import PageBanner from "@/components/PageBanner";
+import VetQuickActions from "@/components/vet/VetQuickActions";
 import heroVet from "@/assets/card-vet.jpg";
+import vetBanner from "@/assets/hero-vet.jpg.asset.json";
+import animalCow from "@/assets/animal-cow.png.asset.json";
+import animalBuffalo from "@/assets/animal-buffalo.png.asset.json";
+import animalHen from "@/assets/animal-hen.png.asset.json";
+import animalRooster from "@/assets/animal-rooster.png.asset.json";
 import { demoVets } from "@/data/demo/vets";
 import { USE_DEMO_DATA } from "@/data/demo";
 
@@ -51,12 +58,12 @@ type GeoComponents = {
   formatted: string | null; lat: number | null; lng: number | null;
 };
 
-const ANIMALS: { id: string; emoji: string; label: string }[] = [
+const ANIMALS: { id: string; emoji: string; img?: string; label: string }[] = [
   { id: "all", emoji: "🐾", label: "All" },
-  { id: "cow", emoji: "🐄", label: "Cow" },
-  { id: "buffalo", emoji: "🐃", label: "Buffalo" },
-  { id: "hen", emoji: "🐔", label: "Hen" },
-  { id: "chicken", emoji: "🐓", label: "Cock" },
+  { id: "cow", emoji: "🐄", img: animalCow.url, label: "Cow" },
+  { id: "buffalo", emoji: "🐃", img: animalBuffalo.url, label: "Buffalo" },
+  { id: "hen", emoji: "🐔", img: animalHen.url, label: "Hen" },
+  { id: "chicken", emoji: "🐓", img: animalRooster.url, label: "Cock" },
 ];
 
 const VOICE_LANGS: { code: string; label: string }[] = [
@@ -666,7 +673,12 @@ export default function VetContacts() {
   return (
     <>
       <MobilePageHero image={heroVet} eyebrow="Verified" title="Veterinary Doctors" subtitle="Book trusted vets near you" />
+      <PageBanner
+        image={vetBanner.url}
+        alt="Veterinary support for dairy farmers — verified doctors, emergency help and health checkups for cows, buffaloes and poultry"
+      />
     <div className="container py-4 md:py-12">
+
       {/* Header */}
       <div className="hidden md:flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
@@ -866,13 +878,25 @@ export default function VetContacts() {
                   key={a.id}
                   type="button"
                   onClick={() => { setAnimal(a.id); if (userLoc) fetchNearbyLive({ animal: a.id }); }}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
+                  className={`inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition ${
                     animal === a.id
                       ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : "border-border bg-background hover:border-primary/50 hover:bg-primary/5"
                   }`}
                 >
-                  <span className="text-base leading-none">{a.emoji}</span> {a.label}
+                  {a.img ? (
+                    <img
+                      src={a.img}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-7 w-7 shrink-0 rounded-full bg-background/70 object-contain"
+                    />
+                  ) : (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center text-base leading-none">{a.emoji}</span>
+                  )}
+                  {a.label}
                 </button>
               ))}
             </div>
@@ -981,7 +1005,10 @@ export default function VetContacts() {
             </Card>
           )}
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <VetQuickActions />
+
+          <div id="vet-listings" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
             {nearbyLoading ? (
               Array.from({ length: 6 }).map((_, i) => <VetCardSkeleton key={i} />)
             ) : !nearbyFetched ? (
