@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import HeroPanel from "./HeroPanel";
-import { HOME_HEROES, type HeroContent } from "./heroContent";
+import HeroBannerSlide from "./HeroBannerSlide";
+import { HERO_BANNERS, type HeroBanner } from "./heroBanners";
 
 const INTERVAL = 5500;
 
 interface HeroCarouselProps {
-  heroes?: HeroContent[];
+  banners?: HeroBanner[];
   className?: string;
 }
 
@@ -15,16 +15,16 @@ interface HeroCarouselProps {
  * tablet, laptop and desktop — slides are stacked in one grid cell so the
  * container keeps a constant height (no layout jump) while cross-fading.
  */
-export default function HeroCarousel({ heroes = HOME_HEROES, className = "" }: HeroCarouselProps) {
+export default function HeroCarousel({ banners = HERO_BANNERS, className = "" }: HeroCarouselProps) {
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
-  const n = heroes.length;
+  const n = banners.length;
 
   const go = (next: number) => setI((next + n) % n);
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || n < 2) return;
     const id = setInterval(() => setI((p) => (p + 1) % n), INTERVAL);
     return () => clearInterval(id);
   }, [paused, n, i]);
@@ -46,15 +46,15 @@ export default function HeroCarousel({ heroes = HOME_HEROES, className = "" }: H
       aria-label="Smart Dairy Hub highlights"
     >
       <div className="grid">
-        {heroes.map((h, idx) => (
+        {banners.map((b, idx) => (
           <div
-            key={h.key}
+            key={b.key}
             aria-hidden={idx !== i}
             className={`col-start-1 row-start-1 transition-opacity duration-700 ease-out ${
               idx === i ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
           >
-            <HeroPanel content={h} priority={idx === 0} />
+            <HeroBannerSlide banner={b} priority={idx === 0} />
           </div>
         ))}
       </div>
@@ -77,11 +77,11 @@ export default function HeroCarousel({ heroes = HOME_HEROES, className = "" }: H
 
       {/* Dots */}
       <div className="mt-3 flex items-center justify-center gap-1.5">
-        {heroes.map((h, idx) => (
+        {banners.map((b, idx) => (
           <button
-            key={h.key}
+            key={b.key}
             onClick={() => go(idx)}
-            aria-label={`Show ${h.title} ${h.titleAccent}`}
+            aria-label={`Show ${b.title}`}
             aria-current={idx === i}
             className={`h-1.5 rounded-full transition-all ${idx === i ? "w-6 bg-primary" : "w-1.5 bg-primary/30 hover:bg-primary/60"}`}
           />
