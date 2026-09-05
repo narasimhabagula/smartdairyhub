@@ -8,11 +8,8 @@ interface HeroPanelProps {
   showBack?: boolean;
   /** Eager-load the artwork (first hero above the fold). */
   priority?: boolean;
-  /** Replace the link CTAs with custom action buttons (e.g. file upload). */
-  actions?: React.ReactNode;
   className?: string;
 }
-
 
 /**
  * One responsive hero composition used on every screen size.
@@ -20,7 +17,7 @@ interface HeroPanelProps {
  * while the supplied farm artwork renders at its natural aspect ratio
  * (never stretched, never cropped).
  */
-export default function HeroPanel({ content, showBack, priority, actions, className = "" }: HeroPanelProps) {
+export default function HeroPanel({ content, showBack, priority, className = "" }: HeroPanelProps) {
   const navigate = useNavigate();
   const c = content;
 
@@ -41,7 +38,7 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
       <div className="grid items-center gap-5 p-4 pt-5 sm:gap-6 sm:p-7 lg:grid-cols-[1.02fr_0.98fr] lg:gap-9 lg:p-10">
         {/* ---------- Text side ---------- */}
         <div className="min-w-0">
-          <span className={`inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 ${showBack ? "ml-11 md:ml-0" : ""} text-[10px] font-bold uppercase tracking-widest text-primary sm:text-[11px]`}>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary sm:text-[11px]">
             <Sparkles className="h-3 w-3" /> {c.eyebrow}
           </span>
 
@@ -73,8 +70,8 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
           </div>
 
           {/* CTAs */}
-          <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3">
-            {actions ?? c.ctas.map((cta) => (
+          <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
+            {c.ctas.map((cta) => (
               <Link
                 key={cta.label}
                 to={cta.to}
@@ -88,7 +85,6 @@ export default function HeroPanel({ content, showBack, priority, actions, classN
               </Link>
             ))}
           </div>
-
         </div>
 
         {/* ---------- Visual side ---------- */}

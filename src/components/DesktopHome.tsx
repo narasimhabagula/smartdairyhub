@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { Bot } from "lucide-react";
-import { FEATURE_CARDS, QUICK_ACTIONS } from "@/components/home/homeData";
+import { useEffect, useState } from "react";
+import { Bot, ChevronRight, Newspaper, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import { BANNERS, FEATURE_CARDS, QUICK_ACTIONS, IMG } from "@/components/home/homeData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,12 @@ const STATS = [
 export default function DesktopHome() {
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % BANNERS.length), 5000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="w-full bg-gradient-to-b from-emerald-50/50 via-background to-background pb-20">

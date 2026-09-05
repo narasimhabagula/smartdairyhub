@@ -20,8 +20,8 @@ import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
 import { escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
-import HeroPanel from "@/components/hero/HeroPanel";
-import { HERO_VET } from "@/components/hero/heroContent";
+import MobilePageHero from "@/components/MobilePageHero";
+import heroVet from "@/assets/card-vet.jpg";
 import { demoVets } from "@/data/demo/vets";
 import { USE_DEMO_DATA } from "@/data/demo";
 
@@ -665,12 +665,14 @@ export default function VetContacts() {
 
   return (
     <>
-      <div className="container pt-3 md:pt-6">
-        <HeroPanel content={HERO_VET} priority showBack />
-      </div>
-    <div className="container py-4 md:py-8">
-      {/* Suggest a Vet */}
-      <div className="flex flex-wrap items-start justify-end gap-4">
+      <MobilePageHero image={heroVet} eyebrow="Verified" title="Veterinary Doctors" subtitle="Book trusted vets near you" />
+    <div className="container py-4 md:py-12">
+      {/* Header */}
+      <div className="hidden md:flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-2xl">
+          <h1 className="font-display text-3xl font-bold md:text-4xl">{t("vet.title")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("vet.subtitle")}</p>
+        </div>
         {user && (
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>

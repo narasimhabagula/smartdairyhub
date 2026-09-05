@@ -9,8 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { isSafeHttpUrl } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import HeroPanel from "@/components/hero/HeroPanel";
-import { HERO_SCHEMES } from "@/components/hero/heroContent";
+import MobilePageHero from "@/components/MobilePageHero";
+import PageBanner from "@/components/PageBanner";
+import heroSchemes from "@/assets/banner-schemes.jpg";
+import schemesBanner from "@/assets/hero-schemes.jpg.asset.json";
 
 
 const categories = ["all", "subsidy", "loan", "insurance", "training", "other"];
@@ -58,10 +60,14 @@ export default function Schemes() {
 
   return (
     <>
-      <div className="container px-4 pt-4 sm:px-6 md:pt-6">
-        <HeroPanel content={HERO_SCHEMES} priority showBack />
-      </div>
+      <MobilePageHero image={heroSchemes} eyebrow="Government" title="Schemes & Subsidies" subtitle="Loans, insurance and grants for dairy farmers" />
+      <PageBanner image={schemesBanner.url} alt="Government schemes for dairy farmers — financial assistance, welfare benefits, growth and simple transparent applications" />
     <div className="container py-10">
+
+      <div className="mx-auto hidden max-w-3xl text-center md:block">
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">{t("schemes.title")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("schemes.subtitle")}</p>
+      </div>
 
       <div className="mx-auto mt-8 flex max-w-3xl flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
