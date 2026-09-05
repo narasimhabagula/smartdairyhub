@@ -1005,7 +1005,10 @@ export default function VetContacts() {
             </Card>
           )}
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <VetQuickActions />
+
+          <div id="vet-listings" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
             {nearbyLoading ? (
               Array.from({ length: 6 }).map((_, i) => <VetCardSkeleton key={i} />)
             ) : !nearbyFetched ? (
