@@ -873,13 +873,25 @@ export default function VetContacts() {
                   key={a.id}
                   type="button"
                   onClick={() => { setAnimal(a.id); if (userLoc) fetchNearbyLive({ animal: a.id }); }}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
+                  className={`inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition ${
                     animal === a.id
                       ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : "border-border bg-background hover:border-primary/50 hover:bg-primary/5"
                   }`}
                 >
-                  <span className="text-base leading-none">{a.emoji}</span> {a.label}
+                  {a.img ? (
+                    <img
+                      src={a.img}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-7 w-7 shrink-0 rounded-full bg-background/70 object-contain"
+                    />
+                  ) : (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center text-base leading-none">{a.emoji}</span>
+                  )}
+                  {a.label}
                 </button>
               ))}
             </div>
