@@ -1,67 +1,28 @@
-# Smart Dairy Hub — Premium Redesign Plan
+# One banner set: desktop banners reused on mobile
 
-Your app already has the core modules built: Dashboard, Milk Rates, Marketplace, Cattle Market, Vet Contacts, Schemes, Jerry AI, Auth, Admin, etc. The gap is **visual craft + polish**, not new backend. This plan is a phased design + UX overhaul — one phase per turn — so we can ship real quality instead of a rushed mega-rewrite.
+## What changes
 
-## What I will NOT rebuild
-These already exist and work; I'll only re-skin them:
-- Supabase auth (email + Google + OTP) ✓
-- Jerry AI chatbot with voice ✓
-- Milk rate DB + realtime feed ✓
-- Marketplace / cattle listings / vet directory / schemes ✓
-- Notifications, orders, payments scaffolding ✓
+1. **AI Scan banner** — your uploaded image becomes the banner on the AI Disease Detection page, on both desktop and mobile. Nothing about the image is redrawn or regenerated.
+2. **Same banners everywhere** — the separate mobile picture strips (with the back arrow and white text over the photo) are removed from Milk Rates, Cattle Market, Vet, Schemes, Feed & Supplies and AI Scan. Each page then shows the one desktop banner, scaled down on phones so the whole picture is visible.
+3. **Nothing else** — no layout, colour, font, navigation, data or functionality changes. Existing desktop appearance stays identical.
 
-## What I WILL do
+## How the mobile sizing works
 
-### Phase 1 — Design foundation + Home (this turn if you approve)
-The single highest-leverage change. Sets the visual language every other page inherits.
-- New design tokens in `index.css` + `tailwind.config.ts`:
-  - White canvas, primary green `#22C55E` + darker `#15803D`, cream accent, ink `#0F172A`
-  - 24px card radius, glass surfaces, soft layered shadows, generous spacing scale
-  - Type: Playfair Display (display) + Inter (body) — already loaded, tightened scale
-  - Motion tokens (easing, durations) + `animate-fade-in` / `scale-in` / parallax
-- New `Home` (Index) page:
-  - Full-bleed hero with drone-style farm photo, glass search bar, 3 CTAs (Get Started / AI Disease Detection / Download App)
-  - Animated stats strip (100k+ Farmers, 50k+ Cattle, 10M+ Records, 24/7 AI)
-  - Feature bento grid linking to Milk Rates, Disease Detection, Vets, Marketplace, Schemes
-  - Testimonials + trust logos, premium footer
-- Global `Navbar` refresh (glass, sticky, mobile drawer with the full menu you listed)
-- Global `Footer` refresh
+The shared banner block becomes visible at all widths instead of desktop-only:
+- full width of the page, side padding on phones so it doesn't touch the edges
+- height follows the picture's own proportions (no fixed height, no cropping, no stretching)
+- rounded frame and soft shadow kept as today
+- no horizontal scrolling, no text overlaid on the picture
 
-### Phase 2 — AI Disease Detection (new feature)
-This is the "main feature" from your brief and doesn't exist yet.
-- New `/disease-detection` route with ChatGPT-style upload:
-  - Drag-drop + camera + gallery, multi-image, preview with zoom/delete/replace, progress bar
-  - Calls a new `analyze-animal-health` edge function → Lovable AI Gateway (Gemini vision)
-  - Returns structured: disease, confidence, severity, symptoms, causes, medicine, feed, vitamins, isolation advice, nearest vet CTA, emergency button, downloadable PDF report
-  - Saves history to a new `disease_reports` table (RLS: farmer-owned)
+## One thing to confirm
 
-### Phase 3 — Dashboard redesign
-Animated stat cards, Recharts graphs, weather widget, AI suggestions feed, notification stream — all on the new tokens.
-
-### Phase 4 — Milk Rates + Milk Calculator redesign
-Live-price hero graph, filter chips, comparison cards. Keep existing data + realtime logic.
-
-### Phase 5 — Marketplace + Cattle Market + Feed Store redesign
-Airbnb-style listing cards, sticky filters, favorites, verified badges, WhatsApp/call CTAs.
-
-### Phase 6 — Vet Directory + Booking redesign
-Doctor profile cards with rating, fee, map pin, book/call/chat/video call CTAs.
-
-### Phase 7 — Schemes + Community + Profile polish
-Scheme eligibility checker UI, community feed, profile settings hub.
+The image you uploaded is a screenshot of the whole AI Scan page — it includes the top navigation bar, the upload box and the "What You Get" row underneath the banner area. If I place it in full, the page would show a second navigation bar and a second upload box inside the picture. My plan is to use the banner portion of that screenshot (the green card with the cow, the phone and the four stats) at its full height, without altering the artwork itself. Tell me if you'd rather have the entire screenshot placed as-is.
 
 ## Technical notes
-- All colors go through semantic tokens — no hardcoded `bg-green-500` in components.
-- New AI vision call uses existing Lovable AI Gateway (`LOVABLE_API_KEY` already set); no new secrets.
-- All new tables get `GRANT` + RLS in the same migration.
-- I'll use AI Elements for the disease-detection chat/upload surface.
-- Framer Motion for hero/parallax animations (bounded — no perf tax).
-- Existing routes and data stay intact; this is additive + re-skin.
 
-## Question before I start
-Which phase do you want first?
-1. **Phase 1 (design system + Home)** — recommended, unlocks the rest
-2. **Phase 2 (AI Disease Detection)** — new hero feature, skip re-skin for now
-3. **All phases sequentially** — approve once, I'll ship phase 1 now and continue in follow-up turns
-
-Reply with the phase number (or "1 then 2") and I'll start immediately.
+- Upload the reference image via `lovable-assets` into `src/assets/hero-aiscan-v2.<ext>.asset.json`.
+- `src/components/PageBanner.tsx`: drop `hidden md:block`, keep `container`, add mobile padding; image stays `w-full h-auto` (aspect intact).
+- Remove `<MobilePageHero />` usage and imports from `MilkRates.tsx`, `CattleMarket.tsx`, `Schemes.tsx`, `VetContacts.tsx`, `Marketplace.tsx`, `DiseaseDetection.tsx`; delete `MobilePageHero.tsx` once unreferenced.
+- `DiseaseDetection.tsx`: replace the current photo/text hero section (lines ~179–198) with `<PageBanner image={aiScanBanner.url} … />`; the Upload/Try Demo buttons stay reachable through the existing upload card below.
+- `Marketplace.tsx`: replace the custom overlay hero with `PageBanner` using the existing `banner-marketplace.jpg`; keep the Medical Store strip and the Shop Now action in the section below untouched.
+- Verify with a build plus mobile (390px) and desktop (1280px) screenshots of all six pages.
