@@ -9,9 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isSafeHttpUrl } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import MobilePageHero from "@/components/MobilePageHero";
 import PageBanner from "@/components/PageBanner";
-import heroSchemes from "@/assets/banner-schemes.jpg";
 import schemesBanner from "@/assets/hero-schemes.jpg.asset.json";
 
 
@@ -60,7 +58,6 @@ export default function Schemes() {
 
   return (
     <>
-      <MobilePageHero image={heroSchemes} eyebrow="Government" title="Schemes & Subsidies" subtitle="Loans, insurance and grants for dairy farmers" />
       <PageBanner image={schemesBanner.url} alt="Government schemes for dairy farmers — financial assistance, welfare benefits, growth and simple transparent applications" />
     <div className="container py-10">
 

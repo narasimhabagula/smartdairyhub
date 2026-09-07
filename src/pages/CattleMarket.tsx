@@ -11,11 +11,9 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import MobilePageHero from "@/components/MobilePageHero";
 import PageBanner from "@/components/PageBanner";
 import marketBanner from "@/assets/hero-market.jpg.asset.json";
 
-import heroMarket from "@/assets/card-market.jpg";
 import { toast } from "sonner";
 import { telHref, waHref } from "@/lib/phone";
 
@@ -268,7 +266,6 @@ export default function CattleMarket() {
 
   return (
     <div className="min-h-screen bg-gradient-mint">
-      <MobilePageHero image={heroMarket} eyebrow="AI-Powered" title="Cattle Marketplace" subtitle="Verified sellers, healthy livestock" />
       <PageBanner image={marketBanner.url} alt="India's smartest livestock marketplace — buy and sell verified cows, buffaloes and poultry. Sell Animals to create a listing, My Listings to manage your listed animals" />
 
 

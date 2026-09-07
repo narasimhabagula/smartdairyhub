@@ -15,12 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { telHref, waHref } from "@/lib/phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import MobilePageHero from "@/components/MobilePageHero";
 import PageBanner from "@/components/PageBanner";
 import milkBanner from "@/assets/hero-milk.jpg.asset.json";
 
 import NearbyMilkRates from "@/components/milk-rates/NearbyMilkRates";
-import heroMilk from "@/assets/card-milk.jpg";
 
 type Company = {
   id: string;
@@ -224,7 +222,6 @@ export default function MilkRates() {
 
   return (
     <>
-      <MobilePageHero image={heroMilk} eyebrow="Live" title="Today's Milk Rates" subtitle="Real-time FAT & SNF prices from verified dairies" />
       <PageBanner image={milkBanner.url} alt="Today's milk rates — live procurement rates from verified dairy companies" />
     <div className="container py-8 md:py-8">
 
