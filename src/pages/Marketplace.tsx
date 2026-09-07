@@ -20,7 +20,6 @@ import {
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
   Phone, MessageCircle, Eye, Loader2, Milk, Cookie, Beef, Droplet, FlaskConical,
 } from "lucide-react";
-import MobilePageHero from "@/components/MobilePageHero";
 import heroFeed from "@/assets/card-feed.jpg";
 import bannerMarketplace from "@/assets/banner-marketplace.jpg";
 import bannerMedical from "@/assets/banner-medical.jpg";
@@ -323,7 +322,6 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <MobilePageHero image={heroFeed} eyebrow="Verified Sellers" title="Feed & Supplies" subtitle="Premium cattle feed and vet medicines" />
 
       {/* Premium marketplace hero banner */}
       <section className="px-4 pt-4 md:container md:pt-8">

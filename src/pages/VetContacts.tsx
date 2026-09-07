@@ -20,7 +20,6 @@ import { normalizeIndianPhone, formatIndianPhoneDisplay } from "@/lib/phone";
 import { escapeHtml } from "@/lib/safe-url";
 import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
-import MobilePageHero from "@/components/MobilePageHero";
 import PageBanner from "@/components/PageBanner";
 import VetQuickActions from "@/components/vet/VetQuickActions";
 import heroVet from "@/assets/card-vet.jpg";
@@ -672,7 +671,6 @@ export default function VetContacts() {
 
   return (
     <>
-      <MobilePageHero image={heroVet} eyebrow="Verified" title="Veterinary Doctors" subtitle="Book trusted vets near you" />
       <PageBanner
         image={vetBanner.url}
         alt="Veterinary support for dairy farmers — verified doctors, emergency help and health checkups for cows, buffaloes and poultry"
