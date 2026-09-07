@@ -59,6 +59,26 @@ export default function DiseaseDetection() {
 
   const active = queue.find((q) => q.id === activeId) || null;
 
+  /** Returns raw base64 (no data: prefix) for a data-URL preview or a remote image URL. */
+  const toBase64 = async (src: string, fallbackMime?: string): Promise<{ base64: string; mimeType: string }> => {
+    if (src.startsWith("data:")) {
+      const [head, body = ""] = src.split(",");
+      const mime = head.match(/data:([^;]+)/)?.[1] || fallbackMime || "image/jpeg";
+      return { base64: body, mimeType: mime };
+    }
+    const res = await fetch(src);
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = () => reject(new Error("Could not read the photo"));
+      r.readAsDataURL(blob);
+    });
+    const [, body = ""] = dataUrl.split(",");
+    return { base64: body, mimeType: blob.type || fallbackMime || "image/jpeg" };
+  };
+
+
   const addFiles = useCallback((files: File[]) => {
     const room = MAX_IMAGES - queue.length;
     if (room <= 0) { toast.error(`Max ${MAX_IMAGES} images`); return; }
@@ -139,9 +159,10 @@ export default function DiseaseDetection() {
     const tick = setInterval(() => setProgress((p) => Math.min(p + 6, 92)), 260);
 
     try {
-      const base64 = active.preview.split(",")[1];
+      const { base64, mimeType } = await toBase64(active.preview, active.file.type);
+      if (!base64) throw new Error("Please add a photo of the animal before starting the scan.");
       const { data, error } = await supabase.functions.invoke("analyze-animal-health", {
-        body: { imageBase64: base64, mimeType: active.file.type },
+        body: { imageBase64: base64, mimeType },
       });
       clearInterval(tick); clearInterval(stageTimer); setProgress(100); setAiStage("Complete");
 
