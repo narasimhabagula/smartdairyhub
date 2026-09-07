@@ -14,7 +14,8 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
 import { demoDiseaseResults, USE_DEMO_DATA } from "@/data/demo";
-import heroImg from "@/assets/disease-hero.jpg";
+import PageBanner from "@/components/PageBanner";
+import aiScanBanner from "@/assets/hero-aiscan-v2.jpg.asset.json";
 
 type Result = {
   animal: string; breed: string; disease: string;
