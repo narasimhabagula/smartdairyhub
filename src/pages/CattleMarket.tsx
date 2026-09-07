@@ -14,7 +14,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import PageBanner from "@/components/PageBanner";
 import marketBanner from "@/assets/hero-market.jpg.asset.json";
 
-import heroMarket from "@/assets/card-market.jpg";
 import { toast } from "sonner";
 import { telHref, waHref } from "@/lib/phone";
 

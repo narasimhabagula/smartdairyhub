@@ -22,7 +22,6 @@ import { useTranslation } from "react-i18next";
 import { VetCard, VetCardSkeleton, type VetCardData } from "@/components/vet/VetCard";
 import PageBanner from "@/components/PageBanner";
 import VetQuickActions from "@/components/vet/VetQuickActions";
-import heroVet from "@/assets/card-vet.jpg";
 import vetBanner from "@/assets/hero-vet.jpg.asset.json";
 import animalCow from "@/assets/animal-cow.png.asset.json";
 import animalBuffalo from "@/assets/animal-buffalo.png.asset.json";

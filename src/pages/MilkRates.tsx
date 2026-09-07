@@ -19,7 +19,6 @@ import PageBanner from "@/components/PageBanner";
 import milkBanner from "@/assets/hero-milk.jpg.asset.json";
 
 import NearbyMilkRates from "@/components/milk-rates/NearbyMilkRates";
-import heroMilk from "@/assets/card-milk.jpg";
 
 type Company = {
   id: string;

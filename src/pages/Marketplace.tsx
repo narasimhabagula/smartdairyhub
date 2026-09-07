@@ -20,7 +20,6 @@ import {
   IndianRupee, SlidersHorizontal, Plus, Wheat, Pill, Mic, Truck, Sparkles,
   Phone, MessageCircle, Eye, Loader2, Milk, Cookie, Beef, Droplet, FlaskConical,
 } from "lucide-react";
-import heroFeed from "@/assets/card-feed.jpg";
 import bannerMarketplace from "@/assets/banner-marketplace.jpg";
 import bannerMedical from "@/assets/banner-medical.jpg";
 import phFeed from "@/assets/ph-feed.jpg";
