@@ -59,6 +59,26 @@ export default function DiseaseDetection() {
 
   const active = queue.find((q) => q.id === activeId) || null;
 
+  /** Returns raw base64 (no data: prefix) for a data-URL preview or a remote image URL. */
+  const toBase64 = async (src: string, fallbackMime?: string): Promise<{ base64: string; mimeType: string }> => {
+    if (src.startsWith("data:")) {
+      const [head, body = ""] = src.split(",");
+      const mime = head.match(/data:([^;]+)/)?.[1] || fallbackMime || "image/jpeg";
+      return { base64: body, mimeType: mime };
+    }
+    const res = await fetch(src);
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = () => reject(new Error("Could not read the photo"));
+      r.readAsDataURL(blob);
+    });
+    const [, body = ""] = dataUrl.split(",");
+    return { base64: body, mimeType: blob.type || fallbackMime || "image/jpeg" };
+  };
+
+
   const addFiles = useCallback((files: File[]) => {
     const room = MAX_IMAGES - queue.length;
     if (room <= 0) { toast.error(`Max ${MAX_IMAGES} images`); return; }
