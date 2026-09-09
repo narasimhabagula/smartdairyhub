@@ -203,7 +203,7 @@ export default function DiseaseDetection() {
         image={aiScanBanner.url}
         alt="AI Disease Detection for dairy animals — upload a photo of your cow or buffalo for AI-based insights on possible diseases, treatment suggestions and preventive care"
       />
-      <div className="container mt-4 flex flex-wrap gap-3">
+      <div className="container mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
         <Button size="lg" onClick={() => fileInput.current?.click()} className="gap-2">
           <Upload className="h-4 w-4" /> Upload Photos
         </Button>
@@ -213,10 +213,10 @@ export default function DiseaseDetection() {
       </div>
 
 
-      <div className="container py-10 space-y-8">
+      <div className="container py-6 space-y-6 md:py-10 md:space-y-8">
         {/* Upload zone — ChatGPT-style */}
         <Card className="overflow-hidden rounded-3xl border-primary/10 shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.4)]">
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-4 sm:p-6 md:p-8">
             {queue.length === 0 ? (
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -226,17 +226,17 @@ export default function DiseaseDetection() {
                   const files = Array.from(e.dataTransfer.files || []);
                   if (files.length) addFiles(files);
                 }}
-                className={`group relative overflow-hidden rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-300 ${
+                className={`group relative overflow-hidden rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-300 sm:p-12 ${
                   dragOver ? "border-primary bg-primary/10 scale-[1.01]" : "border-border hover:border-primary/50 hover:bg-primary/[0.03]"
                 }`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-emerald-400/[0.04] opacity-0 transition group-hover:opacity-100" />
-                <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg shadow-primary/30">
-                  <ImageIcon className="h-9 w-9 text-white" />
+                <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg shadow-primary/30 sm:h-20 sm:w-20">
+                  <ImageIcon className="h-7 w-7 text-white sm:h-9 sm:w-9" />
                 </div>
-                <h3 className="mt-5 font-display text-2xl font-semibold">Drop photos or paste from clipboard</h3>
-                <p className="mt-2 text-sm text-muted-foreground">JPG, PNG · up to 10 MB each · up to {MAX_IMAGES} images</p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <h3 className="mt-4 font-display text-lg font-semibold sm:mt-5 sm:text-2xl">Drop photos or paste from clipboard</h3>
+                <p className="mt-2 text-xs text-muted-foreground sm:text-sm">JPG, PNG · up to 10 MB each · up to {MAX_IMAGES} images</p>
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
                   <Button onClick={() => fileInput.current?.click()} className="gap-2 rounded-full px-5 shadow-md"><Upload className="h-4 w-4" /> Choose files</Button>
                   <Button variant="outline" onClick={() => camInput.current?.click()} className="gap-2 rounded-full px-5"><Camera className="h-4 w-4" /> Camera</Button>
                 </div>
@@ -280,7 +280,7 @@ export default function DiseaseDetection() {
                         background: "radial-gradient(circle, rgba(239,68,68,0.35), transparent 70%)",
                       }}
                     >
-                      <span className="absolute -top-6 left-0 whitespace-nowrap rounded bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
+                      <span className="absolute -top-6 right-0 max-w-[min(90vw,16rem)] truncate rounded bg-red-500 px-2 py-0.5 text-[11px] font-medium text-white sm:left-0 sm:right-auto sm:text-xs">
                         Affected: {result.disease}
                       </span>
                     </div>
@@ -383,7 +383,7 @@ export default function DiseaseDetection() {
             <div className="grid gap-6 md:grid-cols-3">
               <Card className="rounded-2xl"><CardContent className="p-6">
                 <h3 className="font-display text-lg font-semibold">Confidence</h3>
-                <div className="mt-2 h-48">
+                <div className="mt-2 h-40 sm:h-48">
                   <ResponsiveContainer><RadialBarChart innerRadius="65%" outerRadius="100%" data={[{ v: result.confidence, fill: "hsl(var(--primary))" }]} startAngle={90} endAngle={-270}>
                     <RadialBar background dataKey="v" cornerRadius={12} />
                   </RadialBarChart></ResponsiveContainer>
@@ -393,7 +393,7 @@ export default function DiseaseDetection() {
 
               <Card className="rounded-2xl"><CardContent className="p-6">
                 <h3 className="font-display text-lg font-semibold">Recovery Probability</h3>
-                <div className="mt-2 h-48">
+                <div className="mt-2 h-40 sm:h-48">
                   <ResponsiveContainer><PieChart>
                     <Pie data={[{ v: result.recoveryChance }, { v: 100 - result.recoveryChance }]} innerRadius={55} outerRadius={80} dataKey="v" startAngle={90} endAngle={-270}>
                       <Cell fill="hsl(142, 60%, 45%)" /><Cell fill="hsl(var(--muted))" />
