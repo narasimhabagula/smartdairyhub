@@ -811,8 +811,8 @@ export default function VetContacts() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Search doctor, hospital, village, mandal, district or PIN…"
-                      className="h-12 rounded-xl pl-10 pr-28 text-base shadow-sm"
+                      placeholder="Search doctor, village, district or PIN…"
+                      className="h-12 rounded-xl pl-10 pr-12 text-base shadow-sm sm:pr-28"
                       value={manualQuery}
                       onChange={(e) => setManualQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") searchManual(); }}
@@ -845,9 +845,18 @@ export default function VetContacts() {
                       </Button>
                     </div>
                   </div>
-                  <Button disabled={manualLoading} onClick={searchManual} className="h-12 gap-1.5 rounded-xl px-5">
-                    <Search className="h-4 w-4" /> {manualLoading ? "Searching…" : "Search"}
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2 sm:contents">
+                    <Button disabled={manualLoading} onClick={searchManual} className="h-12 gap-1.5 rounded-xl px-5">
+                      <Search className="h-4 w-4" /> {manualLoading ? "Searching…" : "Search"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))}
+                      className="h-12 gap-1.5 rounded-xl px-4 sm:hidden"
+                    >
+                      <Navigation className="h-4 w-4" /> My GPS
+                    </Button>
+                  </div>
                 </div>
                 {listening && (
                   <p className="flex items-center gap-2 text-xs text-primary">
@@ -856,7 +865,7 @@ export default function VetContacts() {
                   </p>
                 )}
               </div>
-              <div className="flex items-end">
+              <div className="hidden items-end sm:flex">
                 <Button onClick={() => locateMe().then((l) => l && fetchNearbyLive({ loc: l }))} className="gap-2 w-full sm:w-auto">
                   <Navigation className="h-4 w-4" /> Use my GPS
                 </Button>
