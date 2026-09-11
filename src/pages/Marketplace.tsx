@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -129,7 +129,15 @@ export default function Marketplace() {
   const { user } = useAuth();
   const { addItem, items: cartItems } = useCart();
 
-  const [tab, setTab] = useState<string>("all");
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const validCategory = categoryParam && CATEGORIES.some((c) => c.id === categoryParam) ? categoryParam : "all";
+
+  const [tab, setTab] = useState<string>(validCategory);
+
+  useEffect(() => {
+    setTab(validCategory);
+  }, [validCategory]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<string>("newest");
   const [location, setLocation] = useState("");
