@@ -48,7 +48,7 @@ function parseResult(r: any): Components {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const limited = rateLimit(req, "geo-resolve", 60, 60_000, corsHeaders);
+  const limited = await rateLimit(req, "geo-resolve", 60, 60_000, corsHeaders);
   if (limited) return limited;
 
   try {

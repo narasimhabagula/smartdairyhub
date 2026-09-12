@@ -31,7 +31,7 @@ const ANIMAL_QUERIES: Record<string, string> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const limited = rateLimit(req, "nearby-vets", 40, 60_000, corsHeaders);
+  const limited = await rateLimit(req, "nearby-vets", 40, 60_000, corsHeaders);
   if (limited) return limited;
 
   try {

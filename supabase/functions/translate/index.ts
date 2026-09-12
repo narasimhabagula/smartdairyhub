@@ -35,7 +35,7 @@ async function sha1(text: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const limited = rateLimit(req, "translate", 60, 60_000, corsHeaders);
+  const limited = await rateLimit(req, "translate", 60, 60_000, corsHeaders);
   if (limited) return limited;
 
   try {

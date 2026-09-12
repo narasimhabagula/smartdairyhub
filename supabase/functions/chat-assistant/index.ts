@@ -91,7 +91,7 @@ async function retrieveContext(query: string, apiKey: string): Promise<string> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const limited = rateLimit(req, "chat-assistant", 30, 60_000, corsHeaders);
+  const limited = await rateLimit(req, "chat-assistant", 30, 60_000, corsHeaders);
   if (limited) return limited;
 
   try {
