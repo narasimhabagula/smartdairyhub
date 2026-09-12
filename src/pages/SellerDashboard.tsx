@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { validateImage, validateVideoFile, safeStoragePath } from "@/lib/uploads";
+import { friendlyError } from "@/lib/errors";
 import {
   Plus, Pencil, Trash2, Image as ImageIcon, Video, X, Package, IndianRupee,
   ShoppingBag, TrendingUp, Eye, Boxes, Beef, Loader2,
@@ -167,13 +169,17 @@ export default function SellerDashboard() {
 
   const uploadFile = async (file: File, kind: "image" | "video") => {
     if (!user) return null;
-    const ext = file.name.split(".").pop() || (kind === "image" ? "jpg" : "mp4");
-    const path = `${user.id}/products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const invalid = kind === "image" ? validateImage(file) : validateVideoFile(file);
+    if (invalid) {
+      toast.error(invalid);
+      return null;
+    }
+    const path = safeStoragePath(user.id, "products", file, kind);
     const { error } = await supabase.storage.from("images").upload(path, file, {
       cacheControl: "3600", upsert: false, contentType: file.type,
     });
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error, "Could not upload that file. Please try again."));
       return null;
     }
     return supabase.storage.from("images").getPublicUrl(path).data.publicUrl;

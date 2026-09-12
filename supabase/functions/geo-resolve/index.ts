@@ -1,5 +1,6 @@
 // Forward + reverse geocoding via Google Geocoding API through Lovable connector gateway.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,6 +47,9 @@ function parseResult(r: any): Components {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const limited = await rateLimit(req, "geo-resolve", 60, 60_000, corsHeaders);
+  if (limited) return limited;
 
   try {
     // Public endpoint: geocoding is open to all visitors (no PII).

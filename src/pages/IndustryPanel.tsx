@@ -12,6 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { validateImage, safeStoragePath } from "@/lib/uploads";
+import { friendlyError } from "@/lib/errors";
 
 type Company = {
   id: string; name: string; logo_url: string | null; description: string | null;
@@ -157,10 +159,14 @@ function CompanyForm({ company, onSaved }: { company: Company | null; onSaved: (
 
   const uploadLogo = async (file: File) => {
     if (!user) return;
+    const invalid = validateImage(file);
+    if (invalid) { toast.error(invalid); return; }
     setUploading(true);
-    const path = `${user.id}/dairy-logo-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-    const { error } = await supabase.storage.from("images").upload(path, file, { upsert: false });
-    if (error) { toast.error("Upload failed"); setUploading(false); return; }
+    const path = safeStoragePath(user.id, "dairy-logo", file);
+    const { error } = await supabase.storage
+      .from("images")
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (error) { toast.error(friendlyError(error, "Could not upload that logo. Please try again.")); setUploading(false); return; }
     const { data } = supabase.storage.from("images").getPublicUrl(path);
     setForm((f) => ({ ...f, logo_url: data.publicUrl }));
     setUploading(false);

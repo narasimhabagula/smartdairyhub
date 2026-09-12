@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { toast } from "sonner";
 import { LANGUAGES, type LanguageCode } from "@/locales";
+import { validateImage, safeStoragePath, AVATAR_MAX_BYTES } from "@/lib/uploads";
+import { friendlyError } from "@/lib/errors";
 import { Link } from "react-router-dom";
 import farmBg from "@/assets/bg-farm-soft.jpg";
 import farmerAvatar from "@/assets/farmer-avatar.png";
@@ -92,10 +94,13 @@ export default function Profile() {
 
   const onAvatarFile = async (file: File) => {
     if (!user) return;
-    if (file.size > 2 * 1024 * 1024) return toast.error("Image must be under 2 MB");
-    const path = `${user.id}/avatar-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-    const { error } = await supabase.storage.from("images").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
+    const invalid = validateImage(file, AVATAR_MAX_BYTES);
+    if (invalid) return toast.error(invalid);
+    const path = safeStoragePath(user.id, "avatar", file);
+    const { error } = await supabase.storage
+      .from("images")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(friendlyError(error, "Could not upload that photo. Please try again."));
     const { data: pub } = supabase.storage.from("images").getPublicUrl(path);
     updateExtra("avatar_url", pub.publicUrl);
     await supabase.from("profiles").update({ avatar_url: pub.publicUrl } as any).eq("user_id", user.id);

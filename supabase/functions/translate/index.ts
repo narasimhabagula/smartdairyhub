@@ -1,6 +1,7 @@
 // Machine-translation fallback for any UI string that has no local translation.
 // Results are cached in `translation_cache` so each phrase is translated once.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +34,9 @@ async function sha1(text: string) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const limited = await rateLimit(req, "translate", 60, 60_000, corsHeaders);
+  if (limited) return limited;
 
   try {
     const { texts, target } = await req.json();
