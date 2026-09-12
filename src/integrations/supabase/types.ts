@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_rate_limits: {
+        Row: {
+          bucket: string
+          caller: string
+          hits: number
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          caller: string
+          hits?: number
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          caller?: string
+          hits?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           animal_type: string | null
@@ -1512,6 +1533,15 @@ export type Database = {
       }
     }
     Functions: {
+      api_rate_limit_hit: {
+        Args: {
+          _bucket: string
+          _caller: string
+          _limit: number
+          _window_seconds: number
+        }
+        Returns: boolean
+      }
       decrement_product_stock: {
         Args: { _product_id: string; _qty: number }
         Returns: boolean
