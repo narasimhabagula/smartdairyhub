@@ -1,4 +1,5 @@
 // Smart Dairy Hub AI Assistant — streams responses from Lovable AI Gateway.
+import { rateLimit } from "../_shared/rate-limit.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -89,6 +90,9 @@ async function retrieveContext(query: string, apiKey: string): Promise<string> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const limited = rateLimit(req, "chat-assistant", 30, 60_000, corsHeaders);
+  if (limited) return limited;
 
   try {
     // Require an authenticated user — block anonymous abuse of AI credits.
