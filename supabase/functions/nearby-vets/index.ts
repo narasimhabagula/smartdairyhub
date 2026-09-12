@@ -1,6 +1,7 @@
 // Nearby vet search via Google Places API (New) through Lovable connector gateway.
 // Supports animal-specific text queries and optional same-state filtering.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +30,9 @@ const ANIMAL_QUERIES: Record<string, string> = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const limited = rateLimit(req, "nearby-vets", 40, 60_000, corsHeaders);
+  if (limited) return limited;
 
   try {
     // Public endpoint: vet search is available to all visitors (no PII exposed).
