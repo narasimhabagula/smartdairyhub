@@ -1,3 +1,5 @@
+import { rateLimit } from "../_shared/rate-limit.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -119,6 +121,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
+  const limited = rateLimit(req, "analyze-animal-health", 10, 60_000, corsHeaders);
+  if (limited) return limited;
+
   try {
     const { imageBase64, mimeType } = await req.json().catch(() => ({}));
     if (!imageBase64 || typeof imageBase64 !== "string") {
@@ -132,7 +137,8 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "AI service is not configured." }, 500);
 
-    const mime = typeof mimeType === "string" && mimeType.startsWith("image/") ? mimeType : "image/jpeg";
+    const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"];
+    const mime = typeof mimeType === "string" && ALLOWED_MIME.includes(mimeType) ? mimeType : "image/jpeg";
     const dataUrl = `data:${mime};base64,${imageBase64}`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
