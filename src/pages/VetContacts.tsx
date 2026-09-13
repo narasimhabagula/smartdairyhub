@@ -28,6 +28,7 @@ import animalBuffalo from "@/assets/animal-buffalo.png.asset.json";
 import animalHen from "@/assets/animal-hen.png.asset.json";
 import animalRooster from "@/assets/animal-rooster.png.asset.json";
 import { demoVets } from "@/data/demo/vets";
+import { friendlyError } from "@/lib/errors";
 import { USE_DEMO_DATA } from "@/data/demo";
 
 type NearbyPlace = {
@@ -280,7 +281,7 @@ export default function VetContacts() {
       .from("vet_doctors_public" as any).select(VET_SAFE_COLUMNS)
       .eq("status", "approved").eq("available", true)
       .order("rating", { ascending: false });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyError(error, "Couldn't load the vet directory. Please try again."));
     setVets((data as any[]) || []);
     setLoading(false);
   }, []);
@@ -412,7 +413,7 @@ export default function VetContacts() {
       // Trigger nearby fetch
       setNearbyFetched(false);
     } catch (e: any) {
-      toast.error(e?.message || "Location search failed");
+      toast.error(friendlyError(e, "Couldn't search that location. Please try again."));
     } finally {
       setManualLoading(false);
     }
