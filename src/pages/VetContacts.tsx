@@ -28,6 +28,7 @@ import animalBuffalo from "@/assets/animal-buffalo.png.asset.json";
 import animalHen from "@/assets/animal-hen.png.asset.json";
 import animalRooster from "@/assets/animal-rooster.png.asset.json";
 import { demoVets } from "@/data/demo/vets";
+import { friendlyError } from "@/lib/errors";
 import { USE_DEMO_DATA } from "@/data/demo";
 
 type NearbyPlace = {
