@@ -40,6 +40,7 @@ export type Database = {
           animal_type: string | null
           contact_phone: string | null
           created_at: string
+          directory_vet_id: string | null
           farmer_id: string
           id: string
           location: string | null
@@ -50,12 +51,13 @@ export type Database = {
           status: string
           symptoms: string
           updated_at: string
-          vet_id: string
+          vet_id: string | null
         }
         Insert: {
           animal_type?: string | null
           contact_phone?: string | null
           created_at?: string
+          directory_vet_id?: string | null
           farmer_id: string
           id?: string
           location?: string | null
@@ -66,12 +68,13 @@ export type Database = {
           status?: string
           symptoms: string
           updated_at?: string
-          vet_id: string
+          vet_id?: string | null
         }
         Update: {
           animal_type?: string | null
           contact_phone?: string | null
           created_at?: string
+          directory_vet_id?: string | null
           farmer_id?: string
           id?: string
           location?: string | null
@@ -82,9 +85,24 @@ export type Database = {
           status?: string
           symptoms?: string
           updated_at?: string
-          vet_id?: string
+          vet_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "appointments_directory_vet_id_fkey"
+            columns: ["directory_vet_id"]
+            isOneToOne: false
+            referencedRelation: "vet_doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_directory_vet_id_fkey"
+            columns: ["directory_vet_id"]
+            isOneToOne: false
+            referencedRelation: "vet_doctors_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cattle_favorites: {
         Row: {
@@ -1140,9 +1158,12 @@ export type Database = {
         Row: {
           address: string | null
           available: boolean
+          bio: string | null
+          consultation_fee: number | null
           created_at: string
           district: string | null
           email: string | null
+          experience_years: number | null
           google_maps_url: string | null
           hospital_name: string | null
           id: string
@@ -1151,6 +1172,7 @@ export type Database = {
           location: string
           longitude: number | null
           name: string
+          opening_hours: Json | null
           phone: string
           qualification: string | null
           rating: number | null
@@ -1164,9 +1186,12 @@ export type Database = {
         Insert: {
           address?: string | null
           available?: boolean
+          bio?: string | null
+          consultation_fee?: number | null
           created_at?: string
           district?: string | null
           email?: string | null
+          experience_years?: number | null
           google_maps_url?: string | null
           hospital_name?: string | null
           id?: string
@@ -1175,6 +1200,7 @@ export type Database = {
           location: string
           longitude?: number | null
           name: string
+          opening_hours?: Json | null
           phone: string
           qualification?: string | null
           rating?: number | null
@@ -1188,9 +1214,12 @@ export type Database = {
         Update: {
           address?: string | null
           available?: boolean
+          bio?: string | null
+          consultation_fee?: number | null
           created_at?: string
           district?: string | null
           email?: string | null
+          experience_years?: number | null
           google_maps_url?: string | null
           hospital_name?: string | null
           id?: string
@@ -1199,6 +1228,7 @@ export type Database = {
           location?: string
           longitude?: number | null
           name?: string
+          opening_hours?: Json | null
           phone?: string
           qualification?: string | null
           rating?: number | null
@@ -1469,15 +1499,20 @@ export type Database = {
         Row: {
           address: string | null
           available: boolean | null
+          bio: string | null
+          consultation_fee: number | null
           created_at: string | null
           district: string | null
+          experience_years: number | null
           google_maps_url: string | null
           hospital_name: string | null
           id: string | null
+          image_url: string | null
           latitude: number | null
           location: string | null
           longitude: number | null
           name: string | null
+          opening_hours: Json | null
           qualification: string | null
           rating: number | null
           specialization: string | null
@@ -1490,15 +1525,20 @@ export type Database = {
         Insert: {
           address?: string | null
           available?: boolean | null
+          bio?: string | null
+          consultation_fee?: number | null
           created_at?: string | null
           district?: string | null
+          experience_years?: number | null
           google_maps_url?: string | null
           hospital_name?: string | null
           id?: string | null
+          image_url?: string | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
           name?: string | null
+          opening_hours?: Json | null
           qualification?: string | null
           rating?: number | null
           specialization?: string | null
@@ -1511,15 +1551,20 @@ export type Database = {
         Update: {
           address?: string | null
           available?: boolean | null
+          bio?: string | null
+          consultation_fee?: number | null
           created_at?: string | null
           district?: string | null
+          experience_years?: number | null
           google_maps_url?: string | null
           hospital_name?: string | null
           id?: string | null
+          image_url?: string | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
           name?: string | null
+          opening_hours?: Json | null
           qualification?: string | null
           rating?: number | null
           specialization?: string | null
