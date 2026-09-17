@@ -1131,6 +1131,7 @@ export default function VetContacts() {
                   <VetCard
                     key={v.id}
                     vet={data}
+                    profilePath={`/vet/${v.id}`}
                     isLoading={!!contactLoading[v.id]}
                     contactError={vetContactErrors[v.id] || null}
                     retryIn={vetContactRetryIn[v.id]}
