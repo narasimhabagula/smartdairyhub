@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Phone, MapPin, MessageCircle, Navigation, Star, Clock, Stethoscope, ShieldCheck, AlertCircle, Radar, Info } from "lucide-react";
 import { telHref, waHref } from "@/lib/phone";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 
 export type VetCardData = {
@@ -32,6 +33,8 @@ export type VetCardData = {
 
 export type VetCardProps = {
   vet: VetCardData;
+  /** When set, the doctor's name links to their full profile page. */
+  profilePath?: string;
   isLoading?: boolean;
   contactError?: string | null;
   retryIn?: number;
@@ -54,7 +57,7 @@ function isWhatsAppPhone(phone?: string | null) {
   return digits.length >= 10;
 }
 
-export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetCardProps) {
+export function VetCard({ vet, profilePath, isLoading, contactError, retryIn, onRetry }: VetCardProps) {
   const { t } = useTranslation();
   const initials = vet.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
   const waOk = isWhatsAppPhone(vet.phone);
@@ -84,7 +87,16 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="truncate font-display text-base font-semibold leading-tight">{vet.name}</h3>
+            {profilePath ? (
+              <Link
+                to={profilePath}
+                className="truncate font-display text-base font-semibold leading-tight hover:text-primary hover:underline underline-offset-2"
+              >
+                {vet.name}
+              </Link>
+            ) : (
+              <h3 className="truncate font-display text-base font-semibold leading-tight">{vet.name}</h3>
+            )}
           </div>
           {vet.hospital && (
             <p className="mt-0.5 truncate text-sm text-muted-foreground">{vet.hospital}</p>
@@ -258,6 +270,13 @@ export function VetCard({ vet, isLoading, contactError, retryIn, onRetry }: VetC
                 </a>
               </Button>
             </div>
+            {profilePath && (
+              <Button size="sm" className="mt-2 h-9 w-full gap-1.5 font-medium" asChild>
+                <Link to={profilePath} aria-label={`View profile and book ${vet.name}`}>
+                  <Stethoscope className="h-3.5 w-3.5" /> View profile &amp; book
+                </Link>
+              </Button>
+            )}
           </TooltipProvider>
         )}
       </div>

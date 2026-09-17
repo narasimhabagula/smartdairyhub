@@ -83,7 +83,17 @@ const DEFAULT_LOCATION = DEFAULT_ANCHORS[0];
 const emptyForm = {
   name: "", qualification: "", specialization: "", phone: "", email: "",
   hospital_name: "", address: "", district: "", village: "", google_maps_url: "",
+  weekday_hours: "", saturday_hours: "", sunday_hours: "", consultation_fee: "",
 };
+
+// "09:00-13:00,16:00-19:00" or "closed" — anything else is ignored so we never show made-up hours.
+function cleanHours(value: string): string | null {
+  const v = value.trim();
+  if (!v) return null;
+  if (/^closed$/i.test(v)) return "closed";
+  const ok = v.split(",").every((part) => /^\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*$/.test(part));
+  return ok ? v.replace(/\s+/g, "") : null;
+}
 
 function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const R = 6371;
@@ -650,6 +660,17 @@ export default function VetContacts() {
       address: form.address.trim() || null, district: form.district.trim(),
       village: form.village.trim() || null, google_maps_url: form.google_maps_url.trim() || null,
       location: [form.village.trim(), form.district.trim()].filter(Boolean).join(", "),
+      opening_hours: (() => {
+        const weekday = cleanHours(form.weekday_hours);
+        const sat = cleanHours(form.saturday_hours);
+        const sun = cleanHours(form.sunday_hours);
+        const out: Record<string, string> = {};
+        if (weekday) for (const d of ["mon", "tue", "wed", "thu", "fri"]) out[d] = weekday;
+        if (sat) out.sat = sat;
+        if (sun) out.sun = sun;
+        return Object.keys(out).length ? out : null;
+      })(),
+      consultation_fee: form.consultation_fee.trim() ? Number(form.consultation_fee) : null,
       status: "pending", suggested_by: user.id,
     } as any);
     setSaving(false);
@@ -708,6 +729,12 @@ export default function VetContacts() {
                   <div><Label>Phone *</Label><Input className="mt-1.5" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required placeholder="98765 43210" maxLength={15} /></div>
                   <div><Label>Email</Label><Input className="mt-1.5" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={120} /></div>
                 </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div><Label>Mon–Fri hours</Label><Input className="mt-1.5" placeholder="09:00-13:00,16:00-19:00" value={form.weekday_hours} onChange={(e) => setForm({ ...form, weekday_hours: e.target.value })} maxLength={40} /></div>
+                  <div><Label>Saturday</Label><Input className="mt-1.5" placeholder="09:00-13:00" value={form.saturday_hours} onChange={(e) => setForm({ ...form, saturday_hours: e.target.value })} maxLength={40} /></div>
+                  <div><Label>Sunday</Label><Input className="mt-1.5" placeholder="closed" value={form.sunday_hours} onChange={(e) => setForm({ ...form, sunday_hours: e.target.value })} maxLength={40} /></div>
+                </div>
+                <div><Label>Consultation fee (₹)</Label><Input className="mt-1.5" inputMode="numeric" placeholder="Optional" value={form.consultation_fee} onChange={(e) => setForm({ ...form, consultation_fee: e.target.value })} maxLength={6} /></div>
                 <div><Label>Google Maps Link</Label><Input className="mt-1.5" type="url" value={form.google_maps_url} onChange={(e) => setForm({ ...form, google_maps_url: e.target.value })} placeholder="https://maps.app.goo.gl/..." /></div>
                 <p className="text-xs text-muted-foreground">Submissions are reviewed by an admin before going live.</p>
                 <Button type="submit" className="w-full" disabled={saving}>{saving ? "Submitting..." : "Submit for review"}</Button>
@@ -1131,6 +1158,7 @@ export default function VetContacts() {
                   <VetCard
                     key={v.id}
                     vet={data}
+                    profilePath={`/vet/${v.id}`}
                     isLoading={!!contactLoading[v.id]}
                     contactError={vetContactErrors[v.id] || null}
                     retryIn={vetContactRetryIn[v.id]}

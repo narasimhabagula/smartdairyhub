@@ -12,7 +12,8 @@ import { CalendarClock, Stethoscope, MapPin, Phone, RefreshCw } from "lucide-rea
 
 type Appointment = {
   id: string;
-  vet_id: string;
+  vet_id: string | null;
+  directory_vet_id?: string | null;
   farmer_id: string;
   animal_type: string | null;
   symptoms: string;
@@ -45,7 +46,7 @@ export default function MyAppointments() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("all");
 
-  const APPT_COLS = "id,farmer_id,vet_id,animal_type,symptoms,mode,status,scheduled_at,location,notes,prescription,created_at,updated_at";
+  const APPT_COLS = "id,farmer_id,vet_id,directory_vet_id,animal_type,symptoms,mode,status,scheduled_at,location,notes,prescription,created_at,updated_at";
 
   const load = async () => {
     if (!user) return;
@@ -69,13 +70,21 @@ export default function MyAppointments() {
     );
     const rows = baseRows.map((r, i) => ({ ...r, contact_phone: phones[i] ?? null }));
     setItems(rows);
-    const ids = Array.from(new Set(rows.map((r) => r.vet_id)));
+    const map: Record<string, string> = {};
+    const ids = Array.from(new Set(rows.map((r) => r.vet_id).filter((v): v is string => !!v)));
     if (ids.length) {
       const { data: names } = await supabase.rpc("get_display_names", { _ids: ids });
-      const map: Record<string, string> = {};
       (names ?? []).forEach((n: any) => (map[n.user_id] = n.full_name || "Veterinarian"));
-      setVetNames(map);
     }
+    const dirIds = Array.from(new Set(rows.map((r) => r.directory_vet_id).filter((v): v is string => !!v)));
+    if (dirIds.length) {
+      const { data: dirVets } = await supabase
+        .from("vet_doctors_public" as any)
+        .select("id,name,hospital_name")
+        .in("id", dirIds);
+      (dirVets ?? []).forEach((v: any) => (map[v.id] = v.name || v.hospital_name || "Veterinarian"));
+    }
+    setVetNames(map);
     setLoading(false);
   };
 
@@ -193,7 +202,7 @@ export default function MyAppointments() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Stethoscope className="h-5 w-5 text-primary" />
-                      Dr. {vetNames[a.vet_id] || "Veterinarian"}
+                      {vetNames[a.directory_vet_id || a.vet_id || ""] || "Veterinarian"}
                     </CardTitle>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Requested {fmt(a.created_at)}
