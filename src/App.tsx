@@ -36,6 +36,7 @@ const CattleNew = lazy(() => import("./pages/CattleNew"));
 const CattleDetail = lazy(() => import("./pages/CattleDetail"));
 const MyListings = lazy(() => import("./pages/MyListings"));
 const VetContacts = lazy(() => import("./pages/VetContacts"));
+const VetDetail = lazy(() => import("./pages/VetDetail"));
 const Schemes = lazy(() => import("./pages/Schemes"));
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -168,6 +169,7 @@ const App = () => (
                           <Route path="/cattle-market/:id/edit" element={<ProtectedRoute><CattleNew /></ProtectedRoute>} />
                           <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
                           <Route path="/vet-contacts" element={<VetContacts />} />
+                          <Route path="/vet/:id" element={<VetDetail />} />
                           <Route path="/schemes" element={<Schemes />} />
                           <Route path="/cart" element={<Cart />} />
                           <Route path="/milk-calculator" element={<MilkCalculator />} />
