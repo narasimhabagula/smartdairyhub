@@ -115,7 +115,8 @@ export default function VetDetail() {
     (async () => {
       const { data } = await supabase.rpc("get_vet_contact" as never, { _vet_id: id } as never);
       if (cancelled) return;
-      const row = Array.isArray(data) ? (data[0] as { phone?: string; email?: string } | undefined) : undefined;
+      const rows = (data ?? []) as unknown as Array<{ phone?: string | null; email?: string | null }>;
+      const row = Array.isArray(rows) ? rows[0] : undefined;
       if (row) setContact({ phone: row.phone ?? null, email: row.email ?? null });
     })();
     return () => { cancelled = true; };
