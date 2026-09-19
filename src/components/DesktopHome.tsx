@@ -38,7 +38,7 @@ export default function DesktopHome() {
           fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/70 to-emerald-950/25" />
-        <div className={`${SHELL} relative grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
+        <div className={`${SHELL} relative grid items-center gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
           <div className="max-w-2xl text-white">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest ring-1 ring-inset ring-white/25 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> AI-powered dairy platform
@@ -79,18 +79,19 @@ export default function DesktopHome() {
           </div>
 
           {/* Rotating banner card */}
-          <div className="hidden lg:block">
-            <div className="relative h-[380px] w-full overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15">
+          <div className="block">
+            <div className="relative mx-auto aspect-[16/9] w-full max-w-3xl overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15 lg:h-[380px] lg:max-w-none">
               {BANNERS.map((b, i) => (
                 <Link
                   key={b.title}
                   to={b.to}
                   aria-hidden={i !== idx}
-                  className={`absolute inset-0 flex flex-col justify-end p-7 text-white transition-opacity duration-700 ${
+                  tabIndex={i === idx ? 0 : -1}
+                  className={`absolute inset-0 flex flex-col justify-end p-7 pb-12 text-primary-foreground transition-opacity duration-700 lg:pb-7 ${
                     i === idx ? "opacity-100" : "pointer-events-none opacity-0"
                   }`}
                 >
-                  <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                  <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover object-center" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
                   <div className="relative">
                     <div className="font-display text-2xl font-bold">{b.title}</div>
@@ -101,14 +102,19 @@ export default function DesktopHome() {
                   </div>
                 </Link>
               ))}
-              <div className="absolute bottom-4 right-6 flex gap-1.5">
+              <div className="absolute bottom-4 right-6 z-10 flex gap-2">
                 {BANNERS.map((_, i) => (
-                  <button
+                  <Button
                     key={i}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setIdx(i)}
                     aria-label={`Show banner ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-1.5 bg-white/60"}`}
-                  />
+                    className="h-7 w-7 rounded-full p-0 hover:bg-background/20"
+                  >
+                    <span className={`block h-1.5 rounded-full bg-primary-foreground transition-all ${i === idx ? "w-5" : "w-1.5 opacity-60"}`} />
+                  </Button>
                 ))}
               </div>
             </div>
