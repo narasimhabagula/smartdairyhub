@@ -127,7 +127,7 @@ export default function DesktopHome() {
         <div className={`${SHELL} grid grid-cols-2 gap-6 py-10 lg:grid-cols-4 lg:py-12`}>
           {STATS.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="font-display text-3xl font-bold text-foreground lg:text-5xl">{s.value}</div>
+              <div className="font-display text-3xl font-bold text-foreground lg:text-4xl xl:text-5xl">{s.value}</div>
               <div className="mt-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground lg:text-sm">
                 {s.label}
               </div>
