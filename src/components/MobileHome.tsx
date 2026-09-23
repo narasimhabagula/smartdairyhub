@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS } from "@/components/home/homeData";
+import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS, IMG } from "@/components/home/homeData";
 
 
 export default function MobileHome() {
@@ -118,7 +118,7 @@ export default function MobileHome() {
       {/* ============ MOBILE HERO ============ */}
       <section className="relative overflow-hidden px-4 pb-6 pt-7 text-primary-foreground">
         <img
-          src={BANNERS[0].img}
+          src={IMG.banner1}
           alt="Indian dairy farm with healthy cattle"
           className="absolute inset-0 h-full w-full object-cover object-center"
           fetchPriority="high"
@@ -128,7 +128,7 @@ export default function MobileHome() {
           <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-background/15 px-3 py-1.5 text-[11px] font-semibold uppercase ring-1 ring-inset ring-background/25 backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 shrink-0" /> AI-powered dairy platform
           </span>
-          <h1 className="mt-5 max-w-full break-words font-display text-4xl font-bold leading-[1.08] sm:text-5xl">
+          <h1 className="mt-5 max-w-full break-words font-display text-[clamp(2rem,10vw,3rem)] font-bold leading-[1.08]">
             Everything your dairy farm needs, in one place
           </h1>
           <p className="mt-4 text-sm leading-6 text-primary-foreground/85 sm:text-base">
