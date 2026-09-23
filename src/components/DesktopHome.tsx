@@ -80,7 +80,7 @@ export default function DesktopHome() {
 
           {/* Rotating banner card */}
           <div className="block">
-            <div className="relative mx-auto aspect-[16/9] w-full max-w-3xl overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15 lg:h-[380px] lg:max-w-none">
+            <div className="relative mx-auto aspect-[16/9] w-full max-w-3xl overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15 lg:aspect-auto lg:h-[380px] lg:max-w-none">
               {BANNERS.map((b, i) => (
                 <Link
                   key={b.title}

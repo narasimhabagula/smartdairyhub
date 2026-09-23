@@ -51,9 +51,9 @@ export default function MobileHome() {
       <header className="sticky top-0 z-30 bg-background/95 px-4 pb-3 pt-3 shadow-sm backdrop-blur-xl">
         <div className="flex min-w-0 items-center justify-between gap-2">
           <Link to="/" className="flex min-w-0 items-center gap-2">
-            <img src="/logo.png" alt="Smart Dairy Hub" className="h-9 w-9 rounded-full object-contain" />
+            <img src="/logo.png" alt="Smart Dairy Hub" className="h-8 w-8 shrink-0 rounded-full object-contain min-[360px]:h-9 min-[360px]:w-9" />
             <div className="min-w-0 leading-tight">
-              <div className="truncate font-display text-[15px] font-bold text-primary">Smart Dairy Hub</div>
+              <div className="whitespace-nowrap font-display text-[13px] font-bold text-primary min-[360px]:text-[15px]">Smart Dairy Hub</div>
               <div className="text-[10px] font-medium text-muted-foreground">
                 {user ? `Hi, ${firstName} 👋` : "India's dairy app"}
               </div>
