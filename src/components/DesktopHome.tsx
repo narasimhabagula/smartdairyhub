@@ -92,8 +92,7 @@ export default function DesktopHome() {
                   }`}
                 >
                   <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover object-center" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-                  <div className="relative">
+                  <div className="relative drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
                     <div className="font-display text-2xl font-bold">{b.title}</div>
                     <div className="mt-1 text-sm text-white/85">{b.subtitle}</div>
                     <span className={`mt-4 inline-flex items-center gap-1 rounded-full ${b.accent} px-4 py-1.5 text-xs font-bold`}>
