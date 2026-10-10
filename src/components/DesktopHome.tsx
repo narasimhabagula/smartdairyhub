@@ -87,7 +87,7 @@ export default function DesktopHome() {
                   to={b.to}
                   aria-hidden={i !== idx}
                   tabIndex={i === idx ? 0 : -1}
-                  className={`absolute inset-0 flex flex-col justify-end p-7 pb-12 text-primary-foreground transition-opacity duration-700 lg:pb-7 ${
+                  className={`absolute inset-0 flex flex-col justify-end p-7 pb-12 text-primary-foreground transition-opacity duration-700 lg:pb-16 ${
                     i === idx ? "opacity-100" : "pointer-events-none opacity-0"
                   }`}
                 >
