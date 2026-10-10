@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
   Menu, X, ArrowRight, Stethoscope, Store, TrendingUp, Landmark,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS, IMG } from "@/components/home/homeData";
+import { QUICK_ACTIONS, FEATURE_CARDS, IMG } from "@/components/home/homeData";
 
 
 export default function MobileHome() {
@@ -27,15 +27,9 @@ export default function MobileHome() {
   const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [bannerIdx, setBannerIdx] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
 
-  // Auto-slide banners
-  useEffect(() => {
-    const id = setInterval(() => setBannerIdx((i) => (i + 1) % BANNERS.length), 4200);
-    return () => clearInterval(id);
-  }, []);
 
   const switchLang = async (lng: LanguageCode) => {
     await i18n.changeLanguage(lng);
@@ -154,42 +148,6 @@ export default function MobileHome() {
             <span className="inline-flex items-center gap-2"><Newspaper className="h-4 w-4 shrink-0" /> 11 Indian languages</span>
           </div>
 
-          <div className="relative mt-6 aspect-[4/3] min-h-[220px] w-full overflow-hidden rounded-3xl shadow-lift ring-1 ring-background/20">
-            {BANNERS.map((banner, index) => (
-              <Link
-                key={banner.title}
-                to={banner.to}
-                aria-hidden={index !== bannerIdx}
-                tabIndex={index === bannerIdx ? 0 : -1}
-                className={`absolute inset-0 flex flex-col justify-end p-5 pb-10 transition-opacity duration-700 ${index === bannerIdx ? "opacity-100" : "pointer-events-none opacity-0"}`}
-              >
-                <img src={banner.img} alt="" className="absolute inset-0 h-full w-full object-cover object-center" loading={index === 0 ? "eager" : "lazy"} />
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/35 to-transparent" />
-                <div className="relative pr-2">
-                  <div className="font-display text-xl font-bold leading-tight">{banner.title}</div>
-                  <div className="mt-1 text-xs leading-5 text-primary-foreground/85">{banner.subtitle}</div>
-                  <span className={`mt-3 inline-flex items-center gap-1 rounded-full ${banner.accent} px-3 py-1.5 text-[11px] font-bold`}>
-                    {banner.cta} <ChevronRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-            <div className="absolute bottom-4 right-4 z-10 flex gap-2">
-              {BANNERS.map((_, index) => (
-                <Button
-                  key={index}
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setBannerIdx(index)}
-                  aria-label={`Show promotion ${index + 1}`}
-                  className="h-6 w-6 rounded-full p-0 hover:bg-background/20"
-                >
-                  <span className={`block h-1.5 rounded-full bg-primary-foreground transition-all ${index === bannerIdx ? "w-4" : "w-1.5 opacity-60"}`} />
-                </Button>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
