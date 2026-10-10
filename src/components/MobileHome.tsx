@@ -223,6 +223,15 @@ export default function MobileHome() {
         </div>
       </section>
 
+      {/* ============ TRUST STRIP ============ */}
+      <section className="mt-4 px-4">
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2.5 text-[11px] font-semibold text-emerald-800">
+          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 shrink-0" /> Verified vets</span>
+          <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 shrink-0" /> AI powered</span>
+          <span className="inline-flex items-center gap-1.5"><Newspaper className="h-3.5 w-3.5 shrink-0" /> 11 languages</span>
+        </div>
+      </section>
+
       {/* ============ FEATURE IMAGE CARDS ============ */}
       <section className="mt-6 px-4">
         <div className="flex items-center justify-between">
