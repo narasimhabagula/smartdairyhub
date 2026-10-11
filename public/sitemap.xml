@@ -6,6 +6,7 @@
   <url><loc>https://smartdairyhub.online/vet-contacts</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://smartdairyhub.online/milk-rates</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://smartdairyhub.online/schemes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://smartdairyhub.online/disease-detection</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://smartdairyhub.online/milk-calculator</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://smartdairyhub.online/help</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://smartdairyhub.online/about</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
@@ -14,5 +15,4 @@
   <url><loc>https://smartdairyhub.online/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://smartdairyhub.online/refund</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://smartdairyhub.online/careers</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://smartdairyhub.online/login</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

@@ -1,0 +1,21 @@
+# Smart Dairy Hub
+
+> AI-powered dairy management platform for Indian farmers: milk rates, disease detection, veterinarians, cattle and feed marketplace, and government schemes.
+
+## Pages
+
+- [Home](/): Overview of Smart Dairy Hub tools for dairy farmers.
+- [Marketplace](/marketplace): Buy cattle feed, medicines and dairy supplies.
+- [Cattle Market](/cattle-market): Buy and sell cows and buffaloes.
+- [Milk Rates](/milk-rates): Milk rates published by dairies and collection centres.
+- [Milk Calculator](/milk-calculator): Calculate milk price from FAT and SNF.
+- [AI Disease Detection](/disease-detection): Photo-based animal health check (advisory only).
+- [Veterinary Doctors](/vet-contacts): Find nearby veterinarians.
+- [Government Schemes](/schemes): Dairy subsidies and loans with official links.
+- [Help Center](/help): Frequently asked questions.
+
+## Optional
+
+- [About](/about): Our mission.
+- [Contact](/contact): Get in touch.
+- [Terms](/terms), [Privacy](/privacy), [Refund](/refund): Policies.

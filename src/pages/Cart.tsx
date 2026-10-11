@@ -89,16 +89,16 @@ export default function Cart() {
                   <p className="text-sm text-muted-foreground">₹{item.price}/{item.unit}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                  <Button aria-label="Decrease quantity" size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                     <Minus className="h-3 w-3" />
                   </Button>
                   <span className="w-8 text-center font-medium">{item.quantity}</span>
-                  <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                  <Button aria-label="Increase quantity" size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
                 <p className="font-display font-bold text-primary w-20 text-right">₹{(item.price * item.quantity).toFixed(0)}</p>
-                <Button size="sm" variant="ghost" onClick={() => removeItem(item.id)}>
+                <Button aria-label="Remove item" size="sm" variant="ghost" onClick={() => removeItem(item.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </CardContent>
