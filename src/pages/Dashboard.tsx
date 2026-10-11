@@ -265,7 +265,7 @@ export default function Dashboard() {
                       <td className="py-3 text-right">₹{Number(r.rate).toFixed(2)}</td>
                       <td className="py-3 text-right font-semibold text-primary">₹{Number(r.amount).toFixed(2)}</td>
                       <td className="py-3 text-right">
-                        <Button size="sm" variant="ghost" onClick={() => handleDelete(r.id)}>
+                        <Button size="sm" variant="ghost" aria-label="Delete entry" onClick={() => handleDelete(r.id)}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </td>
