@@ -200,6 +200,7 @@ export default function AdminDashboard() {
           <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
           <p className="mt-1 text-muted-foreground">Manage your dairy marketplace platform.</p>
         </div>
+        <Button asChild variant="outline"><a href="/admin/vets">Vet Approvals →</a></Button>
         <Button asChild variant="outline"><a href="/admin/content">Content Management →</a></Button>
       </div>
 
