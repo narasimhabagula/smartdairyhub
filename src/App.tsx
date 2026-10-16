@@ -72,6 +72,7 @@ const Orders = lazyWithRetry(() => import("./pages/Orders"));
 const AddProduct = lazyWithRetry(() => import("./pages/AddProduct"));
 const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
 const AdminContent = lazyWithRetry(() => import("./pages/AdminContent"));
+const AdminVets = lazyWithRetry(() => import("./pages/AdminVets"));
 const SellerDashboard = lazyWithRetry(() => import("./pages/SellerDashboard"));
 const SelectRole = lazyWithRetry(() => import("./pages/SelectRole"));
 const MilkRates = lazyWithRetry(() => import("./pages/MilkRates"));
@@ -204,6 +205,7 @@ const App = () => (
                           <Route path="/seller" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
                           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                          <Route path="/admin/vets" element={<ProtectedRoute requiredRole="admin"><AdminVets /></ProtectedRoute>} />
                           <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><AdminContent /></ProtectedRoute>} />
                           <Route path="/help" element={<HelpCenter />} />
                           <Route path="/support" element={<Support />} />
