@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Bot, ChevronRight, Newspaper, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
-import { BANNERS, FEATURE_CARDS, QUICK_ACTIONS, IMG } from "@/components/home/homeData";
+import { Bot, Newspaper, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import { FEATURE_CARDS, QUICK_ACTIONS, IMG } from "@/components/home/homeData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
@@ -20,12 +19,8 @@ const STATS = [
 export default function DesktopHome() {
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
-  const [idx, setIdx] = useState(0);
 
-  useEffect(() => {
-    const id = setInterval(() => setIdx((i) => (i + 1) % BANNERS.length), 5000);
-    return () => clearInterval(id);
-  }, []);
+
 
   return (
     <div className="w-full bg-gradient-to-b from-emerald-50/50 via-background to-background pb-20">
@@ -38,7 +33,7 @@ export default function DesktopHome() {
           fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/70 to-emerald-950/25" />
-        <div className={`${SHELL} relative grid items-center gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
+        <div className={`${SHELL} relative grid items-center gap-10 py-14 lg:py-24 xl:py-28`}>
           <div className="max-w-2xl text-white">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest ring-1 ring-inset ring-white/25 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> AI-powered dairy platform
