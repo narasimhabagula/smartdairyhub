@@ -1176,6 +1176,9 @@ export type Database = {
           phone: string
           qualification: string | null
           rating: number | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           specialization: string | null
           status: string
           suggested_by: string | null
@@ -1204,6 +1207,9 @@ export type Database = {
           phone: string
           qualification?: string | null
           rating?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           specialization?: string | null
           status?: string
           suggested_by?: string | null
@@ -1232,6 +1238,9 @@ export type Database = {
           phone?: string
           qualification?: string | null
           rating?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           specialization?: string | null
           status?: string
           suggested_by?: string | null
