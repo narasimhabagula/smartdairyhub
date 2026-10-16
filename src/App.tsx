@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { Suspense, lazy, useEffect, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, type ReactNode, type ComponentType } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -28,51 +28,76 @@ import { JerryProvider } from "./context/JerryContext";
 import Index from "./pages/Index";
 import LanguageSelect from "./pages/LanguageSelect";
 
+
+// After a new deploy, old chunk hashes disappear. Reload once to fetch fresh files.
+const RELOAD_KEY = "sdh_chunk_reload";
+function reloadOnce(): boolean {
+  if (sessionStorage.getItem(RELOAD_KEY)) return false;
+  sessionStorage.setItem(RELOAD_KEY, "1");
+  window.location.reload();
+  return true;
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", (e) => {
+    e.preventDefault();
+    reloadOnce();
+  });
+  window.addEventListener("load", () => setTimeout(() => sessionStorage.removeItem(RELOAD_KEY), 10_000));
+}
+function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(() =>
+    factory().catch((err) => {
+      if (reloadOnce()) return new Promise<{ default: T }>(() => {});
+      throw err;
+    }),
+  );
+}
+
 // Lazy: everything else is code-split so the initial bundle stays small.
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const MilkCalculator = lazy(() => import("./pages/MilkCalculator"));
-const CattleMarket = lazy(() => import("./pages/CattleMarket"));
-const CattleNew = lazy(() => import("./pages/CattleNew"));
-const CattleDetail = lazy(() => import("./pages/CattleDetail"));
-const MyListings = lazy(() => import("./pages/MyListings"));
-const VetContacts = lazy(() => import("./pages/VetContacts"));
-const VetDetail = lazy(() => import("./pages/VetDetail"));
-const Schemes = lazy(() => import("./pages/Schemes"));
-const Login = lazy(() => import("./pages/Login"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const Cart = lazy(() => import("./pages/Cart"));
-const Orders = lazy(() => import("./pages/Orders"));
-const AddProduct = lazy(() => import("./pages/AddProduct"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminContent = lazy(() => import("./pages/AdminContent"));
-const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
-const SelectRole = lazy(() => import("./pages/SelectRole"));
-const MilkRates = lazy(() => import("./pages/MilkRates"));
-const IndustryPanel = lazy(() => import("./pages/IndustryPanel"));
-const MilkRateManagement = lazy(() => import("./pages/MilkRateManagement"));
-const MediatorPanel = lazy(() => import("./pages/MediatorPanel"));
-const VetDashboard = lazy(() => import("./pages/VetDashboard"));
-const BookVet = lazy(() => import("./pages/BookVet"));
-const MyAppointments = lazy(() => import("./pages/MyAppointments"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const HelpCenter = lazy(() => import("./pages/HelpCenter"));
-const Support = lazy(() => import("./pages/Support"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Refund = lazy(() => import("./pages/Refund"));
-const Careers = lazy(() => import("./pages/Careers"));
-const Feedback = lazy(() => import("./pages/Feedback"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const SearchResults = lazy(() => import("./pages/SearchResults"));
-const JerryDemo = lazy(() => import("./pages/JerryDemo"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Profile = lazy(() => import("./pages/Profile"));
-const DiseaseDetection = lazy(() => import("./pages/DiseaseDetection"));
-const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const MilkCalculator = lazyWithRetry(() => import("./pages/MilkCalculator"));
+const CattleMarket = lazyWithRetry(() => import("./pages/CattleMarket"));
+const CattleNew = lazyWithRetry(() => import("./pages/CattleNew"));
+const CattleDetail = lazyWithRetry(() => import("./pages/CattleDetail"));
+const MyListings = lazyWithRetry(() => import("./pages/MyListings"));
+const VetContacts = lazyWithRetry(() => import("./pages/VetContacts"));
+const VetDetail = lazyWithRetry(() => import("./pages/VetDetail"));
+const Schemes = lazyWithRetry(() => import("./pages/Schemes"));
+const Login = lazyWithRetry(() => import("./pages/Login"));
+const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Marketplace = lazyWithRetry(() => import("./pages/Marketplace"));
+const Cart = lazyWithRetry(() => import("./pages/Cart"));
+const Orders = lazyWithRetry(() => import("./pages/Orders"));
+const AddProduct = lazyWithRetry(() => import("./pages/AddProduct"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const AdminContent = lazyWithRetry(() => import("./pages/AdminContent"));
+const SellerDashboard = lazyWithRetry(() => import("./pages/SellerDashboard"));
+const SelectRole = lazyWithRetry(() => import("./pages/SelectRole"));
+const MilkRates = lazyWithRetry(() => import("./pages/MilkRates"));
+const IndustryPanel = lazyWithRetry(() => import("./pages/IndustryPanel"));
+const MilkRateManagement = lazyWithRetry(() => import("./pages/MilkRateManagement"));
+const MediatorPanel = lazyWithRetry(() => import("./pages/MediatorPanel"));
+const VetDashboard = lazyWithRetry(() => import("./pages/VetDashboard"));
+const BookVet = lazyWithRetry(() => import("./pages/BookVet"));
+const MyAppointments = lazyWithRetry(() => import("./pages/MyAppointments"));
+const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
+const HelpCenter = lazyWithRetry(() => import("./pages/HelpCenter"));
+const Support = lazyWithRetry(() => import("./pages/Support"));
+const Terms = lazyWithRetry(() => import("./pages/Terms"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const About = lazyWithRetry(() => import("./pages/About"));
+const Contact = lazyWithRetry(() => import("./pages/Contact"));
+const Refund = lazyWithRetry(() => import("./pages/Refund"));
+const Careers = lazyWithRetry(() => import("./pages/Careers"));
+const Feedback = lazyWithRetry(() => import("./pages/Feedback"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const SearchResults = lazyWithRetry(() => import("./pages/SearchResults"));
+const JerryDemo = lazyWithRetry(() => import("./pages/JerryDemo"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const DiseaseDetection = lazyWithRetry(() => import("./pages/DiseaseDetection"));
+const OAuthConsent = lazyWithRetry(() => import("./pages/OAuthConsent"));
 
 
 const queryClient = new QueryClient({
