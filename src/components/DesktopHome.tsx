@@ -38,7 +38,7 @@ export default function DesktopHome() {
           fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/70 to-emerald-950/25" />
-        <div className={`${SHELL} relative grid items-center gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
+        <div className={`${SHELL} relative grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24 xl:py-28`}>
           <div className="max-w-2xl text-white">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest ring-1 ring-inset ring-white/25 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> AI-powered dairy platform
@@ -79,20 +79,20 @@ export default function DesktopHome() {
           </div>
 
           {/* Rotating banner card */}
-          <div className="block">
-            <div className="relative mx-auto aspect-[16/9] w-full max-w-3xl overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15 lg:aspect-auto lg:h-[380px] lg:max-w-none">
+          <div className="hidden lg:block">
+            <div className="relative h-[380px] w-full overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/15">
               {BANNERS.map((b, i) => (
                 <Link
                   key={b.title}
                   to={b.to}
                   aria-hidden={i !== idx}
-                  tabIndex={i === idx ? 0 : -1}
-                  className={`absolute inset-0 flex flex-col justify-end p-7 pb-12 text-primary-foreground transition-opacity duration-700 lg:pb-16 ${
+                  className={`absolute inset-0 flex flex-col justify-end p-7 text-white transition-opacity duration-700 ${
                     i === idx ? "opacity-100" : "pointer-events-none opacity-0"
                   }`}
                 >
-                  <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover object-center" loading="lazy" />
-                  <div className="relative mr-1 mb-1 max-w-md rounded-2xl bg-black/45 px-4 py-3 backdrop-blur-[3px]">
+                  <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
+                  <div className="relative">
                     <div className="font-display text-2xl font-bold">{b.title}</div>
                     <div className="mt-1 text-sm text-white/85">{b.subtitle}</div>
                     <span className={`mt-4 inline-flex items-center gap-1 rounded-full ${b.accent} px-4 py-1.5 text-xs font-bold`}>
@@ -101,19 +101,14 @@ export default function DesktopHome() {
                   </div>
                 </Link>
               ))}
-              <div className="absolute bottom-4 right-6 z-10 flex gap-2">
+              <div className="absolute bottom-4 right-6 flex gap-1.5">
                 {BANNERS.map((_, i) => (
-                  <Button
+                  <button
                     key={i}
-                    type="button"
-                    variant="ghost"
-                    size="icon"
                     onClick={() => setIdx(i)}
                     aria-label={`Show banner ${i + 1}`}
-                    className="h-7 w-7 rounded-full p-0 hover:bg-background/20"
-                  >
-                    <span className={`block h-1.5 rounded-full bg-primary-foreground transition-all ${i === idx ? "w-5" : "w-1.5 opacity-60"}`} />
-                  </Button>
+                    className={`h-1.5 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-1.5 bg-white/60"}`}
+                  />
                 ))}
               </div>
             </div>
@@ -126,7 +121,7 @@ export default function DesktopHome() {
         <div className={`${SHELL} grid grid-cols-2 gap-6 py-10 lg:grid-cols-4 lg:py-12`}>
           {STATS.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="font-display text-3xl font-bold text-foreground lg:text-4xl xl:text-5xl">{s.value}</div>
+              <div className="font-display text-3xl font-bold text-foreground lg:text-5xl">{s.value}</div>
               <div className="mt-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground lg:text-sm">
                 {s.label}
               </div>

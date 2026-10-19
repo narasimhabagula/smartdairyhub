@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
-  Menu, X, ArrowRight, Stethoscope, Store, TrendingUp, Landmark,
+  Bell, User, ChevronRight, Bot, ShieldCheck, Sparkles, Star, MapPin, IndianRupee, Truck, Newspaper,
 } from "lucide-react";
 import SmartHeroSearch from "@/components/SmartHeroSearch";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -17,9 +16,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 
-import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS, IMG } from "@/components/home/homeData";
+import { QUICK_ACTIONS, BANNERS, FEATURE_CARDS } from "@/components/home/homeData";
 
 
 export default function MobileHome() {
@@ -28,7 +26,6 @@ export default function MobileHome() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [bannerIdx, setBannerIdx] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
   const currentLang = (i18n.language?.slice(0, 2) || "en") as LanguageCode;
 
   // Auto-slide banners
@@ -46,35 +43,40 @@ export default function MobileHome() {
   const firstName = (profile?.full_name || user?.email || "Farmer").split(/[\s@]/)[0];
 
   return (
-    <div className="mx-auto w-full max-w-md overflow-x-hidden bg-gradient-to-b from-emerald-50/60 via-background to-background pb-6">
+    <div className="mx-auto max-w-md bg-gradient-to-b from-emerald-50/60 via-background to-background pb-6">
       {/* ============ TOP HEADER ============ */}
-      <header className="sticky top-0 z-30 bg-background/95 px-4 pb-3 pt-3 shadow-sm backdrop-blur-xl">
-        <div className="flex min-w-0 items-center justify-between gap-2">
-          <Link to="/" className="flex min-w-0 items-center gap-2">
-            <img src="/logo.png" alt="Smart Dairy Hub" className="h-8 w-8 shrink-0 rounded-full object-contain min-[360px]:h-9 min-[360px]:w-9" />
-            <div className="min-w-0 leading-tight">
-              <div className="whitespace-nowrap font-display text-[13px] font-bold text-primary min-[360px]:text-[15px]">Smart Dairy Hub</div>
+      <header className="sticky top-0 z-30 -mx-0 bg-white/95 px-4 pb-3 pt-3 shadow-sm backdrop-blur-xl dark:bg-card/90">
+        <div className="flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Smart Dairy Hub" className="h-9 w-9 rounded-full object-contain" />
+            <div className="leading-tight">
+              <div className="font-display text-[15px] font-bold text-primary">Smart Dairy Hub</div>
               <div className="text-[10px] font-medium text-muted-foreground">
                 {user ? `Hi, ${firstName} 👋` : "India's dairy app"}
               </div>
             </div>
           </Link>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex items-center gap-1">
+            {/* Language */}
             <LanguageSelector size="sm" />
-            {!user && (
-              <Button size="sm" className="h-9 px-3 text-xs" onClick={() => openAuth("/")}>Sign in</Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-              className="h-9 w-9 shrink-0"
-              onClick={() => setMenuOpen((value) => !value)}
+
+            {/* Notifications */}
+            <button
+              onClick={() => (user ? navigate("/notifications") : openAuth("/notifications"))}
+              aria-label="Notifications"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
             >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+              <Bell className="h-[18px] w-[18px]" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-white dark:ring-card" />
+            </button>
+            {/* Profile */}
+            <button
+              onClick={() => (user ? navigate("/profile") : openAuth("/profile"))}
+              aria-label="Profile"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            >
+              <User className="h-[18px] w-[18px]" />
+            </button>
           </div>
         </div>
 
@@ -82,116 +84,7 @@ export default function MobileHome() {
         <div className="mt-3">
           <SmartHeroSearch />
         </div>
-
-        {menuOpen && (
-          <nav aria-label="Home menu" className="mt-3 grid grid-cols-2 gap-1 border-t border-border/70 pt-3">
-            {[
-              { to: "/marketplace", label: "Marketplace", icon: Store },
-              { to: "/cattle-market", label: "Cattle", icon: User },
-              { to: "/milk-rates", label: "Milk rates", icon: TrendingUp },
-              { to: "/vet-contacts", label: "Vets", icon: Stethoscope },
-              { to: "/schemes", label: "Schemes", icon: Landmark },
-              { to: "/disease-detection", label: "AI scan", icon: Sparkles },
-            ].map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setMenuOpen(false)}
-                className="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
-              >
-                <item.icon className="h-4 w-4 text-primary" /> {item.label}
-              </Link>
-            ))}
-            {user && (
-              <Link
-                to="/profile"
-                onClick={() => setMenuOpen(false)}
-                className="col-span-2 flex min-h-11 items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary"
-              >
-                <User className="h-4 w-4" /> My profile
-              </Link>
-            )}
-          </nav>
-        )}
       </header>
-
-      {/* ============ MOBILE HERO ============ */}
-      <section className="relative overflow-hidden px-4 pb-6 pt-7 text-primary-foreground">
-        <img
-          src={IMG.banner1}
-          alt="Indian dairy farm with healthy cattle"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/90 via-emerald-950/85 to-emerald-950/95" />
-        <div className="relative min-w-0">
-          <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-background/15 px-3 py-1.5 text-[11px] font-semibold uppercase ring-1 ring-inset ring-background/25 backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" /> AI-powered dairy platform
-          </span>
-          <h1 className="mt-5 max-w-full break-words font-display text-[clamp(2rem,10vw,3rem)] font-bold leading-[1.08]">
-            Everything your dairy farm needs, in one place
-          </h1>
-          <p className="mt-4 text-sm leading-6 text-primary-foreground/85 sm:text-base">
-            Live milk rates, AI disease detection, verified veterinarians, cattle trading and government schemes — built for Indian dairy farmers, in 11 languages.
-          </p>
-          <div className="mt-6 flex flex-col gap-3">
-            <Button asChild size="lg" className="h-12 w-full justify-center">
-              <Link to="/marketplace">Explore marketplace <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-            {user ? (
-              <Button asChild size="lg" variant="secondary" className="h-12 w-full justify-center">
-                <Link to="/dashboard">Go to dashboard</Link>
-              </Button>
-            ) : (
-              <Button size="lg" variant="secondary" className="h-12 w-full" onClick={() => openAuth("/dashboard")}>
-                Farmer sign in
-              </Button>
-            )}
-          </div>
-          <div className="mt-6 grid gap-2 text-xs text-primary-foreground/80">
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 shrink-0" /> Verified vets & sellers</span>
-            <span className="inline-flex items-center gap-2"><Sparkles className="h-4 w-4 shrink-0" /> AI diagnosis in seconds</span>
-            <span className="inline-flex items-center gap-2"><Newspaper className="h-4 w-4 shrink-0" /> 11 Indian languages</span>
-          </div>
-
-          <div className="relative mt-6 aspect-[4/3] min-h-[220px] w-full overflow-hidden rounded-3xl shadow-lift ring-1 ring-background/20">
-            {BANNERS.map((banner, index) => (
-              <Link
-                key={banner.title}
-                to={banner.to}
-                aria-hidden={index !== bannerIdx}
-                tabIndex={index === bannerIdx ? 0 : -1}
-                className={`absolute inset-0 flex flex-col justify-end p-5 pb-10 transition-opacity duration-700 ${index === bannerIdx ? "opacity-100" : "pointer-events-none opacity-0"}`}
-              >
-                <img src={banner.img} alt="" className="absolute inset-0 h-full w-full object-cover object-center" loading={index === 0 ? "eager" : "lazy"} />
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/35 to-transparent" />
-                <div className="relative pr-2">
-                  <div className="font-display text-xl font-bold leading-tight">{banner.title}</div>
-                  <div className="mt-1 text-xs leading-5 text-primary-foreground/85">{banner.subtitle}</div>
-                  <span className={`mt-3 inline-flex items-center gap-1 rounded-full ${banner.accent} px-3 py-1.5 text-[11px] font-bold`}>
-                    {banner.cta} <ChevronRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-            <div className="absolute bottom-4 right-4 z-10 flex gap-2">
-              {BANNERS.map((_, index) => (
-                <Button
-                  key={index}
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setBannerIdx(index)}
-                  aria-label={`Show promotion ${index + 1}`}
-                  className="h-6 w-6 rounded-full p-0 hover:bg-background/20"
-                >
-                  <span className={`block h-1.5 rounded-full bg-primary-foreground transition-all ${index === bannerIdx ? "w-4" : "w-1.5 opacity-60"}`} />
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ============ QUICK ACTIONS (horizontal scroll) ============ */}
       <section className="mt-4 px-4">
@@ -223,12 +116,51 @@ export default function MobileHome() {
         </div>
       </section>
 
+      {/* ============ AUTO-SLIDING BANNERS ============ */}
+      <section className="mt-5 px-4">
+        <div className="relative overflow-hidden rounded-3xl shadow-lift">
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{ transform: `translateX(-${bannerIdx * 100}%)` }}
+          >
+            {BANNERS.map((b) => (
+              <Link
+                key={b.title}
+                to={b.to}
+                className="relative flex h-44 w-full shrink-0 flex-col justify-end overflow-hidden p-5 text-white"
+              >
+                <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="relative">
+                  <div className="font-display text-lg font-bold leading-tight">{b.title}</div>
+                  <div className="mt-0.5 text-xs text-white/85">{b.subtitle}</div>
+                  <span className={`mt-2.5 inline-flex items-center gap-1 rounded-full ${b.accent} px-3 py-1 text-[11px] font-bold`}>
+                    {b.cta} <ChevronRight className="h-3 w-3" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {/* dots */}
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {BANNERS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setBannerIdx(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${i === bannerIdx ? "w-5 bg-white" : "w-1.5 bg-white/60"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ============ TRUST STRIP ============ */}
-      <section className="mt-4 px-4">
-        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2.5 text-[11px] font-semibold text-emerald-800">
-          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 shrink-0" /> Verified vets</span>
-          <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 shrink-0" /> AI powered</span>
-          <span className="inline-flex items-center gap-1.5"><Newspaper className="h-3.5 w-3.5 shrink-0" /> 11 languages</span>
+      <section className="mt-5 px-4">
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5 text-[11px] font-medium text-emerald-900 dark:border-primary/20 dark:bg-primary/10 dark:text-primary-foreground">
+          <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> Verified vets</span>
+          <span className="flex items-center gap-1.5"><Sparkles className="h-4 w-4" /> AI powered</span>
+          <span className="flex items-center gap-1.5"><Newspaper className="h-4 w-4" /> 12 languages</span>
         </div>
       </section>
 
