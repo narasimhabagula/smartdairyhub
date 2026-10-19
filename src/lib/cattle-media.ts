@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { safeStoragePath } from "@/lib/uploads";
 
 export const PHOTO_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 export const VIDEO_MAX_BYTES = 30 * 1024 * 1024; // 30 MB
@@ -24,8 +25,9 @@ export async function uploadCattleFile(
   file: File,
   kind: "photo" | "video",
 ): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || (kind === "photo" ? "jpg" : "mp4");
-  const path = `cattle/${userId}/${kind}-${crypto.randomUUID()}.${ext}`;
+  const validationError = kind === "photo" ? validatePhoto(file) : validateVideo(file);
+  if (validationError) throw new Error(validationError);
+  const path = safeStoragePath(userId, "cattle", file, kind === "photo" ? "image" : "video");
   const { error } = await supabase.storage.from("images").upload(path, file, {
     cacheControl: "3600",
     upsert: false,

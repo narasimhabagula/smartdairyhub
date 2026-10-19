@@ -1,1 +1,2 @@
 - Disease photo analysis uses the validated animalHealth service; failed requests must not become demo reports, so uploaded-photo results remain attributable to the deployed AI service.
+- Cattle media uses the shared owner-first storage path helper so uploads comply with storage ownership policies without broadening access.
