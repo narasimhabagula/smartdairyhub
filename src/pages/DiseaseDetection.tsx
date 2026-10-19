@@ -13,7 +13,8 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, RadialBarChart, RadialBar,
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
-import { demoDiseaseResults, USE_DEMO_DATA } from "@/data/demo";
+import { demoDiseaseResults } from "@/data/demo";
+import { analyzeAnimalPhoto } from "@/services/animalHealth";
 import PageBanner from "@/components/PageBanner";
 import aiScanBanner from "@/assets/hero-aiscan-v2.jpg.asset.json";
 
@@ -53,6 +54,7 @@ export default function DiseaseDetection() {
   const [progress, setProgress] = useState(0);
   const [aiStage, setAiStage] = useState<string>("");
   const [result, setResult] = useState<Result | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const camInput = useRef<HTMLInputElement>(null);
@@ -84,7 +86,7 @@ export default function DiseaseDetection() {
     if (room <= 0) { toast.error(`Max ${MAX_IMAGES} images`); return; }
     const accepted = files
       .filter((f) => {
-        if (!f.type.startsWith("image/")) { toast.error(`${f.name}: not an image`); return false; }
+        if (!["image/jpeg", "image/png", "image/webp"].includes(f.type) || !f.size) { toast.error(`${f.name}: choose a non-empty JPG, PNG or WebP photo`); return false; }
         if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: over 10 MB`); return false; }
         return true;
       })
@@ -152,8 +154,8 @@ export default function DiseaseDetection() {
 
   const analyze = async () => {
     if (!active) return;
-    setAnalyzing(true); setProgress(5); setResult(null);
-    const stages = ["Enhancing image…", "Detecting animal…", "Scanning for symptoms…", "Cross-checking database…", "Generating diagnosis…"];
+    setAnalyzing(true); setProgress(5); setResult(null); setIsDemo(false);
+    const stages = ["Reading photo…", "Assessing visible signs…", "Preparing veterinary advice…"];
     let sIdx = 0; setAiStage(stages[0]);
     const stageTimer = setInterval(() => { sIdx = (sIdx + 1) % stages.length; setAiStage(stages[sIdx]); }, 900);
     const tick = setInterval(() => setProgress((p) => Math.min(p + 6, 92)), 260);
@@ -161,26 +163,14 @@ export default function DiseaseDetection() {
     try {
       const { base64, mimeType } = await toBase64(active.preview, active.file.type);
       if (!base64) throw new Error("Please add a photo of the animal before starting the scan.");
-      const { data, error } = await supabase.functions.invoke("analyze-animal-health", {
-        body: { imageBase64: base64, mimeType },
-      });
+      const data = await analyzeAnimalPhoto(base64, mimeType);
       clearInterval(tick); clearInterval(stageTimer); setProgress(100); setAiStage("Complete");
 
-      if (error || data?.error) {
-        if (USE_DEMO_DATA) {
-          toast.info("Using demo analysis (AI unavailable)");
-          finalizeResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result, active.preview);
-        } else {
-          toast.error(error?.message || data?.error || "Analysis failed");
-        }
-      } else {
-        finalizeResult(data as Result, active.preview);
-        toast.success("Analysis complete");
-      }
+      finalizeResult(data, active.preview);
+      toast.success("Photo assessment complete");
     } catch (e) {
       clearInterval(tick); clearInterval(stageTimer);
-      if (USE_DEMO_DATA) { toast.info("Using demo analysis"); finalizeResult(demoDiseaseResults[0] as Result, active.preview); }
-      else toast.error((e as Error).message);
+      toast.error(e instanceof Error ? e.message : "The photo could not be analysed. Please try again later.");
     } finally {
       setTimeout(() => { setAnalyzing(false); setProgress(0); setAiStage(""); }, 600);
     }
@@ -192,7 +182,8 @@ export default function DiseaseDetection() {
     const id = crypto.randomUUID();
     setQueue([{ id, file: new File([], "demo.jpg", { type: "image/jpeg" }), preview: img, progress: 100, status: "ready" }]);
     setActiveId(id);
-    finalizeResult(demoDiseaseResults[Math.floor(Math.random() * demoDiseaseResults.length)] as Result, img);
+    setIsDemo(true);
+    setResult(demoDiseaseResults[0] as Result);
     toast.success("Demo analysis loaded");
   };
 
@@ -271,7 +262,7 @@ export default function DiseaseDetection() {
                       <style>{`@keyframes scan { 0% { top: 0% } 100% { top: 100% } }`}</style>
                     </>
                   )}
-                  {result && !analyzing && (
+                  {result && !analyzing && result.disease !== "Healthy" && result.animal !== "Unknown" && (
                     <div
                       className="pointer-events-none absolute rounded-lg border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)]"
                       style={{
@@ -373,16 +364,17 @@ export default function DiseaseDetection() {
         {/* Results */}
         {result && (
           <div className="animate-fade-in space-y-6">
+            <p className="text-sm text-muted-foreground">{isDemo ? "Sample report — not an assessment of your animal." : "AI photo assessment — possible findings, not a confirmed diagnosis. A photo cannot determine recovery chances."}</p>
             <div className="grid gap-4 md:grid-cols-4">
               <StatCard label="Animal" value={`${result.animal} · ${result.breed}`} icon={Activity} />
               <StatCard label="Disease" value={result.disease} icon={ShieldAlert} />
               <StatCard label="Severity" value={result.severity} accent={severityColor[result.severity]} />
-              <StatCard label="Recovery" value={`${result.recoveryChance}%`} icon={RefreshCw} />
+              <StatCard label="Recovery" value={isDemo ? `${result.recoveryChance}% (sample)` : "Vet assessment needed"} icon={RefreshCw} />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               <Card className="rounded-2xl"><CardContent className="p-6">
-                <h3 className="font-display text-lg font-semibold">Confidence</h3>
+                <h3 className="font-display text-lg font-semibold">AI confidence estimate</h3>
                 <div className="mt-2 h-40 sm:h-48">
                   <ResponsiveContainer><RadialBarChart innerRadius="65%" outerRadius="100%" data={[{ v: result.confidence, fill: "hsl(var(--primary))" }]} startAngle={90} endAngle={-270}>
                     <RadialBar background dataKey="v" cornerRadius={12} />
@@ -391,7 +383,7 @@ export default function DiseaseDetection() {
                 <p className="text-center font-display text-3xl font-bold">{result.confidence}%</p>
               </CardContent></Card>
 
-              <Card className="rounded-2xl"><CardContent className="p-6">
+              {isDemo && <Card className="rounded-2xl"><CardContent className="p-6">
                 <h3 className="font-display text-lg font-semibold">Recovery Probability</h3>
                 <div className="mt-2 h-40 sm:h-48">
                   <ResponsiveContainer><PieChart>
@@ -401,10 +393,10 @@ export default function DiseaseDetection() {
                   </PieChart></ResponsiveContainer>
                 </div>
                 <p className="text-center font-display text-3xl font-bold">{result.recoveryChance}%</p>
-              </CardContent></Card>
+              </CardContent></Card>}
 
-              <Card className="rounded-2xl"><CardContent className="p-6">
-                <h3 className="font-display text-lg font-semibold">12-Month Health Trend</h3>
+              {isDemo && <Card className="rounded-2xl"><CardContent className="p-6">
+                <h3 className="font-display text-lg font-semibold">Sample Health Trend</h3>
                 <div className="mt-2 h-48">
                   <ResponsiveContainer><LineChart data={healthTrend}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -415,7 +407,7 @@ export default function DiseaseDetection() {
                     <Line dataKey="yield" stroke="hsl(36, 80%, 55%)" strokeWidth={2} dot={false} />
                   </LineChart></ResponsiveContainer>
                 </div>
-              </CardContent></Card>
+              </CardContent></Card>}
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
