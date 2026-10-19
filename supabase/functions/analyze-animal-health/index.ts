@@ -20,7 +20,8 @@ Rules:
 - Name the single most likely condition. If the animal looks healthy, set disease to "Healthy", severity "Mild", confidence high.
 - confidence reflects how sure you are from the image alone. Do not exceed 92 unless the signs are unmistakable.
 - symptoms: 3-6 short observations you can actually see or that typically accompany the condition.
-- medicines: 2-4 entries with commonly available Indian veterinary products, realistic dosage by body weight and a duration. Always note that a vet must confirm before administering.
+- medicines: Do not prescribe medication or doses from a photo. Use an empty array for healthy or unclear images. For suspected illness, include only a recommendation for veterinary examination, with dosage "Do not administer without veterinary examination". Never recommend antibiotics, injections or routine deworming based only on a photo.
+- Separate visible observations from signs that require a physical examination. Never claim fever, milk changes or reduced yield are observed from a photo. If uncertain, say so and recommend a veterinary assessment rather than making a definitive diagnosis.
 - nutrition: 3-5 short feeding actions. isolation, vaccination, nextCheckup: one short sentence each.
 - affectedArea: percentage box (x, y from top-left, w, h) around the visible problem area in the image. Use a small central box if nothing specific is visible.
 - If the photo is not an animal, set animal to "Unknown", disease to "Image unclear", confidence low, and explain in symptoms what a better photo should show.`;
@@ -170,16 +171,10 @@ Deno.serve(async (req) => {
     if (!resp.ok) {
       const txt = await resp.text();
       console.error("AI gateway error", resp.status, txt.slice(0, 400));
-      if (resp.status === 429) {
-        return json({ error: "The AI is busy right now. Please try again in a moment." }, 429);
-      }
-      if (resp.status === 402) {
-        return json({ error: "AI usage credits have run out. Please add credits to continue." }, 402);
-      }
-      if (resp.status === 403) {
-        return json({ error: "AI access is currently blocked for this workspace." }, 403);
-      }
-      return json({ error: "The AI could not read this photo. Please try another one." }, 502);
+      let upstream: any = null;
+      try { upstream = JSON.parse(txt); } catch { /* non-JSON upstream response */ }
+      const message = upstream?.error?.message || upstream?.message || "The AI service could not analyse this photo. Please try again later.";
+      return json({ error: message }, resp.status);
     }
 
     const data = await resp.json();
