@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import type { DiseaseSample } from "@/data/demo/diseases";
 
 const resultSchema = z.object({
   animal: z.string(), breed: z.string(), disease: z.string(),
@@ -12,7 +13,7 @@ const resultSchema = z.object({
   affectedArea: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }),
 });
 
-export async function analyzeAnimalPhoto(imageBase64: string, mimeType: string) {
+export async function analyzeAnimalPhoto(imageBase64: string, mimeType: string): Promise<Omit<DiseaseSample, "id">> {
   const { data, error } = await supabase.functions.invoke("analyze-animal-health", {
     body: { imageBase64, mimeType },
   });
@@ -28,5 +29,5 @@ export async function analyzeAnimalPhoto(imageBase64: string, mimeType: string) 
   if (typeof data?.error === "string") throw new Error(data.error);
   const parsed = resultSchema.safeParse(data);
   if (!parsed.success) throw new Error("The photo analysis was incomplete. No diagnosis has been saved.");
-  return parsed.data;
+  return parsed.data as Omit<DiseaseSample, "id">;
 }
