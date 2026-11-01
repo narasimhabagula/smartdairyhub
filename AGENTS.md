@@ -1,3 +1,4 @@
 - Disease photo analysis uses the validated animalHealth service; failed requests must not become demo reports, so uploaded-photo results remain attributable to the deployed AI service.
 - Cattle media uses the shared owner-first storage path helper so uploads comply with storage ownership policies without broadening access.
 - Cattle upload previews and listing details share CattleVideo with inline playback and retry/download recovery, so mobile behavior and unsupported-codec handling remain consistent.
+- Lazy routes use an eager route error boundary with a persisted one-reload-per-tab guard; prefetch failures are contained so outdated assets cannot blank the app or cause reload loops.

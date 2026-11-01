@@ -21,6 +21,7 @@ import NetworkStatus from "./components/NetworkStatus";
 
 
 import RouteFallback from "./components/RouteFallback";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import JerryBot from "./components/JerryBot/JerryBot";
 import { JerryProvider } from "./context/JerryContext";
 
@@ -83,13 +84,16 @@ const queryClient = new QueryClient({
 function RoutePrefetcher() {
   useEffect(() => {
     const warm = () => {
-      import("./pages/Dashboard");
-      import("./pages/Login");
-      import("./pages/MilkRates");
-      import("./pages/Marketplace");
-      import("./pages/DiseaseDetection");
-      import("./pages/VetContacts");
-      import("./pages/Schemes");
+      // Optional warmups must not reject globally or refresh a working page.
+      void Promise.allSettled([
+        import("./pages/Dashboard"),
+        import("./pages/Login"),
+        import("./pages/MilkRates"),
+        import("./pages/Marketplace"),
+        import("./pages/DiseaseDetection"),
+        import("./pages/VetContacts"),
+        import("./pages/Schemes"),
+      ]);
     };
 
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
@@ -140,6 +144,7 @@ const App = () => (
                       <NotificationBanners />
                     </Chrome>
                     <main className="flex-1">
+                      <RouteErrorBoundary>
                       <Suspense fallback={<RouteFallback />}>
                         <Routes>
                           <Route path="/" element={<Index />} />
@@ -192,6 +197,7 @@ const App = () => (
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </Suspense>
+                      </RouteErrorBoundary>
                     </main>
                     <Chrome>
                       <Footer />
