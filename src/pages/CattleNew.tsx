@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { normalizeIndianPhone } from "@/lib/phone";
+import CattleVideo from "@/components/CattleVideo";
 import {
   MAX_PHOTOS, uploadCattleFile, validatePhoto, validateVideo, deleteCattleFiles,
 } from "@/lib/cattle-media";
@@ -388,7 +389,7 @@ export default function CattleNew() {
               <div className="mt-2">
                 {video ? (
                   <div className="relative">
-                    <video src={video} controls className="w-full max-h-72 rounded-lg border bg-black" />
+                    <CattleVideo key={video} src={video} label="Uploaded animal video" />
                     <Button type="button" size="sm" variant="destructive" onClick={removeVideo} className="absolute right-2 top-2 gap-1">
                       <X className="h-3.5 w-3.5" /> Remove
                     </Button>

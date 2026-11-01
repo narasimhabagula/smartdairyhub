@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, MessageCircle, MapPin, IndianRupee, Heart, Flag, User, ArrowLeft, Loader2, Share2, Navigation } from "lucide-react";
 import { telHref, waHref, formatIndianPhoneDisplay } from "@/lib/phone";
 import { toast } from "sonner";
+import CattleVideo from "@/components/CattleVideo";
 
 export default function CattleDetail() {
   const { id } = useParams();
@@ -94,7 +95,7 @@ export default function CattleDetail() {
           {listing.video_url && (
             <div className="mt-4">
               <p className="mb-2 text-sm font-medium">Video</p>
-              <video src={listing.video_url} controls preload="metadata" className="w-full rounded-lg border bg-black" />
+              <CattleVideo key={listing.video_url} src={listing.video_url} label={`${listing.name} video`} />
             </div>
           )}
         </div>
